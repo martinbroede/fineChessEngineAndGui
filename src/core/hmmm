@@ -1,0 +1,34 @@
+
+
+weiß zieht
+aktualisiere ggf whiteKingPosition
+
+ermittle Figuren, die schwarzen könig
+a) bedrohen: kann die figur auf blackKingPosition ziehen?  ja =>  whiteAttackers.add(...) oder: directOffense ???
+b) indirekt bedrohen, d.h. diagonale oder linie mit schwarzem könig gemeinsam haben.
+    => whiteOffenders.add(...) indirectOffense
+
+
+schwarz zieht
+A) König im Schach:
+wie viele bedrohen König?
+    1) Figur F bedroht König.
+        a) König zieht Weg
+            wohin?
+            white
+        b) Figur f schlägt F
+
+    2) Matt Situation MA1: zwei Figuren bedrohen König.
+
+B) König nicht im Schach
+    Figur ist nicht König
+    1) Figur teilt nicht Diagonale oder Linie mit König
+        => alle Züge legal
+    2) Figur teilt D/L mit König
+        a) figur dazwischen:
+            => alle Züge legal.
+        b) keine Figur dazwischen:
+            => alle Züge illegal.
+
+    Figur ist König:
+    Feld ist nicht bedroht => Zug ist legal.
