@@ -19,11 +19,14 @@ public class Constants {
     public final byte[][] FILE_DISTANCE;// TODO don't need these ... ?
     public final byte[][] RANK_DISTANCE;
     public final byte[][] DIAGONAL_DISTANCE;
-    public final byte[][] ANTI_DIAGONAL_DISTANCE;
+    public final byte[][] ANTI_DIAGONAL_DISTANCE;// TODO don't need these ... ?
     public final char[] FILES = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'}; //"COLUMNS"
     public final char[] RANKS = {'1', '2', '3', '4', '5', '6', '7', '8'}; //"ROWS"
+    private Square[] allSquares;
 
     public Constants() {
+
+        allSquares = Square.createAllSquares();
 
         ROOK_SQUARES = new byte[4][64][];
         for (int i = 0; i <= 63; i++) {
@@ -213,8 +216,12 @@ public class Constants {
                 ANTI_DIAGONAL_DISTANCE[i][j] = 0; //todo
             }
         }
-        System.out.println("MOVE TABLE CALCULATED.");
+        System.out.println("CONSTANTS CALCULATED.");
         assert test();
+    }
+
+    public Square getSquare(byte pos){
+        return allSquares[pos];
     }
 
     public static boolean getDiagonalDistance(int sq1, int sq2) {

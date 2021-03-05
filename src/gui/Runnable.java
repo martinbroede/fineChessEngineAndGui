@@ -10,7 +10,7 @@ import java.awt.event.MouseEvent;
 
 public class Runnable {
     private final String storagePath = "chessUserData/currentGame.txt";
-    private final Gui gui;
+    private final MainWindow mainWindow;
     private Chess chess;
     private String moveString;
     private Move lastMove = null;
@@ -18,22 +18,22 @@ public class Runnable {
     public Runnable() {
         chess = new Chess();
         moveString = "";
-        gui = new Gui(chess.getBoard());
+        mainWindow = new MainWindow(chess.getBoard());
 
         /* add action listeners */
-        gui.item_new.addActionListener(e -> {
+        mainWindow.item_new.addActionListener(e -> {
             System.out.println("NEW GAME!");
             chess.newGame();
-            gui.boardCanvas.repaint();
-            gui.boardCanvas.paintDiffus();
+            mainWindow.boardCanvas.repaint();
+            mainWindow.boardCanvas.paintDiffus();
             lastMove = null;
-            gui.show_dialog("Spiel beginnen");
+            mainWindow.show_dialog("Spiel beginnen");
         });
-        gui.item_store.addActionListener(e -> {
+        mainWindow.item_store.addActionListener(e -> {
             System.out.println("STORE GAME");
             ReadWrite.writeToFile(storagePath, chess);
         });
-        gui.item_restore.addActionListener(e -> {
+        mainWindow.item_restore.addActionListener(e -> {
             chess.pieceAtSquare(0);
             Object obj = null;
             try {
@@ -43,57 +43,64 @@ public class Runnable {
             }
             if (obj != null) {
                 chess = (Chess) obj;
-                gui.boardCanvas.setBoard(chess.getBoard());
+                mainWindow.boardCanvas.setBoard(chess.getBoard());
                 System.out.println("SUCCESSFULLY LOADED");
-                gui.boardCanvas.repaint();
+                mainWindow.boardCanvas.repaint();
             }
         });
-        gui.item_begin.addActionListener(e -> {
+        mainWindow.item_begin.addActionListener(e -> {
             System.out.println("NOT YET IMPLEMENTED");
             {}
         });
-        gui.boardCanvas.addMouseListener(new MouseAdapter() {
+        mainWindow.boardCanvas.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent event) {
-                int btn = event.getButton();
+            public void mousePressed(MouseEvent mouseEvent) {
+                int btn = mouseEvent.getButton();
                 switch (btn) {
                     case 1: {
-                        byte pos = Parser.coordFromEvent(event, gui.boardCanvas.offset, gui.boardCanvas.size_factor);
-
-                        if (moveString.equals("")) {
-                            if (chess.pieceAtSquare(pos, chess.getTurnColor())) {
-
-                                moveString += Parser.parse(pos) + " ";
-                            }
-                        } //you already chose a square:
-                        else if (!moveString.equals(Parser.parse(pos) + " ")) //avoids moves like A1->A1! :
-                            moveString += Parser.parse(pos) + " ";
-
-                        if (moveString.length() > 5) {
-                            if (chess.movePieceUser(new Move(moveString))) {
-                                lastMove = new Move(moveString);
-                            } else System.out.println("MOVE ILLEGAL.");
-                            moveString = "";
-                        }
-
-                        gui.boardCanvas.refresh(true, true,
-                                chess.getAllMoves().getMovesFrom(pos), lastMove);
+                        movePieceFromEvent(mouseEvent);
                         break;
                     }
                     case 2: {
+                        chess.whitePieces.printThreats();
+                        chess.blackPieces.printThreats();
+                        System.out.println();
                         break;
                     }
                     case 3: {
-                        moveString = "";
-                        gui.boardCanvas.repaint();
-                        byte pos = Parser.coordFromEvent(event,
-                                gui.boardCanvas.offset, gui.boardCanvas.size_factor);
-                        System.out.println(event.getX() + "/" + event.getX());
-                        System.out.println(Parser.parse(pos));
+                        movePieceFromEvent(mouseEvent);
+                        chess.whitePieces.print();
+                        chess.blackPieces.print();
+                        System.out.println();
                         break;
                     }
                 }
             }
         });
+    }
+
+    private void movePieceFromEvent(MouseEvent mouseEvent){
+        byte pos = Parser.coordFromEvent(mouseEvent,
+                mainWindow.boardCanvas.s.offset,
+                mainWindow.boardCanvas.s.size_factor);
+
+        if (moveString.equals("")) {
+            if (chess.pieceAtSquare(pos, chess.getTurnColor())) {
+
+                moveString += Parser.parse(pos) + " ";
+            }
+        } //you already chose a square:
+        else if (!moveString.equals(Parser.parse(pos) + " ")) //avoids moves like A1->A1! :
+            moveString += Parser.parse(pos) + " ";
+
+        if (moveString.length() > 5) {
+            if (chess.movePieceUser(new Move(moveString))) {
+                lastMove = new Move(moveString);
+            } else System.out.println("MOVE ILLEGAL.");
+            moveString = "";
+        }
+
+        mainWindow.boardCanvas.refresh(true, true,
+                chess.getPseudoLegalMoves().getMovesFrom(pos), lastMove);
     }
 }

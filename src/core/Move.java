@@ -3,10 +3,10 @@ package core;
 import java.util.InputMismatchException;
 
 public class Move {
-    int move; //todo can be short right?
+    short move;
 
     public Move(byte from, byte to) {
-        move = from + to * 64;
+        move = (short) (from + to * 64);
     }
 
     public Move(String moveString) {
@@ -15,7 +15,7 @@ public class Move {
             }
             byte from = Parser.parse(moveString.split(" ")[0]);
             byte to = Parser.parse(moveString.split(" ")[1]);
-            move = from + to * 64;
+            move = (short) (from + to * 64);
     }
 
     public byte getFrom(){

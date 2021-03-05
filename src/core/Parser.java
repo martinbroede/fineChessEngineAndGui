@@ -4,6 +4,7 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 
+/** includes all parsing functions */
 public final class Parser {
 
     private static final HashMap<Character, Character> SYMBOLS = new HashMap<Character, Character>() {{
@@ -38,9 +39,7 @@ public final class Parser {
         put(' ', ' ');
     }};
 
-    public Parser() {
-        throw new InstantiationError("No need to instatiate parser.");
-    }
+    private Parser() {} // to avoid Parser beeing instantiated.
 
     public static char parseSymbol(char c) {
         return SYMBOLS.get(c);

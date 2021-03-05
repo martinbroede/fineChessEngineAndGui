@@ -1,12 +1,15 @@
 package gui;
 
+import gui.chessBoard.BoardCanvas;
+
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 
-public class Gui {
+public class MainWindow {
     protected final Panel panel;
-    protected final BoardCanvas boardCanvas;
+    public final BoardCanvas boardCanvas;
     protected final MenuItem item_new;
     protected final MenuItem item_store;
     protected final MenuItem item_restore;
@@ -23,7 +26,7 @@ public class Gui {
     /** pixel per square */
     public int size_factor;
 
-    public Gui(char[] board) {
+    public MainWindow(char[] board) {
         frame = new Frame();
         colors = new Colors();
         panel = new Panel();
@@ -95,7 +98,6 @@ public class Gui {
         frame.setLocation(100, 100);
         frame.setVisible(true);
 
-
         adjustSize(SIZE_S); // 2X !!
         try {
             Thread.sleep(50);
@@ -127,8 +129,8 @@ public class Gui {
         Point location = frame.getLocation();
         location.translate(panel.getLocation().x, panel.getLocation().y);
         location.translate(
-                boardCanvas.getLocation().x + boardCanvas.offset + 2 * size_factor,
-                boardCanvas.getLocation().y + boardCanvas.offset + 3 * size_factor);
+                boardCanvas.getLocation().x + boardCanvas.s.offset + 2 * size_factor,
+                boardCanvas.getLocation().y + boardCanvas.s.offset + 3 * size_factor);
         dialog_game_over.setLocation(location);
         dialog_game_over.setVisible(true);
     }

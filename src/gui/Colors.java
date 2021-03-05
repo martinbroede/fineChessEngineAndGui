@@ -3,17 +3,17 @@ package gui;
 import java.awt.*;
 
 public class Colors {
-    protected Color WHITE_SQUARES_COLOR;
-    protected Color BLACK_SQUARES_COLOR;
-    protected Color MARGIN_COLOR;
-    protected Color PIECE_COLOR;
-    protected Color FILL_COLOR;
-    protected Color HIGHLIGHT_1_COLOR;
-    protected Color HIGHLIGHT_2_COLOR;
-    protected Color LIGHT_COLOR;
+    public Color WHITE_SQUARES_COLOR;
+    public Color BLACK_SQUARES_COLOR;
+    public Color MARGIN_COLOR;
+    public Color PIECE_COLOR;
+    public Color FILL_COLOR;
+    public Color HIGHLIGHT_1_COLOR;
+    public Color HIGHLIGHT_2_COLOR;
+    public Color LIGHT_COLOR;
 
     public Colors() {
-        setColors('p');
+        setColors('s');
     }
 
     protected void setColors(char col) {
