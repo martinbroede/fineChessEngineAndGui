@@ -1,5 +1,23 @@
+A1: 0
+B1: 1
+C1: 2
+D1: 3
+E1: 4
+F1: 5
+G1: 6
+H1: 7
+A8: 56
+B8: 57
+C8: 58
+D8: 59
+E8: 60
+F8: 61
+G8: 62
+H8: 63
 
+Ideen: Matt / legale Königszüge
 
+Beispiel:
 weiß zieht
 aktualisiere ggf whiteKingPosition
 
@@ -32,3 +50,17 @@ B) König nicht im Schach
 
     Figur ist König:
     Feld ist nicht bedroht => Zug ist legal.
+
+
+########################################################################################################################
+########################################################################################################################
+
+
+if threats(king) == 0:
+    ???
+
+if threats(king) == 2:
+    if king.can_move:
+            return king.moves
+    else:
+        return CHECKMATE

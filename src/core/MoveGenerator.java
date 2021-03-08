@@ -8,108 +8,77 @@ import java.util.Stack;
 
 public class MoveGenerator extends PiecePatterns {
 
-    public WhitePieceCollection whitePieces;
-    public BlackPieceCollection blackPieces;
+    public PieceCollectionWhite whitePieces;
+    public PieceCollectionBlack blackPieces;
     public Castling castling;
     protected boolean whiteToMove;
-    protected int moveCounter;
-    protected int moveCounterLastCaptureOrPawnMove;
+    protected short moveCounter;
+    protected short moveCounterLastCaptureOrPawnMove;
 
 
     public Moves getPseudoLegalMoves() {
+
         if (whiteToMove) {
             return whitePieces.getPseudoLegalMoves();
         } else return blackPieces.getPseudoLegalMoves();
     }
 
-    class Castling {
+    public class Castling {
+        private byte rights;
 
-        public boolean white = true;
-        public boolean black = true;
-        public boolean whiteKingSide = true;
-        public boolean whiteQueenSide = true;
-        public boolean blackKingSide = true;
-        public boolean blackQueenSide = true;
-        /**
-         * bit order : MSB- w, b, wKS, wQS, bKS, bQS -LSB
-         * +              - 5  4   3    2    1    0
-         */
-        private byte hash = 0b111111;
-
-        public byte getHash(){
-            return hash;
+        public byte getRights() {
+            return rights;
         }
 
-        public void setDefault() {
-            hash = 0b111111;
-            white = true;
-            black = true;
-            whiteKingSide = true;
-            whiteQueenSide = true;
-            blackKingSide = true;
-            blackQueenSide = true;
+        public void setRights(byte rights) {
+            this.rights = rights;
+        }
+
+        public void reset() {
+            /* MSB-wKS wQS bKS bQS-LSB */
+            rights = 0b1111;
         }
 
         public void disableWhiteKingSide() {
-            whiteKingSide = false;
-            hash &= ~(1 << 3);
-            if (!whiteQueenSide) {
-                white = false;
-                hash &= ~(1 << 5);
-            }
+            rights &= ~(1 << 3);
         }
 
         public void disableWhiteQueenSide() {
-            whiteQueenSide = false;
-            hash &= ~(1 << 2);
-            if (!whiteKingSide) {
-                white = false;
-                hash &= ~(1 << 5);
-            }
+            rights &= ~(1 << 2);
         }
 
         public void disableBlackKingSide() {
-            blackKingSide = false;
-            if (!blackQueenSide) black = false;
+            rights &= ~(1 << 1);
         }
 
         public void disableBlackQueenSide() {
-            blackQueenSide = false;
-            if (!blackKingSide) black = false;
+            rights &= ~(1);
         }
 
-        public void restore(byte h) {
-            if (h != 0) {
-                if ((h & (1 << 5)) > 0) white = true;
-                if ((h & (1 << 4)) > 0) black = true;
-                if ((h & (1 << 3)) > 0) whiteKingSide = true;
-                if ((h & (1 << 2)) > 0) whiteQueenSide = true;
-                if ((h & (1 << 1)) > 0) blackKingSide = true;
-                if ((h & (1 << 0)) > 0) blackQueenSide = true;
-            }
-            hash = h;
+        public boolean whiteKingSide() {
+            return (rights & (1 << 3)) > 0;
         }
 
-        public void restoreCompletely(byte h) {
-            white = false;
-            black = false;
-            whiteKingSide = false;
-            whiteQueenSide = false;
-            blackKingSide = false;
-            blackQueenSide = false;
-            restore(h);
+        public boolean whiteQueenSide() {
+            return (rights & (1 << 2)) > 0;
+        }
+
+        public boolean blackKingSide() {
+            return (rights & (1 << 1)) > 0;
+        }
+
+        public boolean blackQueenSide() {
+            return (rights & 1) > 0;
         }
 
         public void print() {
-            System.out.println("CASTLING-WHITE:\t" + white +
-                    "\nW-KINGSIDE:\t\t" + whiteKingSide +
-                    "\nW-QUEENSIDE:\t" + whiteQueenSide +
-                    "\nBLACK:\t\t\t" + black +
-                    "\nB-KINGSIDE:\t\t" + blackKingSide +
-                    "\nB-QUEENSIDE:\t" + blackQueenSide + "\n" +
-                    Integer.toBinaryString(hash) + "\n");
-        }
 
+            System.out.println("WHITE KINGSIDE:\t" + whiteKingSide() +
+                    "\nWHITE QUEENSIDE:" + whiteQueenSide() +
+                    "\nBLACK KINGSIDE:\t" + blackKingSide() +
+                    "\nBLACK QUEENSIDE:" + blackQueenSide() +
+                    "\nRIGHTS:\t\t\t" + Integer.toBinaryString(rights) + "\n");
+        }
     }
 
     class Piece {
@@ -148,8 +117,12 @@ public class MoveGenerator extends PiecePatterns {
             pattern.updateThreats(this.position, threats);
         }
 
-        public Moves getPseudoLegalMoves(byte[] threats) {
-            return pattern.getMoves(position, threats);
+        public Moves getPseudoLegalMoves() {
+            return pattern.getMoves(position);
+        }
+
+        public Moves getPseudoLegalKingMoves(byte[] threats, boolean kingSideCastling, boolean queenSideCastling) {
+            return pattern.getKingMoves(position, threats, kingSideCastling, queenSideCastling);
         }
 
         public void print() {
@@ -160,12 +133,17 @@ public class MoveGenerator extends PiecePatterns {
 
     public class PieceCollection extends HashSet<Piece> {
 
-        final CapturedPieces capturedPieces;
+        private final CapturedPieces capturedPieces;
         private final byte[] threats;
+        protected Piece king;
 
         public PieceCollection() {
             threats = new byte[64];
             capturedPieces = new CapturedPieces();
+        }
+
+        public void setKing(Piece king) {
+            this.king = king;
         }
 
         public byte[] getThreats() {
@@ -183,14 +161,14 @@ public class MoveGenerator extends PiecePatterns {
             capturedPieces.print();
         }
 
-        public void changePosition(byte from, byte to) {
+        public Piece changePosition(byte from, byte to) {
             for (Piece p : this) { //todo this is not efficient. find better method later
                 if (p.getPosition() == from) {
                     p.setPosition(to);
-                    return;
+                    return p;
                 }
             }
-            throw new InputMismatchException("NO PIECE AT " + Parser.parse(from) + ". E22");
+            throw new InputMismatchException("NO PIECE AT " + Parser.parse(from));
         }
 
         public void removePiece(byte position) {
@@ -204,6 +182,10 @@ public class MoveGenerator extends PiecePatterns {
             }
             this.remove(removePiece);
             capturedPieces.add(removePiece);
+        }
+
+        public void activateLastCapturedPiece() {
+            this.add(capturedPieces.pop());
         }
 
         public void updateThreats() {
@@ -240,18 +222,21 @@ public class MoveGenerator extends PiecePatterns {
         }
     }
 
-    public class WhitePieceCollection extends PieceCollection {
+    public class PieceCollectionWhite extends PieceCollection {
 
-        public WhitePieceCollection() {
+        public PieceCollectionWhite() {
 
             super();
         }
 
         public Moves getPseudoLegalMoves() {
+
             Moves moves = new Moves();
-            for (Piece p : this) {
-                moves.addAll(p.getPseudoLegalMoves(blackPieces.getThreats()));
-            }
+
+            for (Piece p : this) moves.addAll(p.getPseudoLegalMoves());
+
+            moves.addAll(king.getPseudoLegalKingMoves(blackPieces.getThreats(),
+                    castling.whiteKingSide(), castling.whiteQueenSide()));
             return moves;
         }
 
@@ -263,17 +248,20 @@ public class MoveGenerator extends PiecePatterns {
         }
     }
 
-    public class BlackPieceCollection extends PieceCollection {
+    public class PieceCollectionBlack extends PieceCollection {
 
-        public BlackPieceCollection() {
+        public PieceCollectionBlack() {
             super();
         }
 
         public Moves getPseudoLegalMoves() {
+
             Moves moves = new Moves();
-            for (Piece p : this) {
-                moves.addAll(p.getPseudoLegalMoves(whitePieces.getThreats()));
-            }
+
+            for (Piece p : this) moves.addAll(p.getPseudoLegalMoves());
+
+            moves.addAll(king.getPseudoLegalKingMoves(whitePieces.getThreats(),
+                    castling.blackKingSide(), castling.blackQueenSide()));
             return moves;
         }
 

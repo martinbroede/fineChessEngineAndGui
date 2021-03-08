@@ -3,35 +3,90 @@ package core;
 import java.util.InputMismatchException;
 
 public class Move {
-    short move;
+    public static final short KING_SIDE_CASTLING =/*    */0b0001000000000000; // readability
+    public static final short QUEEN_SIDE_CASTLING =/*   */0b0010000000000000;
+    public static final short EN_PASSANT =/*            */0b0011000000000000;
+    public static final short PROMOTION_BISHOP =/*      */0b0100000000000000;
+    public static final short PROMOTION_KNIGHT =/*      */0b0101000000000000;
+    public static final short PROMOTION_ROOK =/*        */0b0110000000000000;
+    public static final short PROMOTION_QUEEN =/*       */0b0111000000000000;
+
+    private short information; //todo can be short right?
 
     public Move(byte from, byte to) {
-        move = (short) (from + to * 64);
+        information = (short) (from + to * 64);
+    }
+
+    public Move(byte from, byte to, short special) {
+        information = (short) ((short) (from + to * 64) | special);
     }
 
     public Move(String moveString) {
-            if(moveString.length() > 7 | moveString.length() < 5){
-                throw new InputMismatchException(moveString + " is not a move. Must consist of 5-7 Characters.");
+
+        if (moveString.length() > 7 | moveString.length() < 5) {
+            throw new InputMismatchException(moveString + " is not a move. Must consist of 5-6 Characters.");
+        }
+        String[] moveExpressions = moveString.split(" ");
+        if (moveExpressions.length <= 1) throw new InputMismatchException(moveString +
+                " is not a move. Coordinates must be separated like: A1 A2");
+
+        byte from = Parser.parse(moveExpressions[0]);
+        byte to = Parser.parse(moveExpressions[1]);
+        short special = 0;
+
+        if (moveExpressions.length > 2) {
+            switch (moveExpressions[2]) {
+                case "Q":
+                    special |= PROMOTION_QUEEN;
+                    break;
+                case "B":
+                    special |= PROMOTION_BISHOP;
+                    break;
+                case "N":
+                    special |= PROMOTION_KNIGHT;
+                    break;
+                case "R":
+                    special |=PROMOTION_ROOK;
+                    break;
             }
-            byte from = Parser.parse(moveString.split(" ")[0]);
-            byte to = Parser.parse(moveString.split(" ")[1]);
-            move = (short) (from + to * 64);
+        }
+        information = (short) ((short) (from + to * 64) | special);
     }
 
-    public byte getFrom(){
-        return (byte) (move%64);
+    public Move(short information){
+        this.information = information;
     }
 
-    public byte getTo(){
-        return (byte) (move>>6);
+    public static byte getTo(short info) {
+        return (byte) ((info / 64) % 64);
     }
 
-    public boolean isFrom(byte from){
-        return move%64 == from;
+    public static byte getFrom(short info) {
+        return (byte) (info % 64);
     }
 
-    public static int coordToInt(byte from, byte to) {
-        return from + to * 64;
+    public static short getSpecial(short info) {
+        return (short) (info & 0b1111000000000000);
+    }
+
+    public short getInformation() {
+        return information;
+    }
+
+    public short getSpecial() {
+        return (short) (information & 0b1111000000000000);
+    }
+
+    public byte getFrom() {
+        return (byte) (information % 64);
+    }
+
+    public byte getTo() {
+        return (byte) ((information / 64) % 64);
+    }
+
+    public boolean isFrom(byte from) {
+        return information % 64 == from;
     }
 
     @Override
@@ -39,21 +94,28 @@ public class Move {
         if (this == obj)
             return true;
         Move other = (Move) obj;
-        return other.move == this.move;
+        return other.information == this.information;
     }
 
     public boolean equalToMove(byte from, byte to) {
-        return from + to * 64 == this.move;
+        return from + to * 64 == this.information;
     }
 
     @Override
     public int hashCode() {
-        return move;
+        return information;
     }
 
 
     @Override
     public String toString() {
-        return " | (" + Parser.parse(move % 64) + "->" + Parser.parse(move / 64) + ')';
+        String outp = " | (" + Parser.parse(information % 64) + "->" + Parser.parse((information / 64) % 64) + ')';
+        if (information < KING_SIDE_CASTLING) return outp; //no castling, enPassant or promotion
+        else if ((information & 0b1111000000000000) == QUEEN_SIDE_CASTLING) return " | o-o-o";
+        else if ((information & 0b1111000000000000) == KING_SIDE_CASTLING) return " | o-o";
+        else {
+            System.err.println("DON'T KNOW THIS MOVE: " + information + " (FROM CLASS: Move.java)");
+            return "?";
+        }
     }
 }

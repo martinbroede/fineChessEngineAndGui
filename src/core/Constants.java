@@ -7,22 +7,22 @@ import java.util.InputMismatchException;
 public class Constants {
     static public final boolean WHITE = true;
     static public final boolean BLACK = false;
-    public final byte[][] WHITE_PAWN_CAPTURE_SQUARES;
-    public final byte[][] WHITE_PAWN_STRAIGHT_SQUARES;
-    public final byte[][] BLACK_PAWN_CAPTURE_SQUARES;
-    public final byte[][] BLACK_PAWN_STRAIGHT_SQUARES;
-    public final byte[][][] ROOK_SQUARES;
-    public final byte[][][] BISHOP_SQUARES;
-    public final byte[][] KNIGHT_SQUARES;
-    public final byte[][][] QUEEN_SQUARES;
-    public final byte[][] KING_SQUARES;
-    public final byte[][] FILE_DISTANCE;// TODO don't need these ... ?
-    public final byte[][] RANK_DISTANCE;
-    public final byte[][] DIAGONAL_DISTANCE;
-    public final byte[][] ANTI_DIAGONAL_DISTANCE;// TODO don't need these ... ?
-    public final char[] FILES = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'}; //"COLUMNS"
-    public final char[] RANKS = {'1', '2', '3', '4', '5', '6', '7', '8'}; //"ROWS"
-    private Square[] allSquares;
+    final byte[][] WHITE_PAWN_CAPTURE_SQUARES;
+    final byte[][] WHITE_PAWN_STRAIGHT_SQUARES;
+    final byte[][] BLACK_PAWN_CAPTURE_SQUARES;
+    final byte[][] BLACK_PAWN_STRAIGHT_SQUARES;
+    final byte[][][] ROOK_SQUARES;
+    final byte[][][] BISHOP_SQUARES;
+    final byte[][] KNIGHT_SQUARES;
+    final byte[][][] QUEEN_SQUARES;
+    final byte[][] KING_SQUARES;
+    final byte[][] FILE_DISTANCE;// TODO don't need these ... ?
+    final byte[][] RANK_DISTANCE;
+    final byte[][] DIAGONAL_DISTANCE;
+    final byte[][] ANTI_DIAGONAL_DISTANCE;// TODO don't need these ... ?
+    final char[] FILES = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'}; //"COLUMNS"
+    final char[] RANKS = {'1', '2', '3', '4', '5', '6', '7', '8'}; //"ROWS"
+    Square[] allSquares; // todo remove
 
     public Constants() {
 
@@ -192,14 +192,14 @@ public class Constants {
         RANK_DISTANCE = new byte[64][64];
         for (int i = 0; i <= 63; i++) {
             for (int j = 0; j <= 63; j++) {
-                RANK_DISTANCE[i][j] = getRankDistance(i,j);
+                RANK_DISTANCE[i][j] = getRankDistance(i, j);
             }
         }
 
         FILE_DISTANCE = new byte[64][64];
         for (int i = 0; i <= 63; i++) {
             for (int j = 0; j <= 63; j++) {
-                FILE_DISTANCE[i][j] = getFileDistance(i,j);
+                FILE_DISTANCE[i][j] = getFileDistance(i, j);
             }
         }
 
@@ -218,10 +218,6 @@ public class Constants {
         }
         System.out.println("CONSTANTS CALCULATED.");
         assert test();
-    }
-
-    public Square getSquare(byte pos){
-        return allSquares[pos];
     }
 
     public static boolean getDiagonalDistance(int sq1, int sq2) {
@@ -407,6 +403,10 @@ public class Constants {
             throw new InputMismatchException("\"" + rank + "\"" + " is not a rank name.");
         }
         return inp >> 3 == (int) rank - (int) '1';
+    }
+
+    public Square getSquare(byte pos) {
+        return allSquares[pos];
     }
 
     public boolean test() {

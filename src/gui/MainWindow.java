@@ -5,47 +5,85 @@ import gui.chessBoard.BoardCanvas;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 
 public class MainWindow {
-    protected final Panel panel;
-    public final BoardCanvas boardCanvas;
-    protected final MenuItem item_new;
-    protected final MenuItem item_store;
-    protected final MenuItem item_restore;
-    protected final MenuItem item_begin;
-    protected final MenuItem item_size_1;
-    protected final MenuItem item_size_2;
-    protected final MenuItem item_size_3;
-    protected final MenuItem item_change_piece_style;
-    protected final Colors colors;
-    private final int SIZE_L = 90;
-    private final int SIZE_M = 65;
-    private final int SIZE_S = 45;
-    private final Frame frame;
+
+    final Frame frame;
+    final Panel panel;
+    final BoardCanvas boardCanvas;
+    final MenuBar menuBar;
+
+    final MenuItem item_new;
+    final MenuItem item_store;
+    final MenuItem item_restore;
+    final MenuItem item_begin;
+
+    final MenuItem item_size_1;
+    final MenuItem item_size_2;
+    final MenuItem item_size_3;
+    final MenuItem item_change_piece_style;
+
+    final MenuItem item_castling_queenside;
+    final MenuItem item_castling_kingside;
+
+    final MenuItem item_promotion_queen;
+    final MenuItem item_promotion_knight;
+    final MenuItem item_promotion_bishop;
+    final MenuItem item_promotion_rook;
+    final PopupMenu promotion_menu;
+
+    final MenuItem item_undo;
+    final MenuItem item_redo;
+
+    final ColorScheme colorScheme;
+    final int SIZE_L = 90;
+    final int SIZE_M = 65;
+    final int SIZE_S = 45;
+
     /** pixel per square */
-    public int size_factor;
+    int size_factor;
 
     public MainWindow(char[] board) {
+
         frame = new Frame();
-        colors = new Colors();
+        colorScheme = new ColorScheme();
         panel = new Panel();
-        boardCanvas = new BoardCanvas(SIZE_S, board, colors);
+        boardCanvas = new BoardCanvas(SIZE_S, board, colorScheme);
+
         panel.add(boardCanvas);
+
         frame.setTitle("Schach");
         frame.addWindowListener(new WindowListener());
         frame.add(panel, BorderLayout.CENTER);
+
         item_new = new MenuItem("Neu");
         item_store = new MenuItem("Speichern");
         item_restore = new MenuItem("Wiederherstellen");
         item_begin = new MenuItem("Siel starten");
+
         item_size_1 = new MenuItem("groß");
         item_size_2 = new MenuItem("mittel");
         item_size_3 = new MenuItem("klein");
         item_change_piece_style = new MenuItem("Schachfiguren");
+
+        item_castling_kingside = new MenuItem("kurz");
+        item_castling_queenside = new MenuItem("lang");
+
+        Font promotionItemFont = new Font("Times", Font.PLAIN, 35);
+        MenuItem item_promotion = new MenuItem("Umwandlung?");
+        item_promotion.setEnabled(false);
+        item_promotion_queen = new MenuItem("Dame");
+        item_promotion_knight = new MenuItem("Springer");
+        item_promotion_bishop = new MenuItem("Läufer");
+        item_promotion_rook = new MenuItem("Turm");
+
+        item_undo = new MenuItem("<<");
+        item_redo = new MenuItem(">>");
+
         MenuItem item_color_standard = new MenuItem("standard");
         MenuItem item_color_plain = new MenuItem("schlicht");
         MenuItem item_color_dark = new MenuItem("dunkel");
+
         item_size_1.addActionListener(e -> {
             adjustSize(SIZE_L);
             this.boardCanvas.repaint();
@@ -58,53 +96,89 @@ public class MainWindow {
             adjustSize(SIZE_S);
             this.boardCanvas.repaint();
         });
+
         item_color_standard.addActionListener(e -> {
-            this.colors.setColors('s');
+            this.colorScheme.setColors('s');
             this.boardCanvas.repaint();
         });
         item_color_plain.addActionListener(e -> {
-            this.colors.setColors('p');
+            this.colorScheme.setColors('p');
             this.boardCanvas.repaint();
         });
         item_color_dark.addActionListener(e -> {
-            this.colors.setColors('d');
+            this.colorScheme.setColors('d');
             this.boardCanvas.repaint();
         });
+
         item_change_piece_style.addActionListener(e -> {
             this.boardCanvas.fontRoulette();
             {
             }
         });
+
         Menu main_menu = new Menu("Spiel...");
         Menu size_menu = new Menu("Größe...");
         Menu style_menu = new Menu("Stil...");
+        Menu move_menu = new Menu("Zug...");
+        Menu castling_menu = new Menu("Rochade...");
+        promotion_menu = new PopupMenu();
+        promotion_menu.setFont(promotionItemFont);
+
         main_menu.add(item_new);
         main_menu.add(item_store);
         main_menu.add(item_restore);
         main_menu.add(item_begin);
+
         size_menu.add(item_size_1);
         size_menu.add(item_size_2);
         size_menu.add(item_size_3);
+
         style_menu.add(item_color_standard);
         style_menu.add(item_color_plain);
         style_menu.add(item_color_dark);
         style_menu.addSeparator();
         style_menu.add(item_change_piece_style);
-        MenuBar main_bar = new MenuBar();
-        main_bar.add(main_menu);
-        main_bar.add(size_menu);
-        main_bar.add(style_menu);
-        frame.setMenuBar(main_bar);
+
+        move_menu.add(item_undo);
+        move_menu.add(item_redo);
+        item_undo.setShortcut(new MenuShortcut('Z'));
+        item_redo.setShortcut(new MenuShortcut('R'));
+
+        castling_menu.add(item_castling_kingside);
+        castling_menu.add(item_castling_queenside);
+
+        promotion_menu.add(item_promotion);
+        promotion_menu.addSeparator();
+        promotion_menu.add(item_promotion_queen);
+        promotion_menu.addSeparator();
+        promotion_menu.addSeparator();
+        promotion_menu.add(item_promotion_rook);
+        promotion_menu.addSeparator();
+        promotion_menu.addSeparator();
+        promotion_menu.add(item_promotion_bishop);
+        promotion_menu.addSeparator();
+        promotion_menu.addSeparator();
+        promotion_menu.add(item_promotion_knight);
+        promotion_menu.addSeparator();
+
+        menuBar = new MenuBar();
+        menuBar.add(main_menu);
+        menuBar.add(castling_menu);
+        menuBar.add(move_menu);
+        menuBar.add(size_menu);
+        menuBar.add(style_menu);
+        frame.add(promotion_menu);
+        frame.setMenuBar(menuBar);
         frame.setLocation(100, 100);
         frame.setVisible(true);
 
-        adjustSize(SIZE_S); // 2X !!
+        adjustSize(SIZE_S); // 2X !
         try {
-            Thread.sleep(50);
+            Thread.sleep(100);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
-        adjustSize(SIZE_S); // 2X !!
+        adjustSize(SIZE_S); // 2X !
     }
 
     private void adjustSize(int size_factor) {
@@ -122,15 +196,15 @@ public class MainWindow {
             dialog_game_over.setVisible(false);
             boardCanvas.repaint();
         });
-        b.setBackground(colors.WHITE_SQUARES_COLOR);
-        b.setForeground(colors.PIECE_COLOR);
+        b.setBackground(colorScheme.WHITE_SQUARES_COLOR);
+        b.setForeground(colorScheme.PIECE_COLOR);
         dialog_game_over.add(b);
 
         Point location = frame.getLocation();
         location.translate(panel.getLocation().x, panel.getLocation().y);
         location.translate(
-                boardCanvas.getLocation().x + boardCanvas.s.offset + 2 * size_factor,
-                boardCanvas.getLocation().y + boardCanvas.s.offset + 3 * size_factor);
+                boardCanvas.getLocation().x + boardCanvas.getOffset() + 2 * size_factor,
+                boardCanvas.getLocation().y + boardCanvas.getOffset() + 3 * size_factor);
         dialog_game_over.setLocation(location);
         dialog_game_over.setVisible(true);
     }

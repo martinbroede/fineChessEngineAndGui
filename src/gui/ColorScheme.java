@@ -2,7 +2,7 @@ package gui;
 
 import java.awt.*;
 
-public class Colors {
+public class ColorScheme {
     public Color WHITE_SQUARES_COLOR;
     public Color BLACK_SQUARES_COLOR;
     public Color MARGIN_COLOR;
@@ -12,7 +12,7 @@ public class Colors {
     public Color HIGHLIGHT_2_COLOR;
     public Color LIGHT_COLOR;
 
-    public Colors() {
+    public ColorScheme() {
         setColors('s');
     }
 

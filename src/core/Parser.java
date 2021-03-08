@@ -39,7 +39,7 @@ public final class Parser {
         put(' ', ' ');
     }};
 
-    private Parser() {} // to avoid Parser beeing instantiated.
+    private Parser() {} // ne need to instantiate parser
 
     public static char parseSymbol(char c) {
         return SYMBOLS.get(c);
@@ -50,6 +50,7 @@ public final class Parser {
     }
 
     public static byte parse(String inp) {
+
         if (inp.length() > 2 | inp.length() <= 1) {
             throw new InputMismatchException(inp + " is not a chess coordinate - must have 2 characters.");
         }
@@ -65,6 +66,7 @@ public final class Parser {
     }
 
     public static byte parse(int x, int y) {
+
         if (x < 0 || x > 7 || y < 0 || y > 7) {
             throw new InputMismatchException(x + "/" + y + " is out of bounds.");
         }
@@ -72,6 +74,7 @@ public final class Parser {
     }
 
     public static String parse(int inp) {
+
         if ((inp < 0) | (inp > 63)) {
             throw new InputMismatchException(inp + " is not a chess coordinate - must be between 0 and 63.");
         }
@@ -80,7 +83,18 @@ public final class Parser {
         return outp;
     }
 
+    public static String parseLowerCase(int inp) {
+
+        if ((inp < 0) | (inp > 63)) {
+            throw new InputMismatchException(inp + " is not a chess coordinate - must be between 0 and 63.");
+        }
+        String outp = "" + (char) (inp % 8 + (int) 'a');
+        outp += (char) (inp / 8 + (int) '1');
+        return outp;
+    }
+
     public static byte coordFromEvent(MouseEvent e, int offset, int size_factor) {
+
         int x = (e.getX() - offset) / size_factor;
         int y = 7 - (e.getY() - offset) / size_factor;
         return parse(x, y);
@@ -92,12 +106,5 @@ public final class Parser {
 
     public static char getRankName(int i) {
         return (char) ((int) '1' + i);
-    }
-
-    public static void printCoords(byte[] inp) {
-        for (byte b : inp) {
-            System.out.print(Parser.parse(b) + "/");
-        }
-        System.out.print("+MOVE+");
     }
 }

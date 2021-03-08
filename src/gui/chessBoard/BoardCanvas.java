@@ -1,14 +1,9 @@
 package gui.chessBoard;
 
-
-import core.Move;
 import core.Moves;
-import gui.Colors;
+import gui.ColorScheme;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
 
 
 public class BoardCanvas extends Canvas {
@@ -16,10 +11,18 @@ public class BoardCanvas extends Canvas {
     public CanvasSettings s;
     char [] board;
 
-    public BoardCanvas(int size_factor, char[] board, Colors COLORS) {
-        s = new CanvasSettings(COLORS); //todo refactor to MainWindow
+    public BoardCanvas(int size_factor, char[] board, ColorScheme ColorScheme) {
+        s = new CanvasSettings(ColorScheme); //todo refactor to MainWindow
         this.board = board;
         adjustSize(size_factor);
+    }
+
+    public int getOffset(){
+        return s.offset;
+    }
+
+    public int getSizeFactor(){
+        return s.sizeFactor;
     }
 
     public void adjustSize(int size_factor) {
@@ -33,7 +36,7 @@ public class BoardCanvas extends Canvas {
 
     public void fontRoulette() {
         s.nextFont();
-        adjustSize(s.size_factor);
+        adjustSize(s.sizeFactor);
         repaint();
     }
 
@@ -41,7 +44,7 @@ public class BoardCanvas extends Canvas {
         paint(getGraphics());
     }
 
-    public void refresh(boolean showMoves, boolean showLastMove, Moves moves, Move move) {
+    public void refresh(boolean showMoves, boolean showLastMove, Moves moves, short move) {
         Graphics g = getGraphics();
         Painter.paintBoard(g, s);
         if (showMoves) Painter.paintHighlights(g,s,moves, true);
@@ -53,7 +56,7 @@ public class BoardCanvas extends Canvas {
     public void paintDiffus() {
         paint(getGraphics());
         Graphics g = getGraphics();
-        g.setColor(s.COLORS.LIGHT_COLOR);
+        g.setColor(s.ColorScheme.LIGHT_COLOR);
         g.fillRect(0, 0, s.margin, s.margin);
     }
 

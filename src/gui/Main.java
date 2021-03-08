@@ -1,7 +1,10 @@
 package gui;
 
+import core.Chess;
+
 public class Main {
     public static void main(String[] args) {
-        Runnable runnable = new Runnable();
+        Chess chess = new Chess();
+        Gui gui = new Gui(chess);
     }
 }
