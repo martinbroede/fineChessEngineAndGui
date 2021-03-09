@@ -8,7 +8,7 @@ import java.awt.*;
 
 public class Painter {
 
-    protected static void paintBoard(Graphics g, CanvasSettings settings) {
+    protected static void paintBoard(Graphics g, appearanceSettings settings) {
         g.setFont(settings.font);
         g.setColor(settings.ColorScheme.MARGIN_COLOR);
         g.fillRect(0, 0, settings.margin, settings.margin);
@@ -27,7 +27,7 @@ public class Painter {
         }
     }
 
-    protected static void paintPieces(Graphics g, CanvasSettings s, char[] board) {
+    protected static void paintPieces(Graphics g, appearanceSettings s, char[] board) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
@@ -64,7 +64,7 @@ public class Painter {
         }
     }
 
-    protected static void paintFilesAndRanks(Graphics g, CanvasSettings s) {
+    protected static void paintFilesAndRanks(Graphics g, appearanceSettings s) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
@@ -86,7 +86,7 @@ public class Painter {
         }
     }
 
-    protected static void paintHighlights(Graphics g, CanvasSettings s, Moves squares, boolean Ok) {
+    protected static void paintHighlights(Graphics g, appearanceSettings s, Moves squares, boolean Ok) {
         if (squares == null) return;
         Color highlight;
         if (Ok)
@@ -105,7 +105,7 @@ public class Painter {
         }
     }
 
-    protected static void paintLastMove(Graphics g, CanvasSettings s, short moveInformation) {
+    protected static void paintLastMove(Graphics g, appearanceSettings s, short moveInformation) {
         if (moveInformation < 0) return;
         int diminish = s.sizeFactor / 13;
         int from = Move.getFrom(moveInformation);

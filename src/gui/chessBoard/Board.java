@@ -6,13 +6,13 @@ import gui.ColorScheme;
 import java.awt.*;
 
 
-public class BoardCanvas extends Canvas {
+public class Board extends Canvas {
 
-    public CanvasSettings s;
+    public appearanceSettings s;
     char [] board;
 
-    public BoardCanvas(int size_factor, char[] board, ColorScheme ColorScheme) {
-        s = new CanvasSettings(ColorScheme); //todo refactor to MainWindow
+    public Board(int size_factor, char[] board, ColorScheme ColorScheme) {
+        s = new appearanceSettings(ColorScheme); //todo refactor to MainWindow
         this.board = board;
         adjustSize(size_factor);
     }

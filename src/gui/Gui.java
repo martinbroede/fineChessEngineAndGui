@@ -28,8 +28,8 @@ public class Gui extends MainWindow {
         item_new.addActionListener(e -> {
             System.out.println("NEW GAME!");
             chess.newGame();
-            boardCanvas.repaint();
-            boardCanvas.paintDiffus();
+            board.repaint();
+            board.paintDiffus();
             resetMoveString();
             show_dialog("Spiel beginnen");
         });
@@ -49,9 +49,9 @@ public class Gui extends MainWindow {
             }
             if (obj != null) {
                 chess = (Chess) obj;
-                boardCanvas.setBoard(chess.getBoard());
+                board.setBoard(chess.getBoard());
                 System.out.println("SUCCESSFULLY LOADED");
-                boardCanvas.repaint();
+                board.repaint();
             }
         });
 
@@ -117,7 +117,7 @@ public class Gui extends MainWindow {
 
 
 
-        boardCanvas.addMouseListener(new MouseAdapter() {
+        board.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
                 int btn = mouseEvent.getButton();
@@ -144,8 +144,8 @@ public class Gui extends MainWindow {
 
     private void movePieceFromEvent(MouseEvent mouseEvent) {
         byte pos = Parser.coordFromEvent(mouseEvent,
-                boardCanvas.getOffset(),
-                boardCanvas.getSizeFactor());
+                board.getOffset(),
+                board.getSizeFactor());
 
         if (moveString.equals("")) {
             if (chess.pieceAtSquare(pos, chess.getTurnColor())) {
@@ -195,7 +195,7 @@ public class Gui extends MainWindow {
 
     public void refreshAllCanvasElements(int pos) {
         short lastMove = chess.history.getLastMoveCoordinate();
-        boardCanvas.refresh(true, true,
+        board.refresh(true, true,
                 chess.getPseudoLegalMoves().getMovesFrom((byte) pos), lastMove);
     }
 

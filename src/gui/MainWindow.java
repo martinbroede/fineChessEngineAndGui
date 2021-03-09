@@ -1,6 +1,6 @@
 package gui;
 
-import gui.chessBoard.BoardCanvas;
+import gui.chessBoard.Board;
 
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -10,7 +10,7 @@ public class MainWindow {
 
     final Frame frame;
     final Panel panel;
-    final BoardCanvas boardCanvas;
+    final Board board;
     final MenuBar menuBar;
 
     final MenuItem item_new;
@@ -48,9 +48,9 @@ public class MainWindow {
         frame = new Frame();
         colorScheme = new ColorScheme();
         panel = new Panel();
-        boardCanvas = new BoardCanvas(SIZE_S, board, colorScheme);
+        this.board = new Board(SIZE_S, board, colorScheme);
 
-        panel.add(boardCanvas);
+        panel.add(this.board);
 
         frame.setTitle("Schach");
         frame.addWindowListener(new WindowListener());
@@ -86,32 +86,32 @@ public class MainWindow {
 
         item_size_1.addActionListener(e -> {
             adjustSize(SIZE_L);
-            this.boardCanvas.repaint();
+            this.board.repaint();
         });
         item_size_2.addActionListener(e -> {
             adjustSize(SIZE_M);
-            this.boardCanvas.repaint();
+            this.board.repaint();
         });
         item_size_3.addActionListener(e -> {
             adjustSize(SIZE_S);
-            this.boardCanvas.repaint();
+            this.board.repaint();
         });
 
         item_color_standard.addActionListener(e -> {
             this.colorScheme.setColors('s');
-            this.boardCanvas.repaint();
+            this.board.repaint();
         });
         item_color_plain.addActionListener(e -> {
             this.colorScheme.setColors('p');
-            this.boardCanvas.repaint();
+            this.board.repaint();
         });
         item_color_dark.addActionListener(e -> {
             this.colorScheme.setColors('d');
-            this.boardCanvas.repaint();
+            this.board.repaint();
         });
 
         item_change_piece_style.addActionListener(e -> {
-            this.boardCanvas.fontRoulette();
+            this.board.fontRoulette();
             {
             }
         });
@@ -179,11 +179,13 @@ public class MainWindow {
             Thread.currentThread().interrupt();
         }
         adjustSize(SIZE_S); // 2X !
+
+        show_dialog("DAS IST DIE ALTE AWT - VERSION!");
     }
 
     private void adjustSize(int size_factor) {
         this.size_factor = size_factor;
-        boardCanvas.adjustSize(size_factor);
+        board.adjustSize(size_factor);
         frame.pack();
     }
 
@@ -194,7 +196,7 @@ public class MainWindow {
         Button b = new Button(message);
         b.addActionListener(e -> {
             dialog_game_over.setVisible(false);
-            boardCanvas.repaint();
+            board.repaint();
         });
         b.setBackground(colorScheme.WHITE_SQUARES_COLOR);
         b.setForeground(colorScheme.PIECE_COLOR);
@@ -203,8 +205,8 @@ public class MainWindow {
         Point location = frame.getLocation();
         location.translate(panel.getLocation().x, panel.getLocation().y);
         location.translate(
-                boardCanvas.getLocation().x + boardCanvas.getOffset() + 2 * size_factor,
-                boardCanvas.getLocation().y + boardCanvas.getOffset() + 3 * size_factor);
+                board.getLocation().x + board.getOffset() + 2 * size_factor,
+                board.getLocation().y + board.getOffset() + 3 * size_factor);
         dialog_game_over.setLocation(location);
         dialog_game_over.setVisible(true);
     }
