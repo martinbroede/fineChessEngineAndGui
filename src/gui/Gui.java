@@ -178,12 +178,12 @@ public class Gui extends MainWindow {
                     if ((nextMove.getFrom() >= Parser.parse("A2"))
                             && (nextMove.getFrom() <= Parser.parse("H2"))) {
                         System.out.println("Promotion move?");
-                        promotion_menu.show(panel, panel.getWidth(), 0);
+                        promotion_menu.show(board, board.getWidth(), 0);
                     }// in rank 7 ? might be a promotion move...
                     else if ((nextMove.getFrom() >= Parser.parse("A7"))
                             && (nextMove.getFrom() <= Parser.parse("H7"))) {
                         System.out.println("Promotion move?");
-                        promotion_menu.show(panel, panel.getWidth(), 0);
+                        promotion_menu.show(board, board.getWidth(), 0);
                     }
                 }
             }

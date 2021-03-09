@@ -5,29 +5,28 @@ import gui.ColorScheme;
 
 import java.awt.*;
 
-
 public class Board extends Canvas {
 
-    public appearanceSettings s;
+    public AppearanceSettings s;
     char [] board;
 
-    public Board(int size_factor, char[] board, ColorScheme ColorScheme) {
-        s = new appearanceSettings(ColorScheme); //todo refactor to MainWindow
-        this.board = board;
+    public Board(int size_factor, char[] boardArray, AppearanceSettings appearanceSettings) {
+        s = appearanceSettings;
+        this.board = boardArray;
         adjustSize(size_factor);
     }
 
     public int getOffset(){
-        return s.offset;
+        return s.getOffset();
     }
 
     public int getSizeFactor(){
-        return s.sizeFactor;
+        return s.getSizeFactor();
     }
 
     public void adjustSize(int size_factor) {
         s.adjustSize(size_factor);
-        setSize(s.margin, s.margin);
+        setSize(s.getMargin(), s.getMargin());
     }
 
     public void setBoard(char[] board) {
@@ -36,7 +35,7 @@ public class Board extends Canvas {
 
     public void fontRoulette() {
         s.nextFont();
-        adjustSize(s.sizeFactor);
+        adjustSize(s.getSizeFactor());
         repaint();
     }
 
@@ -56,8 +55,8 @@ public class Board extends Canvas {
     public void paintDiffus() {
         paint(getGraphics());
         Graphics g = getGraphics();
-        g.setColor(s.ColorScheme.LIGHT_COLOR);
-        g.fillRect(0, 0, s.margin, s.margin);
+        g.setColor(s.getColorScheme().LIGHT_COLOR);
+        g.fillRect(0, 0, s.getMargin(), s.getMargin());
     }
 
     @Override

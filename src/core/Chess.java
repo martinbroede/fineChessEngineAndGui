@@ -5,13 +5,9 @@ import java.util.Stack;
 
 public class Chess extends MoveGenerator implements Serializable {
 
-/*    private final String init = ""
+    private final String init = ""
             + "RNBQKBNRPPPPPPPP                "
-            + "                pppppppprnbqkbnr";*/
-
-    final String init = ""
-            + "R  QK  RNppppppN                "
-            + "         PPP    n      nr  qk  r";
+            + "                pppppppprnbqkbnr";
 
     public History history;
     public Stack<Move> undoneMovesHistory;

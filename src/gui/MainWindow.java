@@ -1,5 +1,6 @@
 package gui;
 
+import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
 
 import java.awt.*;
@@ -9,9 +10,9 @@ import java.awt.event.WindowEvent;
 public class MainWindow {
 
     final Frame frame;
-    final Panel panel;
     final Board board;
     final MenuBar menuBar;
+    final AppearanceSettings appearanceSettings;
 
     final MenuItem item_new;
     final MenuItem item_store;
@@ -40,21 +41,16 @@ public class MainWindow {
     final int SIZE_M = 65;
     final int SIZE_S = 45;
 
-    /** pixel per square */
-    int size_factor;
-
-    public MainWindow(char[] board) {
+    public MainWindow(char[] boardArray) {
 
         frame = new Frame();
         colorScheme = new ColorScheme();
-        panel = new Panel();
-        this.board = new Board(SIZE_S, board, colorScheme);
-
-        panel.add(this.board);
+        appearanceSettings = new AppearanceSettings(colorScheme);
+        board = new Board(SIZE_S, boardArray, appearanceSettings);
 
         frame.setTitle("Schach");
         frame.addWindowListener(new WindowListener());
-        frame.add(panel, BorderLayout.CENTER);
+        frame.add(board, BorderLayout.CENTER);
 
         item_new = new MenuItem("Neu");
         item_store = new MenuItem("Speichern");
@@ -69,7 +65,7 @@ public class MainWindow {
         item_castling_kingside = new MenuItem("kurz");
         item_castling_queenside = new MenuItem("lang");
 
-        Font promotionItemFont = new Font("Times", Font.PLAIN, 35);
+        Font promotionItemFont = new Font("Times", Font.PLAIN, 25);
         MenuItem item_promotion = new MenuItem("Umwandlung?");
         item_promotion.setEnabled(false);
         item_promotion_queen = new MenuItem("Dame");
@@ -86,32 +82,32 @@ public class MainWindow {
 
         item_size_1.addActionListener(e -> {
             adjustSize(SIZE_L);
-            this.board.repaint();
+            board.repaint();
         });
         item_size_2.addActionListener(e -> {
             adjustSize(SIZE_M);
-            this.board.repaint();
+            board.repaint();
         });
         item_size_3.addActionListener(e -> {
             adjustSize(SIZE_S);
-            this.board.repaint();
+            board.repaint();
         });
 
         item_color_standard.addActionListener(e -> {
-            this.colorScheme.setColors('s');
-            this.board.repaint();
+            colorScheme.setColors('s');
+            board.repaint();
         });
         item_color_plain.addActionListener(e -> {
-            this.colorScheme.setColors('p');
-            this.board.repaint();
+            colorScheme.setColors('p');
+            board.repaint();
         });
         item_color_dark.addActionListener(e -> {
-            this.colorScheme.setColors('d');
-            this.board.repaint();
+            colorScheme.setColors('d');
+            board.repaint();
         });
 
         item_change_piece_style.addActionListener(e -> {
-            this.board.fontRoulette();
+            board.fontRoulette();
             {
             }
         });
@@ -180,35 +176,38 @@ public class MainWindow {
         }
         adjustSize(SIZE_S); // 2X !
 
-        show_dialog("DAS IST DIE ALTE AWT - VERSION!");
+        show_dialog("ALTE AWT - VERSION!");
     }
 
     private void adjustSize(int size_factor) {
-        this.size_factor = size_factor;
         board.adjustSize(size_factor);
         frame.pack();
     }
 
     public void show_dialog(String message) {
-        Dialog dialog_game_over = new Dialog(frame, "", true);
-        dialog_game_over.setSize(size_factor * 4, size_factor * 2);
-        dialog_game_over.setUndecorated(true);
+
+        Dialog dialog = new Dialog(frame, "", true);
+
+        dialog.setSize(appearanceSettings.getSizeFactor() * 4,
+                appearanceSettings.getSizeFactor() * 2);
+
+        dialog.setUndecorated(true);
         Button b = new Button(message);
         b.addActionListener(e -> {
-            dialog_game_over.setVisible(false);
+            dialog.setVisible(false);
             board.repaint();
         });
         b.setBackground(colorScheme.WHITE_SQUARES_COLOR);
         b.setForeground(colorScheme.PIECE_COLOR);
-        dialog_game_over.add(b);
+        dialog.add(b);
 
         Point location = frame.getLocation();
-        location.translate(panel.getLocation().x, panel.getLocation().y);
+        //location.translate(panel.getLocation().x, panel.getLocation().y);
         location.translate(
-                board.getLocation().x + board.getOffset() + 2 * size_factor,
-                board.getLocation().y + board.getOffset() + 3 * size_factor);
-        dialog_game_over.setLocation(location);
-        dialog_game_over.setVisible(true);
+                board.getLocation().x + board.getOffset() + 2 * appearanceSettings.getSizeFactor(),
+                board.getLocation().y + board.getOffset() + 3 * appearanceSettings.getSizeFactor());
+        dialog.setLocation(location);
+        dialog.setVisible(true);
     }
 
     static class WindowListener extends WindowAdapter {
