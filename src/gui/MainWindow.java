@@ -2,39 +2,45 @@ package gui;
 
 import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
+import sun.swing.text.html.FrameEditorPaneTag;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class MainWindow {
 
-    final Frame frame;
+    final JFrame frame;
     final Board board;
-    final MenuBar menuBar;
+    final JPanel content;
+    final JMenuBar menuBar;
+    final JLabel labelCapturedpieces;
     final AppearanceSettings appearanceSettings;
 
-    final MenuItem item_new;
-    final MenuItem item_store;
-    final MenuItem item_restore;
-    final MenuItem item_begin;
+    final JMenuItem item_new;
+    final JMenuItem item_store;
+    final JMenuItem item_restore;
+    final JMenuItem item_begin;
 
-    final MenuItem item_size_1;
-    final MenuItem item_size_2;
-    final MenuItem item_size_3;
-    final MenuItem item_change_piece_style;
+    final JMenuItem item_size_1;
+    final JMenuItem item_size_2;
+    final JMenuItem item_size_3;
+    final JMenuItem item_change_piece_style;
 
-    final MenuItem item_castling_queenside;
-    final MenuItem item_castling_kingside;
+    final JMenuItem item_castling_queenside;
+    final JMenuItem item_castling_kingside;
 
-    final MenuItem item_promotion_queen;
-    final MenuItem item_promotion_knight;
-    final MenuItem item_promotion_bishop;
-    final MenuItem item_promotion_rook;
-    final PopupMenu promotion_menu;
+    final JMenuItem item_promotion_queen;
+    final JMenuItem item_promotion_knight;
+    final JMenuItem item_promotion_bishop;
+    final JMenuItem item_promotion_rook;
+    final JMenuItem item_promotion;
+    final JPopupMenu promotion_menu;
 
-    final MenuItem item_undo;
-    final MenuItem item_redo;
+    final JMenuItem item_undo;
+    final JMenuItem item_redo;
 
     final ColorScheme colorScheme;
     final int SIZE_L = 90;
@@ -43,66 +49,86 @@ public class MainWindow {
 
     public MainWindow(char[] boardArray) {
 
-        frame = new Frame();
+        frame = new JFrame();
+        frame.setResizable(false);
+        labelCapturedpieces = new JLabel(" ",JLabel.CENTER);
         colorScheme = new ColorScheme();
         appearanceSettings = new AppearanceSettings(colorScheme);
         board = new Board(SIZE_S, boardArray, appearanceSettings);
 
+
         frame.setTitle("Schach");
         frame.addWindowListener(new WindowListener());
-        frame.add(board, BorderLayout.CENTER);
 
-        item_new = new MenuItem("Neu");
-        item_store = new MenuItem("Speichern");
-        item_restore = new MenuItem("Wiederherstellen");
-        item_begin = new MenuItem("Siel starten");
+        content = new JPanel();
+        content.setLayout(new BorderLayout());
+        content.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+        content.add(board,BorderLayout.BEFORE_FIRST_LINE);
+        labelCapturedpieces.setFont(appearanceSettings.getFont()); //todo update
+        labelCapturedpieces.setOpaque(true);
+        labelCapturedpieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        content.add(labelCapturedpieces,BorderLayout.AFTER_LAST_LINE);
 
-        item_size_1 = new MenuItem("groß");
-        item_size_2 = new MenuItem("mittel");
-        item_size_3 = new MenuItem("klein");
-        item_change_piece_style = new MenuItem("Schachfiguren");
+        frame.setContentPane(content);
 
-        item_castling_kingside = new MenuItem("kurz");
-        item_castling_queenside = new MenuItem("lang");
+        item_new = new JMenuItem("Neu");
+        item_store = new JMenuItem("Speichern");
+        item_restore = new JMenuItem("Wiederherstellen");
+        item_begin = new JMenuItem("Siel starten");
 
-        Font promotionItemFont = new Font("Times", Font.PLAIN, 25);
-        MenuItem item_promotion = new MenuItem("Umwandlung?");
-        item_promotion.setEnabled(false);
-        item_promotion_queen = new MenuItem("Dame");
-        item_promotion_knight = new MenuItem("Springer");
-        item_promotion_bishop = new MenuItem("Läufer");
-        item_promotion_rook = new MenuItem("Turm");
+        item_size_1 = new JMenuItem("groß");
+        item_size_2 = new JMenuItem("mittel");
+        item_size_3 = new JMenuItem("klein");
+        item_change_piece_style = new JMenuItem("Schachfiguren");
 
-        item_undo = new MenuItem("<<");
-        item_redo = new MenuItem(">>");
+        item_castling_kingside = new JMenuItem("kurz");
+        item_castling_queenside = new JMenuItem("lang");
 
-        MenuItem item_color_standard = new MenuItem("standard");
-        MenuItem item_color_plain = new MenuItem("schlicht");
-        MenuItem item_color_dark = new MenuItem("dunkel");
+        Font promotionItemFont = new Font("Times", Font.PLAIN, 100);
+        item_promotion = new JMenuItem("Umwandlung");
+        item_promotion_queen = new JMenuItem("\u2655 \u265B");
+        item_promotion_knight = new JMenuItem("\u2658 \u265E");
+        item_promotion_bishop = new JMenuItem("\u2657 \u265D");
+        item_promotion_rook = new JMenuItem("\u2656 \u265C");
+
+
+        KeyStroke ctrlZ = KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask());
+        KeyStroke ctrlR = KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        item_undo = new JMenuItem("<<");
+        item_redo = new JMenuItem(">>");
+        item_undo.setAccelerator(ctrlZ);
+        item_redo.setAccelerator(ctrlR);
+
+        JMenuItem item_color_standard = new JMenuItem("standard");
+        JMenuItem item_color_plain = new JMenuItem("schlicht");
+        JMenuItem item_color_dark = new JMenuItem("dunkel");
 
         item_size_1.addActionListener(e -> {
-            adjustSize(SIZE_L);
+            adjustBoardAndFrameSize(SIZE_L);
             board.repaint();
         });
         item_size_2.addActionListener(e -> {
-            adjustSize(SIZE_M);
+            adjustBoardAndFrameSize(SIZE_M);
             board.repaint();
         });
         item_size_3.addActionListener(e -> {
-            adjustSize(SIZE_S);
+            adjustBoardAndFrameSize(SIZE_S);
             board.repaint();
         });
 
         item_color_standard.addActionListener(e -> {
             colorScheme.setColors('s');
+            setStyleSettings();
             board.repaint();
         });
         item_color_plain.addActionListener(e -> {
             colorScheme.setColors('p');
+            setStyleSettings();
             board.repaint();
         });
         item_color_dark.addActionListener(e -> {
             colorScheme.setColors('d');
+            setStyleSettings();
             board.repaint();
         });
 
@@ -112,12 +138,12 @@ public class MainWindow {
             }
         });
 
-        Menu main_menu = new Menu("Spiel...");
-        Menu size_menu = new Menu("Größe...");
-        Menu style_menu = new Menu("Stil...");
-        Menu move_menu = new Menu("Zug...");
-        Menu castling_menu = new Menu("Rochade...");
-        promotion_menu = new PopupMenu();
+        JMenu main_menu = new JMenu("Spiel...");
+        JMenu size_menu = new JMenu("Größe...");
+        JMenu style_menu = new JMenu("Stil...");
+        JMenu move_menu = new JMenu("Zug...");
+        JMenu castling_menu = new JMenu("Rochade...");
+        promotion_menu = new JPopupMenu();
         promotion_menu.setFont(promotionItemFont);
 
         main_menu.add(item_new);
@@ -137,84 +163,95 @@ public class MainWindow {
 
         move_menu.add(item_undo);
         move_menu.add(item_redo);
-        item_undo.setShortcut(new MenuShortcut('Z'));
-        item_redo.setShortcut(new MenuShortcut('R'));
 
         castling_menu.add(item_castling_kingside);
         castling_menu.add(item_castling_queenside);
 
         promotion_menu.add(item_promotion);
-        promotion_menu.addSeparator();
         promotion_menu.add(item_promotion_queen);
-        promotion_menu.addSeparator();
-        promotion_menu.addSeparator();
         promotion_menu.add(item_promotion_rook);
-        promotion_menu.addSeparator();
-        promotion_menu.addSeparator();
         promotion_menu.add(item_promotion_bishop);
-        promotion_menu.addSeparator();
-        promotion_menu.addSeparator();
         promotion_menu.add(item_promotion_knight);
-        promotion_menu.addSeparator();
 
-        menuBar = new MenuBar();
+        menuBar = new JMenuBar();
         menuBar.add(main_menu);
         menuBar.add(castling_menu);
         menuBar.add(move_menu);
         menuBar.add(size_menu);
         menuBar.add(style_menu);
         frame.add(promotion_menu);
-        frame.setMenuBar(menuBar);
-        frame.setLocation(100, 100);
+        frame.add(menuBar);
+        frame.setJMenuBar(menuBar);
+        frame.setLocation(50, 50);
         frame.setVisible(true);
-
-        adjustSize(SIZE_S); // 2X !
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        }
-        adjustSize(SIZE_S); // 2X !
-
-        show_dialog("ALTE AWT - VERSION!");
+        setStyleSettings();
+        adjustBoardAndFrameSize(SIZE_S);
     }
 
-    private void adjustSize(int size_factor) {
+    private void adjustBoardAndFrameSize(int size_factor) {
+
         board.adjustSize(size_factor);
+
+        content.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+
         frame.pack();
     }
 
-    public void show_dialog(String message) {
+    public void show_popup(String message) {
 
-        Dialog dialog = new Dialog(frame, "", true);
+        board.setActive(false); //makes board diffuse
 
-        dialog.setSize(appearanceSettings.getSizeFactor() * 4,
-                appearanceSettings.getSizeFactor() * 2);
+        JPopupMenu menu = new JPopupMenu();
+        menu.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        menu.setPopupSize(appearanceSettings.getMargin(),appearanceSettings.getSizeFactor());
 
-        dialog.setUndecorated(true);
-        Button b = new Button(message);
-        b.addActionListener(e -> {
-            dialog.setVisible(false);
-            board.repaint();
+        JMenuItem item = new JMenuItem(message);
+        item.setFont(new Font("Times", Font.PLAIN, 20));
+        item.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        menu.add(item);
+
+        item.addActionListener(e -> {
+            board.setActive(true);
         });
-        b.setBackground(colorScheme.WHITE_SQUARES_COLOR);
-        b.setForeground(colorScheme.PIECE_COLOR);
-        dialog.add(b);
 
-        Point location = frame.getLocation();
-        //location.translate(panel.getLocation().x, panel.getLocation().y);
-        location.translate(
-                board.getLocation().x + board.getOffset() + 2 * appearanceSettings.getSizeFactor(),
-                board.getLocation().y + board.getOffset() + 3 * appearanceSettings.getSizeFactor());
-        dialog.setLocation(location);
-        dialog.setVisible(true);
+        menu.show(board, 0,board.getHeight());
+
+    }
+
+    public void show_promotion_popup() {
+
+        board.setActive(false); //makes board diffuse
+
+        JPopupMenu menu = promotion_menu;
+        menu.setPopupSize(appearanceSettings.getSizeFactor() * 4/2, appearanceSettings.getMargin());
+
+        item_promotion.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        item_promotion_bishop.setBackground(appearanceSettings.getColorScheme().BLACK_SQUARES_COLOR);
+        item_promotion_knight.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        item_promotion_queen.setBackground(appearanceSettings.getColorScheme().BLACK_SQUARES_COLOR);
+        item_promotion_rook.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+
+        if(appearanceSettings.getFontNumber()!=3) {
+            item_promotion_bishop.setFont(appearanceSettings.getFont());
+            item_promotion_knight.setFont(appearanceSettings.getFont());
+            item_promotion_queen.setFont(appearanceSettings.getFont());
+            item_promotion_rook.setFont(appearanceSettings.getFont());
+        }
+
+        menu.show(board, board.getWidth(), 0);
+    }
+
+    public void setStyleSettings() {
+        menuBar.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelCapturedpieces.setFont(appearanceSettings.getFont());
+        labelCapturedpieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
     }
 
     static class WindowListener extends WindowAdapter {
         @Override
         public void windowClosing(WindowEvent e) {
-            e.getWindow().dispose(); // Fenster schließen
-            System.exit(0); // VM schließen
+            e.getWindow().dispose(); //close window
+            System.exit(0); //close virtual machine.
         }
     }
 }

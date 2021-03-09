@@ -1,6 +1,8 @@
 package core;
 
 
+import sun.awt.geom.AreaOp;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.InputMismatchException;
@@ -161,6 +163,10 @@ public class MoveGenerator extends PiecePatterns {
             capturedPieces.print();
         }
 
+        public String getCapturedPiecesAsSymbols(){
+            return capturedPieces.getCapturedPiecesAsSymbols();
+        }
+
         public Piece changePosition(byte from, byte to) {
             for (Piece p : this) { //todo this is not efficient. find better method later
                 if (p.getPosition() == from) {
@@ -219,6 +225,22 @@ public class MoveGenerator extends PiecePatterns {
                 }
                 System.out.println("TOTAL: " + this.size() + " CAPTURED PIECES");
             }
+
+            protected String getCapturedPiecesAsSymbols(){
+
+                String outp = "";
+
+                for (Piece p: this){
+                    outp += Parser.parseSymbol(p.type);
+                }
+
+                return outp;
+            }
+        }
+        @Override
+        public void clear(){
+            super.clear();
+            capturedPieces.clear();
         }
     }
 

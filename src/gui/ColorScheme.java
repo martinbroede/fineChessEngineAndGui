@@ -41,14 +41,14 @@ public class ColorScheme {
                 break;
             }
             case 'p': {
-                WHITE_SQUARES_COLOR = new Color(0xffffff); /* WHITE SQUARES */
+                WHITE_SQUARES_COLOR = new Color(0xEEEEEE); /* WHITE SQUARES */
                 BLACK_SQUARES_COLOR = new Color(0xD4D3D3); /* BLACK SQUARES */
                 MARGIN_COLOR = new Color(0x010F2F); /* MARGIN */
                 PIECE_COLOR = new Color(0x010918); /* PIECES */
                 FILL_COLOR = new Color(0xFFFFFF); /* SPACE BETWEEN SQUARES */
                 HIGHLIGHT_1_COLOR = new Color(0xCBDAEC); /*HIGHLIGHT "OK" */
                 HIGHLIGHT_2_COLOR = new Color(0xdbbcbc); /*HIGHLIGHT "NOT OK" */
-                LIGHT_COLOR = new Color(0x8A3B3B3B, true);
+                LIGHT_COLOR = new Color(0x193B3B3B, true);
                 break;
             }
         }

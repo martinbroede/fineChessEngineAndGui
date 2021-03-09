@@ -28,10 +28,9 @@ public class Gui extends MainWindow {
         item_new.addActionListener(e -> {
             System.out.println("NEW GAME!");
             chess.newGame();
-            board.repaint();
-            board.paintDiffus();
+            refreshFrameContent(-1);
             resetMoveString();
-            show_dialog("Spiel beginnen");
+            show_popup("Spiel beginnen");
         });
 
         item_store.addActionListener(e -> {
@@ -49,7 +48,7 @@ public class Gui extends MainWindow {
             }
             if (obj != null) {
                 chess = (Chess) obj;
-                board.setBoard(chess.getBoard());
+                board.setBoardArray(chess.getBoard());
                 System.out.println("SUCCESSFULLY LOADED");
                 board.repaint();
             }
@@ -70,7 +69,7 @@ public class Gui extends MainWindow {
                     System.err.println("CASTLING o-o ILLEGAL");
             }
 
-            refreshAllCanvasElements(-1); // -1 : don't want to paint legal moves.
+            refreshFrameContent(-1); // -1 : don't want to paint legal moves.
         });
 
         item_castling_queenside.addActionListener(e -> {
@@ -82,39 +81,38 @@ public class Gui extends MainWindow {
                     System.err.println("CASTLING o-o-o ILLEGAL");
             }
 
-            refreshAllCanvasElements(-1); // -1 : don't want to paint legal moves.
+            refreshFrameContent(-1); // -1 : don't want to paint legal moves.
         });
 
         item_promotion_queen.addActionListener(e -> {
             chess.movePieceUser(new Move(moveStringSpecialMoves + "Q"));
-            refreshAllCanvasElements(-1);
+            refreshFrameContent(-1);
         });
 
         item_promotion_rook.addActionListener(e -> {
             chess.movePieceUser(new Move(moveStringSpecialMoves + "R"));
-            refreshAllCanvasElements(-1);
+            refreshFrameContent(-1);
         });
 
         item_promotion_knight.addActionListener(e -> {
             chess.movePieceUser(new Move(moveStringSpecialMoves + "N"));
-            refreshAllCanvasElements(-1);
+            refreshFrameContent(-1);
         });
 
         item_promotion_bishop.addActionListener(e -> {
             chess.movePieceUser(new Move(moveStringSpecialMoves + "B"));
-            refreshAllCanvasElements(-1);
+            refreshFrameContent(-1);
         });
 
         item_undo.addActionListener(e -> {
             chess.userUndo();
-            refreshAllCanvasElements(-1);
+            refreshFrameContent(-1);
         });
 
         item_redo.addActionListener(e -> {
             chess.userRedo();
-            refreshAllCanvasElements(-1);
+            refreshFrameContent(-1);
         });
-
 
 
         board.addMouseListener(new MouseAdapter() {
@@ -177,26 +175,35 @@ public class Gui extends MainWindow {
                     // in rank 2 ? might be a promotion move...
                     if ((nextMove.getFrom() >= Parser.parse("A2"))
                             && (nextMove.getFrom() <= Parser.parse("H2"))) {
-                        System.out.println("Promotion move?");
-                        promotion_menu.show(board, board.getWidth(), 0);
+                        show_promotion_popup();
+                        moveString = "";
+                        return;
                     }// in rank 7 ? might be a promotion move...
                     else if ((nextMove.getFrom() >= Parser.parse("A7"))
                             && (nextMove.getFrom() <= Parser.parse("H7"))) {
-                        System.out.println("Promotion move?");
-                        promotion_menu.show(board, board.getWidth(), 0);
+                        show_promotion_popup();
+                        moveString = "";
+                        return;
                     }
                 }
             }
             moveStringSpecialMoves = moveString;
             moveString = "";
         }
-        refreshAllCanvasElements(pos);
+        refreshFrameContent(pos);
     }
 
-    public void refreshAllCanvasElements(int pos) {
+    public void refreshFrameContent(int pos) {
         short lastMove = chess.history.getLastMoveCoordinate();
-        board.refresh(true, true,
+        board.refreshChessBoard(true, true,
                 chess.getPseudoLegalMoves().getMovesFrom((byte) pos), lastMove);
+
+        labelCapturedpieces.setText
+                (" " + chess.whitePieces.getCapturedPiecesAsSymbols()
+                + " "
+                + chess.blackPieces.getCapturedPiecesAsSymbols() +  " ");
+
+        frame.pack();
     }
 
     public void resetMoveString() {

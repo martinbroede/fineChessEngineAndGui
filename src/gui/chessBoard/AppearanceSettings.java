@@ -23,10 +23,6 @@ public class AppearanceSettings {
         return ColorScheme;
     }
 
-    public Font[] getFONT_ROULETTE() {
-        return FONT_ROULETTE;
-    }
-
     public int getSizeFactor() {
         return sizeFactor;
     }
@@ -40,7 +36,7 @@ public class AppearanceSettings {
     }
 
     public int getFontNumber() {
-        return fontNumber;
+        return fontNumber%FONT_ROULETTE.length;
     }
 
     public Font getFont() {
@@ -60,7 +56,7 @@ public class AppearanceSettings {
 
         this.sizeFactor = size_factor;
         this.font = font.deriveFont((float) size_factor * 78 / 100);
-        this.offset = size_factor / 6;
+        this.offset = size_factor / 4;
         this.margin = size_factor * 8 + 2 * this.offset;
     }
 
