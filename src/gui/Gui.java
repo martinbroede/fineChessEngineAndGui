@@ -1,8 +1,6 @@
 package gui;
 
-import core.Chess;
-import core.Move;
-import core.Parser;
+import core.*;
 import fileHandling.ReadWrite;
 
 import java.awt.event.MouseAdapter;
@@ -27,7 +25,7 @@ public class Gui extends MainWindow {
         /* add action listeners */
         item_new.addActionListener(e -> {
             System.out.println("NEW GAME!");
-            chess.newGame();
+            chess.newGame(chess.INIT_STANDARD_BOARD);
             refreshFrameContent(-1);
             resetMoveString();
             show_popup("Spiel beginnen");
@@ -114,6 +112,12 @@ public class Gui extends MainWindow {
             refreshFrameContent(-1);
         });
 
+        item_change_piece_style.addActionListener(e -> {
+            board.fontRoulette();
+            setStyleSettings();
+            refreshFrameContent(-1);
+        });
+
 
         board.addMouseListener(new MouseAdapter() {
             @Override
@@ -126,8 +130,13 @@ public class Gui extends MainWindow {
                     }
                     case 2: {
                         chess.castling.print();
+
+                        chess.blackPieces.printCaptured();
+                        chess.whitePieces.printCaptured();
+
+                        /*
                         chess.whitePieces.printThreats();
-                        chess.blackPieces.printThreats();
+                        chess.blackPieces.printThreats();*/
                         break;
                     }
                     case 3: {
@@ -142,8 +151,8 @@ public class Gui extends MainWindow {
 
     private void movePieceFromEvent(MouseEvent mouseEvent) {
         byte pos = Parser.coordFromEvent(mouseEvent,
-                board.getOffset(),
-                board.getSizeFactor());
+                appearanceSettings.getOffset(),
+                appearanceSettings.getSizeFactor());
 
         if (moveString.equals("")) {
             if (chess.pieceAtSquare(pos, chess.getTurnColor())) {
@@ -171,39 +180,68 @@ public class Gui extends MainWindow {
                     if (!chess.movePieceUser(new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING)))
                         System.err.println("CASTLING o-o-o ILLEGAL");
                 } else {
-                    System.err.println("MOVE ILLEGAL");
-                    // in rank 2 ? might be a promotion move...
-                    if ((nextMove.getFrom() >= Parser.parse("A2"))
-                            && (nextMove.getFrom() <= Parser.parse("H2"))) {
-                        show_promotion_popup();
-                        moveString = "";
-                        return;
-                    }// in rank 7 ? might be a promotion move...
-                    else if ((nextMove.getFrom() >= Parser.parse("A7"))
-                            && (nextMove.getFrom() <= Parser.parse("H7"))) {
-                        show_promotion_popup();
-                        moveString = "";
-                        return;
+                    byte from = nextMove.getFrom();
+                    byte to = nextMove.getTo();
+                    Move promotionMove = new Move(from, to, Move.PROMOTION_QUEEN);
+
+                    if (chess.getTurnColor() == WHITE) {
+                        Moves legalMoves = chess.whitePieces.getPseudoLegalMoves();
+                        if (legalMoves.contains(promotionMove)) {
+                            moveStringSpecialMoves = moveString;
+                            moveString = "";
+                            show_promotion_popup();
+                            return;
+                        }
+                    } else {
+                        Moves legalMoves = chess.blackPieces.getPseudoLegalMoves();
+                        if (legalMoves.contains(promotionMove)) {
+                            moveStringSpecialMoves = moveString;
+                            moveString = "";
+                            show_promotion_popup();
+                            return;
+                        }
                     }
+                    System.err.println("MOVE ILLEGAL");
                 }
             }
-            moveStringSpecialMoves = moveString;
+            //moveStringSpecialMoves = moveString;
             moveString = "";
         }
         refreshFrameContent(pos);
     }
 
     public void refreshFrameContent(int pos) {
-        short lastMove = chess.history.getLastMoveCoordinate();
-        board.refreshChessBoard(true, true,
-                chess.getPseudoLegalMoves().getMovesFrom((byte) pos), lastMove);
 
-        labelCapturedpieces.setText
-                (" " + chess.whitePieces.getCapturedPiecesAsSymbols()
-                + " "
-                + chess.blackPieces.getCapturedPiecesAsSymbols() +  " ");
+        if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED) {
+            show_popup(chess.gameStatus.getStatusNotice());
+        } else {
+            short lastMove = chess.history.getLastMoveCoordinate();
+            board.refreshChessBoard(true, true,
+                    chess.getUserLegalMoves().getMovesFrom((byte) pos), lastMove);
 
-        frame.pack();
+            labelCapturedWhitePieces.setText(" " + chess.whitePieces.getCapturedPiecesAsSymbols() + " ");
+            labelCapturedBlackPieces.setText(" " + chess.blackPieces.getCapturedPiecesAsSymbols() + " ");
+
+            {
+                String textWest = "";
+                String textEast = "";
+
+                int white = chess.whitePieces.getCapturedPiecesAsSymbols().length();
+                int black = chess.blackPieces.getCapturedPiecesAsSymbols().length();
+
+                int difference = white - black;
+
+                if (difference > 0) textWest += "+" + Math.abs(difference) + " ";
+                else if (difference < 0) textEast += "+" + Math.abs(difference) + " ";
+
+                labelPlaceHolderWest.setText(textWest);
+                labelPlaceHolderEast.setText(textEast);
+            }
+            frame.pack();
+        }
+
+        if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED)
+            show_popup(chess.gameStatus.getStatusNotice());
     }
 
     public void resetMoveString() {

@@ -2,22 +2,22 @@ package gui;
 
 import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
-import sun.swing.text.html.FrameEditorPaneTag;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 
 public class MainWindow {
 
-    final JFrame frame;
     final Board board;
+    final AppearanceSettings appearanceSettings;
+    final JFrame frame;
     final JPanel content;
     final JMenuBar menuBar;
-    final JLabel labelCapturedpieces;
-    final AppearanceSettings appearanceSettings;
+    final JLabel labelCapturedWhitePieces;
+    final JLabel labelCapturedBlackPieces;
+    final JLabel labelPlaceHolderWest;
+    final JLabel labelPlaceHolderEast;
 
     final JMenuItem item_new;
     final JMenuItem item_store;
@@ -36,7 +36,6 @@ public class MainWindow {
     final JMenuItem item_promotion_knight;
     final JMenuItem item_promotion_bishop;
     final JMenuItem item_promotion_rook;
-    final JMenuItem item_promotion;
     final JPopupMenu promotion_menu;
 
     final JMenuItem item_undo;
@@ -44,30 +43,41 @@ public class MainWindow {
 
     final ColorScheme colorScheme;
     final int SIZE_L = 90;
-    final int SIZE_M = 65;
-    final int SIZE_S = 45;
+    final int SIZE_M = 60;
+    final int SIZE_S = 30;
 
     public MainWindow(char[] boardArray) {
 
         frame = new JFrame();
         frame.setResizable(false);
-        labelCapturedpieces = new JLabel(" ",JLabel.CENTER);
+        labelCapturedWhitePieces = new JLabel(" ", JLabel.CENTER);
+        labelCapturedBlackPieces = new JLabel(" ", JLabel.CENTER);
+        labelPlaceHolderWest = new JLabel(" ", JLabel.CENTER);
+        labelPlaceHolderEast = new JLabel(" ", JLabel.CENTER);
         colorScheme = new ColorScheme();
         appearanceSettings = new AppearanceSettings(colorScheme);
         board = new Board(SIZE_S, boardArray, appearanceSettings);
-
 
         frame.setTitle("Schach");
         frame.addWindowListener(new WindowListener());
 
         content = new JPanel();
         content.setLayout(new BorderLayout());
-        content.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-        content.add(board,BorderLayout.BEFORE_FIRST_LINE);
-        labelCapturedpieces.setFont(appearanceSettings.getFont()); //todo update
-        labelCapturedpieces.setOpaque(true);
-        labelCapturedpieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        content.add(labelCapturedpieces,BorderLayout.AFTER_LAST_LINE);
+        content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        labelCapturedWhitePieces.setFont(appearanceSettings.getFont());
+        labelCapturedBlackPieces.setFont(appearanceSettings.getFont());
+        labelPlaceHolderWest.setFont(appearanceSettings.getFont());
+        labelPlaceHolderEast.setFont(appearanceSettings.getFont());
+        labelCapturedWhitePieces.setOpaque(true);
+        labelCapturedBlackPieces.setOpaque(true);
+        labelPlaceHolderWest.setOpaque(true);
+        labelPlaceHolderEast.setOpaque(true);
+        labelPlaceHolderWest.setVerticalAlignment(JLabel.TOP);
+        labelPlaceHolderEast.setVerticalAlignment(JLabel.BOTTOM);
+        labelCapturedWhitePieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelCapturedBlackPieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelPlaceHolderWest.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelPlaceHolderEast.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
 
         frame.setContentPane(content);
 
@@ -85,15 +95,15 @@ public class MainWindow {
         item_castling_queenside = new JMenuItem("lang");
 
         Font promotionItemFont = new Font("Times", Font.PLAIN, 100);
-        item_promotion = new JMenuItem("Umwandlung");
         item_promotion_queen = new JMenuItem("\u2655 \u265B");
         item_promotion_knight = new JMenuItem("\u2658 \u265E");
         item_promotion_bishop = new JMenuItem("\u2657 \u265D");
         item_promotion_rook = new JMenuItem("\u2656 \u265C");
 
 
-        KeyStroke ctrlZ = KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask());
+        KeyStroke ctrlZ = KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         KeyStroke ctrlR = KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ctrlQ = KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         item_undo = new JMenuItem("<<");
         item_redo = new JMenuItem(">>");
         item_undo.setAccelerator(ctrlZ);
@@ -117,25 +127,19 @@ public class MainWindow {
         });
 
         item_color_standard.addActionListener(e -> {
-            colorScheme.setColors('s');
+            colorScheme.setColors(ColorScheme.STANDARD);
             setStyleSettings();
             board.repaint();
         });
         item_color_plain.addActionListener(e -> {
-            colorScheme.setColors('p');
+            colorScheme.setColors(ColorScheme.PLAIN);
             setStyleSettings();
             board.repaint();
         });
         item_color_dark.addActionListener(e -> {
-            colorScheme.setColors('d');
+            colorScheme.setColors(ColorScheme.DARK);
             setStyleSettings();
             board.repaint();
-        });
-
-        item_change_piece_style.addActionListener(e -> {
-            board.fontRoulette();
-            {
-            }
         });
 
         JMenu main_menu = new JMenu("Spiel...");
@@ -163,11 +167,12 @@ public class MainWindow {
 
         move_menu.add(item_undo);
         move_menu.add(item_redo);
+        move_menu.addSeparator();
+        move_menu.add(castling_menu);
 
         castling_menu.add(item_castling_kingside);
         castling_menu.add(item_castling_queenside);
 
-        promotion_menu.add(item_promotion);
         promotion_menu.add(item_promotion_queen);
         promotion_menu.add(item_promotion_rook);
         promotion_menu.add(item_promotion_bishop);
@@ -175,25 +180,61 @@ public class MainWindow {
 
         menuBar = new JMenuBar();
         menuBar.add(main_menu);
-        menuBar.add(castling_menu);
         menuBar.add(move_menu);
         menuBar.add(size_menu);
         menuBar.add(style_menu);
         frame.add(promotion_menu);
         frame.add(menuBar);
         frame.setJMenuBar(menuBar);
-        frame.setLocation(50, 50);
+        frame.setLocation(0, 0);
         frame.setVisible(true);
         setStyleSettings();
-        adjustBoardAndFrameSize(SIZE_S);
+
+
+        content.add(labelCapturedWhitePieces, BorderLayout.PAGE_START);
+        content.add(labelPlaceHolderWest, BorderLayout.WEST);
+        content.add(board, BorderLayout.CENTER);
+        content.add(labelPlaceHolderEast, BorderLayout.EAST);
+        content.add(labelCapturedBlackPieces, BorderLayout.PAGE_END);
+        adjustBoardAndFrameSize(SIZE_M);
+
+        frame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == 'P') {
+                    System.out.println("HELLO USER! :)");
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
     }
 
     private void adjustBoardAndFrameSize(int size_factor) {
 
-        board.adjustSize(size_factor);
+        appearanceSettings.adjustSize(size_factor);
 
-        content.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+        Dimension newDim = new Dimension(appearanceSettings.getSizeFactor() * 2, appearanceSettings.getMargin());
+        labelPlaceHolderWest.setPreferredSize(newDim);
+        labelPlaceHolderEast.setPreferredSize(newDim);
 
+        newDim = new Dimension(appearanceSettings.getSizeFactor() * 2 + appearanceSettings.getMargin(),
+                appearanceSettings.getSizeFactor() * 2);
+        labelCapturedWhitePieces.setPreferredSize(newDim);
+        labelCapturedBlackPieces.setPreferredSize(newDim);
+
+        board.adjustSize();
+        setStyleSettings();
+
+        content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         frame.pack();
     }
 
@@ -203,19 +244,23 @@ public class MainWindow {
 
         JPopupMenu menu = new JPopupMenu();
         menu.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        menu.setPopupSize(appearanceSettings.getMargin(),appearanceSettings.getSizeFactor());
+        menu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor());
 
         JMenuItem item = new JMenuItem(message);
-        item.setFont(new Font("Times", Font.PLAIN, 20));
+        item.setFont(new Font("Times", Font.PLAIN, appearanceSettings.getSizeFactor() / 3));
         item.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         menu.add(item);
 
-        item.addActionListener(e -> {
-            board.setActive(true);
-        });
+        ActionListener actionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                board.setActive((true));
+            }
+        };
 
-        menu.show(board, 0,board.getHeight());
+        item.addActionListener(actionListener);
 
+        menu.show(board, 0, appearanceSettings.getMargin());
     }
 
     public void show_promotion_popup() {
@@ -223,33 +268,38 @@ public class MainWindow {
         board.setActive(false); //makes board diffuse
 
         JPopupMenu menu = promotion_menu;
-        menu.setPopupSize(appearanceSettings.getSizeFactor() * 4/2, appearanceSettings.getMargin());
+        menu.setPopupSize(appearanceSettings.getSizeFactor() * 4 / 2, appearanceSettings.getMargin());
 
-        item_promotion.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         item_promotion_bishop.setBackground(appearanceSettings.getColorScheme().BLACK_SQUARES_COLOR);
         item_promotion_knight.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         item_promotion_queen.setBackground(appearanceSettings.getColorScheme().BLACK_SQUARES_COLOR);
         item_promotion_rook.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
 
-        if(appearanceSettings.getFontNumber()!=3) {
-            item_promotion_bishop.setFont(appearanceSettings.getFont());
-            item_promotion_knight.setFont(appearanceSettings.getFont());
-            item_promotion_queen.setFont(appearanceSettings.getFont());
-            item_promotion_rook.setFont(appearanceSettings.getFont());
-        }
+        item_promotion_bishop.setFont(appearanceSettings.getFont());
+        item_promotion_knight.setFont(appearanceSettings.getFont());
+        item_promotion_queen.setFont(appearanceSettings.getFont());
+        item_promotion_rook.setFont(appearanceSettings.getFont());
 
         menu.show(board, board.getWidth(), 0);
     }
 
     public void setStyleSettings() {
+
         menuBar.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        labelCapturedpieces.setFont(appearanceSettings.getFont());
-        labelCapturedpieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelCapturedWhitePieces.setFont(appearanceSettings.getFont());
+        labelCapturedBlackPieces.setFont(appearanceSettings.getFont());
+        labelPlaceHolderWest.setFont(appearanceSettings.getFont());
+        labelPlaceHolderEast.setFont(appearanceSettings.getFont());
+        labelCapturedWhitePieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelCapturedBlackPieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelPlaceHolderWest.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelPlaceHolderEast.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
     }
 
     static class WindowListener extends WindowAdapter {
         @Override
         public void windowClosing(WindowEvent e) {
+            System.out.println("GOODBYE AND HAVE A NICE DAY.");
             e.getWindow().dispose(); //close window
             System.exit(0); //close virtual machine.
         }

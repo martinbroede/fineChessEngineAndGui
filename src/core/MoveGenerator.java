@@ -1,8 +1,5 @@
 package core;
 
-
-import sun.awt.geom.AreaOp;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.InputMismatchException;
@@ -26,6 +23,10 @@ public class MoveGenerator extends PiecePatterns {
     }
 
     public class Castling {
+
+        public final static byte ALL_RIGHTS = 0b1111;
+        public final static byte NO_RIGHTS = 0;
+
         private byte rights;
 
         public byte getRights() {
@@ -163,10 +164,17 @@ public class MoveGenerator extends PiecePatterns {
             capturedPieces.print();
         }
 
-        public String getCapturedPiecesAsSymbols(){
+        public String getCapturedPiecesAsSymbols() {
             return capturedPieces.getCapturedPiecesAsSymbols();
         }
 
+        /**
+         * Change position of chess piece on position "from" to position "to". Return piece that changes position."
+         *
+         * @param from square the piece comes from
+         * @param to   square the piece shall move to
+         * @return piece that moves
+         */
         public Piece changePosition(byte from, byte to) {
             for (Piece p : this) { //todo this is not efficient. find better method later
                 if (p.getPosition() == from) {
@@ -216,6 +224,12 @@ public class MoveGenerator extends PiecePatterns {
             System.out.println(outp);
         }
 
+        @Override
+        public void clear() {
+            super.clear();
+            capturedPieces.clear();
+        }
+
         private class CapturedPieces extends Stack<Piece> {
 
             protected void print() {
@@ -226,21 +240,16 @@ public class MoveGenerator extends PiecePatterns {
                 System.out.println("TOTAL: " + this.size() + " CAPTURED PIECES");
             }
 
-            protected String getCapturedPiecesAsSymbols(){
+            protected String getCapturedPiecesAsSymbols() {
 
                 String outp = "";
 
-                for (Piece p: this){
+                for (Piece p : this) {
                     outp += Parser.parseSymbol(p.type);
                 }
 
                 return outp;
             }
-        }
-        @Override
-        public void clear(){
-            super.clear();
-            capturedPieces.clear();
         }
     }
 

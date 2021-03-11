@@ -18,8 +18,9 @@ public class Board extends JPanel {
 
         active = true;
         s = appearanceSettings;
+        s.adjustSize(size_factor);
         this.boardArray = boardArray;
-        adjustSize(size_factor);
+        adjustSize();
     }
 
     public void setActive(boolean active) {
@@ -27,17 +28,8 @@ public class Board extends JPanel {
         paint(getGraphics());
     }
 
-    public int getOffset() {
-        return s.getOffset();
-    }
+    public void adjustSize() {
 
-    public int getSizeFactor() {
-        return s.getSizeFactor();
-    }
-
-    public void adjustSize(int size_factor) {
-
-        s.adjustSize(size_factor);
         img = new BufferedImage(s.getMargin(), s.getMargin(), BufferedImage.TYPE_INT_RGB);
         bufferGraphics = img.getGraphics();
         Dimension newDimension = new Dimension(s.getMargin(), s.getMargin());
@@ -51,7 +43,7 @@ public class Board extends JPanel {
 
     public void fontRoulette() {
         s.nextFont();
-        adjustSize(s.getSizeFactor());
+        adjustSize();
         repaint();
     }
 
@@ -90,11 +82,10 @@ public class Board extends JPanel {
     public void paint(Graphics g) {
 
         if (bufferGraphics != null) {
-
             Painter.paintBoard(bufferGraphics, s);
             Painter.paintPieces(bufferGraphics, s, boardArray);
             Painter.paintFilesAndRanks(bufferGraphics, s);
-        } else System.err.println("bufferGraphics == null");
+        }
 
         if (img != null) {
             if (!active) {
@@ -103,7 +94,6 @@ public class Board extends JPanel {
                 bufferGraphics.fillRect(0, 0, s.getMargin(), s.getMargin());
             }
             g.drawImage(img, 0, 0, this);
-
-        } else System.err.println("img == null");
+        }
     }
 }

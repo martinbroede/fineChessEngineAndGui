@@ -44,7 +44,7 @@ public class Painter {
                     case "DejaVu Sans":
                         g2.drawString("" + Parser.parseSymbol(board[pos]),
                                 x * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
-                                        - settings.font.getSize() / 2 + settings.getOffset() / 3,
+                                        - settings.font.getSize() / 2 + settings.getOffset() / 5,
                                 y * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
                                         + settings.font.getSize() * 2 / 5 + settings.getOffset() / 5);
                         break;
@@ -55,13 +55,6 @@ public class Painter {
                                         - settings.font.getSize() / 2,
                                 y * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
                                         + settings.font.getSize() * 2 / 5);
-                        break;
-                    case "Chess Maya":
-                        g2.drawString("" + Parser.parseSymbolFromChessFont(board[pos]),
-                                x * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
-                                        - settings.font.getSize() / 2,
-                                y * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
-                                        + settings.font.getSize() * 4 / 11 + settings.getOffset());
                         break;
                     default:
                         g2.drawString("" + Parser.parseSymbolFromChessFont(board[pos]),

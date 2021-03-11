@@ -12,8 +12,7 @@ public class AppearanceSettings {
     private final Font[] FONT_ROULETTE = {
             createFontFromFile("DejaVuSans", 1),
             new Font("Times", Font.PLAIN, 1),
-            new Font("MS Gothic", Font.PLAIN, 1),
-            createFontFromFile("MAYAFONT", 1)};
+            new Font("MS Gothic", Font.PLAIN, 1)};
 
     private int sizeFactor;
     private int offset;
@@ -64,5 +63,6 @@ public class AppearanceSettings {
 
         fontNumber++;
         font = FONT_ROULETTE[fontNumber % FONT_ROULETTE.length];
+        adjustSize(this.sizeFactor);
     }
 }

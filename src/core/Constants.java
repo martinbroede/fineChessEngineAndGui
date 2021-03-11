@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.InputMismatchException;
 
 public class Constants {
-    static public final boolean WHITE = true;
     static public final boolean BLACK = false;
+    static public final boolean WHITE = !BLACK;
     final byte[][] WHITE_PAWN_CAPTURE_SQUARES;
     final byte[][] WHITE_PAWN_STRAIGHT_SQUARES;
     final byte[][] BLACK_PAWN_CAPTURE_SQUARES;
@@ -20,8 +20,8 @@ public class Constants {
     final byte[][] RANK_DISTANCE;
     final byte[][] DIAGONAL_DISTANCE;
     final byte[][] ANTI_DIAGONAL_DISTANCE;// TODO don't need these ... ?
-    final char[] FILES = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'}; //"COLUMNS"
-    final char[] RANKS = {'1', '2', '3', '4', '5', '6', '7', '8'}; //"ROWS"
+/*    final char[] FILES = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'}; //"COLUMNS"
+    final char[] RANKS = {'1', '2', '3', '4', '5', '6', '7', '8'}; //"ROWS"*/
     Square[] allSquares; // todo remove
 
     public Constants() {
