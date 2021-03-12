@@ -42,7 +42,7 @@ public class ReadWrite {
             myFont = ttfBase.deriveFont(Font.PLAIN, size);
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("LOADING FONT FAILED.");
+            System.err.println("LOADING FONT FAILED.");
             return null;
         }
         return myFont;

@@ -18,7 +18,7 @@ public class MaybeUseful {
 
     public static void getNames() throws IOException {
         //Creating a File object for directory
-        File directoryPath = new File("C:\\Users\\admin\\kurs1618\\IntelliJ\\MartinChessV1.0\\fonts");
+        File directoryPath = new File("C:\\Users\\PATHNAME_HERE");
         //List of all files and directories
         String contents[] = directoryPath.list();
         System.out.println("List of files and directories in the specified directory:");

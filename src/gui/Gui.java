@@ -1,42 +1,70 @@
 package gui;
 
+import chessNetwork.Network;
 import core.*;
 import fileHandling.ReadWrite;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class Gui extends MainWindow {
 
-    final boolean WHITE = true; //for readability reasons...
-
     private final String storagePath = "chessUserData/currentGame.txt";
+
+    final boolean WHITE = Constants.WHITE; //for readability reasons
+
+    final Network network;
     private Chess chess;
     private String moveString;
-    private String moveStringSpecialMoves;
+    private String moveStringSpecialMoves; //for promotion, castling, enPassant
 
     public Gui(Chess chessGame) {
+
         super(chessGame.getBoard());
+
         this.chess = chessGame;
         moveString = "";
         moveStringSpecialMoves = "";
 
+        {
+            network = new Network(this.chess);
+            class BoardUpdater extends Thread {
+                public void run() {
+                    System.out.println("GUI WILL UPDATE MOVES FROM NETWORK.");
+                    while (true) {
+                        if (network.updateAdvised()) {
+                            refreshFrameContent(-1);
+                            network.reportUpdate();
+                        }
+                        try {
+                            sleep(100);
+                        } catch (InterruptedException ex) {
+                        }
+                    }
+                }
+            }
+            BoardUpdater boardUpdater = new BoardUpdater();
+            boardUpdater.start();
+        }
+
 
         /* add action listeners */
-        item_new.addActionListener(e -> {
+        itemNew.addActionListener(e -> {
             System.out.println("NEW GAME!");
             chess.newGame(chess.INIT_STANDARD_BOARD);
             refreshFrameContent(-1);
             resetMoveString();
-            show_popup("Spiel beginnen");
+            showPopup("Spiel beginnen");
         });
 
-        item_store.addActionListener(e -> {
+        itemStore.addActionListener(e -> {
             System.out.println("STORE GAME");
             ReadWrite.writeToFile(storagePath, chess);
         });
 
-        item_restore.addActionListener(e -> {
+        itemRestore.addActionListener(e -> {
             chess.pieceAtSquare(0);
             Object obj = null;
             try {
@@ -52,13 +80,9 @@ public class Gui extends MainWindow {
             }
         });
 
-        item_begin.addActionListener(e -> {
-            System.err.println("NOT YET IMPLEMENTED");
-            {
-            }
-        });
+        itemBegin.addActionListener(e -> System.err.println("NOT YET IMPLEMENTED"));
 
-        item_castling_kingside.addActionListener(e -> {
+        itemCastlingKingside.addActionListener(e -> {
             if (chess.getTurnColor() == WHITE) {
                 if (!chess.movePieceUser(new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING)))
                     System.err.println("CASTLING o-o ILLEGAL");
@@ -70,7 +94,7 @@ public class Gui extends MainWindow {
             refreshFrameContent(-1); // -1 : don't want to paint legal moves.
         });
 
-        item_castling_queenside.addActionListener(e -> {
+        itemCastlingQueenside.addActionListener(e -> {
             if (chess.getTurnColor() == WHITE) {
                 if (!chess.movePieceUser(new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING)))
                     System.err.println("CASTLING o-o-o ILLEGAL");
@@ -82,40 +106,78 @@ public class Gui extends MainWindow {
             refreshFrameContent(-1); // -1 : don't want to paint legal moves.
         });
 
-        item_promotion_queen.addActionListener(e -> {
+        itemPromotionQueen.addActionListener(e -> {
             chess.movePieceUser(new Move(moveStringSpecialMoves + "Q"));
             refreshFrameContent(-1);
         });
 
-        item_promotion_rook.addActionListener(e -> {
+        itemPromotionRook.addActionListener(e -> {
             chess.movePieceUser(new Move(moveStringSpecialMoves + "R"));
             refreshFrameContent(-1);
         });
 
-        item_promotion_knight.addActionListener(e -> {
+        itemPromotionKnight.addActionListener(e -> {
             chess.movePieceUser(new Move(moveStringSpecialMoves + "N"));
             refreshFrameContent(-1);
         });
 
-        item_promotion_bishop.addActionListener(e -> {
+        itemPromotionBishop.addActionListener(e -> {
             chess.movePieceUser(new Move(moveStringSpecialMoves + "B"));
             refreshFrameContent(-1);
         });
 
-        item_undo.addActionListener(e -> {
-            chess.userUndo();
-            refreshFrameContent(-1);
+        itemUndo.addActionListener(e -> {
+            if (network.isActive()) {
+                System.out.println("UNDO NOT ALLOWED WHEN NETWORK IS ACTIVE");
+            } else {
+                chess.userUndo();
+                refreshFrameContent(-1);
+            }
         });
 
-        item_redo.addActionListener(e -> {
-            chess.userRedo();
-            refreshFrameContent(-1);
+        itemRedo.addActionListener(e -> {
+            if (network.isActive()) {
+                System.out.println("REDO NOT ALLOWED WHEN NETWORK IS ACTIVE");
+            } else {
+                chess.userRedo();
+                refreshFrameContent(-1);
+            }
         });
 
-        item_change_piece_style.addActionListener(e -> {
+        itemChangePieceStyle.addActionListener(e -> {
             board.fontRoulette();
             setStyleSettings();
             refreshFrameContent(-1);
+        });
+
+        itemStartClient.addActionListener(e -> network.createClient());
+        itemStartServer.addActionListener(e -> network.createServer());
+        itemSynchronize.addActionListener(e -> network.startMoveUpdater());
+        itemNetworkDestroy.addActionListener(e -> network.safeDeleteServerOrClient());
+
+        frame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == 'C') {
+                    network.createClient();
+                } else if (e.getKeyChar() == 'D') {
+                    network.safeDeleteServerOrClient();
+                } else if (e.getKeyChar() == 'S') {
+                    network.createServer();
+                } else if (e.getKeyChar() == 'M') {
+                    network.startMoveUpdater();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
         });
 
 
@@ -130,18 +192,13 @@ public class Gui extends MainWindow {
                     }
                     case 2: {
                         chess.castling.print();
-
                         chess.blackPieces.printCaptured();
                         chess.whitePieces.printCaptured();
-
-                        /*
-                        chess.whitePieces.printThreats();
-                        chess.blackPieces.printThreats();*/
                         break;
                     }
                     case 3: {
-                        /*chess.userUndo();
-                        boardCanvas.repaint();*/
+                        chess.whitePieces.printThreats();
+                        chess.blackPieces.printThreats();
                         break;
                     }
                 }
@@ -150,6 +207,7 @@ public class Gui extends MainWindow {
     }
 
     private void movePieceFromEvent(MouseEvent mouseEvent) {
+
         byte pos = Parser.coordFromEvent(mouseEvent,
                 appearanceSettings.getOffset(),
                 appearanceSettings.getSizeFactor());
@@ -165,6 +223,12 @@ public class Gui extends MainWindow {
 
         if (moveString.length() > 5) {
             Move nextMove = new Move(moveString);
+
+            if (network.isActive()) { //todo remove
+                network.send("MOVE " + nextMove.getInformation() + ' ');
+            } //todo remove
+
+
             if (!chess.movePieceUser(nextMove)) {
                 /* move illegal? try castling moves */
                 if (nextMove.isFrom(Parser.parse("E1")) && nextMove.getTo() == Parser.parse("G1")) {
@@ -189,7 +253,7 @@ public class Gui extends MainWindow {
                         if (legalMoves.contains(promotionMove)) {
                             moveStringSpecialMoves = moveString;
                             moveString = "";
-                            show_promotion_popup();
+                            showPromotionPopup();
                             return;
                         }
                     } else {
@@ -197,14 +261,14 @@ public class Gui extends MainWindow {
                         if (legalMoves.contains(promotionMove)) {
                             moveStringSpecialMoves = moveString;
                             moveString = "";
-                            show_promotion_popup();
+                            showPromotionPopup();
                             return;
                         }
                     }
                     System.err.println("MOVE ILLEGAL");
                 }
             }
-            //moveStringSpecialMoves = moveString;
+            /* moveStringSpecialMoves = moveString;*/
             moveString = "";
         }
         refreshFrameContent(pos);
@@ -213,7 +277,7 @@ public class Gui extends MainWindow {
     public void refreshFrameContent(int pos) {
 
         if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED) {
-            show_popup(chess.gameStatus.getStatusNotice());
+            showPopup(chess.gameStatus.getStatusNotice());
         } else {
             short lastMove = chess.history.getLastMoveCoordinate();
             board.refreshChessBoard(true, true,
@@ -241,7 +305,7 @@ public class Gui extends MainWindow {
         }
 
         if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED)
-            show_popup(chess.gameStatus.getStatusNotice());
+            showPopup(chess.gameStatus.getStatusNotice());
     }
 
     public void resetMoveString() {
