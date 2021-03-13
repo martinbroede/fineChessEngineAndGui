@@ -10,16 +10,17 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.NoSuchElementException;
 
 public class Gui extends MainWindow {
 
     final boolean WHITE = Constants.WHITE; //for readability reasons
     final Network network;
     private final String storagePath = "chessUserData/currentGame.txt";
+    private final ChatDialog chatDialog;
     private Chess chess;
     private String moveString;
     private String moveStringSpecialMoves; //for promotion, castling, enPassant
-    private final ChatDialog chatDialog;
 
     public Gui(Chess chessGame) {
 
@@ -31,27 +32,51 @@ public class Gui extends MainWindow {
         moveString = "";
         moveStringSpecialMoves = "";
 
-        {
-            network = new Network(this.chess);
-            class BoardUpdater extends Thread {
-                public void run() {
-                    System.out.println("GUI WILL UPDATE MOVES FROM NETWORK.");
-                    while (true) {
-                        if (network.updateAdvised()) {
-                            refreshFrameContent(-1);
-                            network.reportUpdate();
-                        }
+
+        network = new Network();
+
+        class BoardUpdater extends Thread {
+
+            @Override
+            public void run() {
+
+                System.out.println("GUI WILL UPDATE MOVES FROM NETWORK.");
+                while (true) {
+
+                    if (network.messageQueue.size() > 0) {
+                        String message = "";
                         try {
-                            sleep(100);
-                        } catch (InterruptedException ex) {
-                            ex.printStackTrace();
+                            message = network.messageQueue.getFirst();
+                            network.messageQueue.removeFirst();
+
+                            String[] args = message.split(" ");
+                            if (args[0].equals("MOVE")) {
+                                Move nextMove = new Move(Short.parseShort(args[1]));
+                                if (nextMove.getInformation() == Move.START_GAME){
+                                    chess.newGame();
+                                    showPopup("Spiel beginnen");
+                                }
+                                else chess.movePieceUser(nextMove);
+                            } else chatOutput.append("\t: "+ message + "\n");
+
+
+                        } catch (NoSuchElementException ex) {
+                            System.err.println("MESSAGE QUEUE IS EMPTY.");
                         }
+
+                        refreshFrameContent(-1);
+                    }
+                    try {
+                        sleep(300);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
                     }
                 }
             }
-            BoardUpdater boardUpdater = new BoardUpdater();
-            boardUpdater.start();
         }
+        BoardUpdater boardUpdater = new BoardUpdater();
+        boardUpdater.start();
+
 
         /* add action listeners */
         itemNew.addActionListener(e -> {
@@ -165,30 +190,17 @@ public class Gui extends MainWindow {
 
         itemStartClient.addActionListener(e -> network.showClientIpDialog(frame.getLocation()));
         itemStartServer.addActionListener(e -> network.showServerIpDialog(frame.getLocation()));
-        itemSynchronize.addActionListener(e -> network.startGame());
+        itemSynchronize.addActionListener(e -> {
+            chess.newGame();
+            network.startGame();
+            showPopup("Spiel beginnen");
+        });
         itemNetworkDestroy.addActionListener(e -> network.safeDeleteServerOrClient());
 
-        frame.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == 'H') System.out.println("HELLO.");
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-
-            }
-        });
-
         chatInput.addKeyListener(new KeyListener() {
+
             @Override
             public void keyTyped(KeyEvent e) {
-
             }
 
             @Override
@@ -197,9 +209,9 @@ public class Gui extends MainWindow {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_ENTER){
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     network.sendToNet(chatInput.getText());
-                    chatOutput.setText(chatOutput.getText()+"\n"+chatInput.getText());
+                    chatOutput.append(chatInput.getText() + "\n");
                     chatInput.setText("");
                 }
             }
@@ -342,11 +354,11 @@ public class Gui extends MainWindow {
 
         public ChatDialog() {
             setLayout(new BorderLayout());
-            add(chatOutput,BorderLayout.NORTH);
-            add(chatInput,BorderLayout.SOUTH);
+            add(chatOutput, BorderLayout.NORTH);
+            add(chatInput, BorderLayout.SOUTH);
         }
 
-        public void toggleVisibility(){
+        public void toggleVisibility() {
             Dimension newDim = new Dimension(appearanceSettings.getMargin(), appearanceSettings.getMargin());
             chatOutput.setPreferredSize(newDim);
 
@@ -358,7 +370,7 @@ public class Gui extends MainWindow {
             chatInput.setBackground(appearanceSettings.getColorScheme().HIGHLIGHT_1_COLOR);
 
             Point location = frame.getLocation();
-            location.translate(frame.getWidth(),0);
+            location.translate(frame.getWidth(), 0);
             setLocation(location);
 
             pack();

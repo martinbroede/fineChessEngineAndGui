@@ -13,14 +13,16 @@ import java.util.Queue;
 public class ChessClient extends Thread {
 
     private final int delayMilliSec;
-    Queue<Move> moveQueue;
+    LinkedList<String> messageQueue;
     private String ip = "0.0.0.0";
     private int port = 3777;
     private Socket socket;
     private ReceivingThread receivingThread;
     private SendingThread sendingThread;
 
-    public ChessClient(String configIpAndPort, int delayMilliSec, Queue<Move> moveQueue) {
+    public ChessClient(String configIpAndPort, int delayMilliSec, LinkedList<String> messageQueue) {
+
+        setName("CLIENT FOR " + configIpAndPort);
 
         System.out.println("NEW CLIENT FOR " + configIpAndPort + " CLIENT NOT STARTED.");
         String[] args = configIpAndPort.split("/");
@@ -31,7 +33,7 @@ public class ChessClient extends Thread {
             port = Integer.parseInt(args[1]);
         }
         this.delayMilliSec = delayMilliSec;
-        this.moveQueue = moveQueue;
+        this.messageQueue = messageQueue;
     }
 
     public static void main(String[] ar) {
@@ -67,7 +69,7 @@ public class ChessClient extends Thread {
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             sendingThread = new SendingThread(bufferedWriter, delayMilliSec,"CLIENT SENDER");
-            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, moveQueue,"CLIENT RECEIVER");
+            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, messageQueue,"CLIENT RECEIVER");
             System.out.println("CONNECTED TO SERVER");
             new DialogMessage("Erfolgreich mit Server verbunden.");
             return true;

@@ -13,17 +13,19 @@ import java.util.Queue;
 
 public class ChessServer extends Thread {
 
+    private final int delayMilliSec;
     private ServerSocket serverSocket;
     private InetAddress inetAddress;
     private int port;
-    private final int delayMilliSec;
     private Socket socket;
     private ReceivingThread receivingThread;
     private SendingThread sendingThread;
-    private Queue<Move> moveQueue;
+    private LinkedList<String> messageQueue;
 
-    public ChessServer(String configIpAndPort, int delayMilliSec, Queue<Move> moveQueue) {
 
+    public ChessServer(String configIpAndPort, int delayMilliSec, LinkedList<String> messageQueue) {
+
+        setName("SERVER FOR " + configIpAndPort);
         System.out.println("START SERVER FOR " + configIpAndPort);
         String[] args = configIpAndPort.split("/");
         String ipString = "";
@@ -39,13 +41,13 @@ public class ChessServer extends Thread {
             ex.printStackTrace();
         }
 
-        this.moveQueue = moveQueue;
+        this.messageQueue = messageQueue;
         System.out.println("SERVER CREATED. SERVER IS LAZY.");
         this.delayMilliSec = delayMilliSec;
     }
 
     public static void main(String[] ar) {
-        ChessServer server = new ChessServer("192.168.178.27/3777",2000, new LinkedList<>());
+        ChessServer server = new ChessServer("192.168.178.27/3777", 2000, new LinkedList<>());
 
         server.start();
 
@@ -77,10 +79,8 @@ public class ChessServer extends Thread {
             new DialogMessage("Server: Verbinden erfolgreich");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            bufferedWriter.write("SERVER WELCOMES CLIENT");
-            bufferedWriter.newLine();
             sendingThread = new SendingThread(bufferedWriter, delayMilliSec, "SERVER SENDER");
-            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec,moveQueue, "SERVER RECEIVER");
+            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, messageQueue, "SERVER RECEIVER");
             System.out.println("SERVER READY");
             return true;
         } catch (Exception e) {
@@ -96,9 +96,9 @@ public class ChessServer extends Thread {
         receivingThread = null;
         sendingThread = null;
 
-        try{
+        try {
             serverSocket.close();
-        }catch(IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
