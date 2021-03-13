@@ -4,6 +4,8 @@ import chessNetwork.Network;
 import core.*;
 import fileHandling.ReadWrite;
 
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -17,10 +19,13 @@ public class Gui extends MainWindow {
     private Chess chess;
     private String moveString;
     private String moveStringSpecialMoves; //for promotion, castling, enPassant
+    private final ChatDialog chatDialog;
 
     public Gui(Chess chessGame) {
 
         super(chessGame.getBoard());
+
+        chatDialog = new ChatDialog();
 
         this.chess = chessGame;
         moveString = "";
@@ -39,6 +44,7 @@ public class Gui extends MainWindow {
                         try {
                             sleep(100);
                         } catch (InterruptedException ex) {
+                            ex.printStackTrace();
                         }
                     }
                 }
@@ -155,6 +161,8 @@ public class Gui extends MainWindow {
             refreshFrameContent(-1);
         });
 
+        itemShowChat.addActionListener(e -> chatDialog.toggleVisibility());
+
         itemStartClient.addActionListener(e -> network.showClientIpDialog(frame.getLocation()));
         itemStartServer.addActionListener(e -> network.showServerIpDialog(frame.getLocation()));
         itemSynchronize.addActionListener(e -> network.startGame());
@@ -174,6 +182,26 @@ public class Gui extends MainWindow {
             @Override
             public void keyReleased(KeyEvent e) {
 
+            }
+        });
+
+        chatInput.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_ENTER){
+                    network.sendToNet(chatInput.getText());
+                    chatOutput.setText(chatOutput.getText()+"\n"+chatInput.getText());
+                    chatInput.setText("");
+                }
             }
         });
 
@@ -205,7 +233,7 @@ public class Gui extends MainWindow {
 
     private boolean movePiece(Move move) {
         if (chess.movePieceUser(move)) {
-            if (network.isActive()) network.send("MOVE " + move.getInformation());
+            if (network.isActive()) network.sendToNet("MOVE " + move.getInformation());
             return true;
         } else return false;
     }
@@ -227,11 +255,6 @@ public class Gui extends MainWindow {
 
         if (moveString.length() > 5) { // "A1 A2 ": from A1 to A2
             Move nextMove = new Move(moveString);
-
-            if (network.isActive()) { //todo remove
-                network.send("MOVE " + nextMove.getInformation());
-            } //todo remove
-
 
             if (!movePiece(nextMove)) {
                 /* move illegal? try castling moves */
@@ -313,5 +336,33 @@ public class Gui extends MainWindow {
 
     public void resetMoveString() {
         moveString = "";
+    }
+
+    class ChatDialog extends JDialog {
+
+        public ChatDialog() {
+            setLayout(new BorderLayout());
+            add(chatOutput,BorderLayout.NORTH);
+            add(chatInput,BorderLayout.SOUTH);
+        }
+
+        public void toggleVisibility(){
+            Dimension newDim = new Dimension(appearanceSettings.getMargin(), appearanceSettings.getMargin());
+            chatOutput.setPreferredSize(newDim);
+
+            chatOutput.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+
+            newDim = new Dimension(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor());
+            chatInput.setPreferredSize(newDim);
+
+            chatInput.setBackground(appearanceSettings.getColorScheme().HIGHLIGHT_1_COLOR);
+
+            Point location = frame.getLocation();
+            location.translate(frame.getWidth(),0);
+            setLocation(location);
+
+            pack();
+            setVisible(!isVisible());
+        }
     }
 }

@@ -13,7 +13,8 @@ class ReceivingThread extends Thread {
     Queue<Move> moveQueue;
     private int delayMilliSec = 150;
 
-    public ReceivingThread(BufferedReader bReader, int delayMilliSec, Queue<Move> moveQueue) {
+    public ReceivingThread(BufferedReader bReader, int delayMilliSec, Queue<Move> moveQueue, String threadName) {
+        setName(threadName);
         this.bReader = bReader;
         this.delayMilliSec = delayMilliSec;
         this.moveQueue = moveQueue;
@@ -29,10 +30,12 @@ class ReceivingThread extends Thread {
                 if(message == null) break;
                 String[] args = message.split(" ");
                 if (args.length >= 2) {
+                    System.out.println(getName() + ":"); //todo remove
                     if (args[0].equals("MOVE")) {
                         moveQueue.add(new Move(Short.parseShort(args[1])));
+                        System.out.println("RECEIVED MOVE:" + Short.parseShort(args[1])); //todo remove
                     }else{
-                        System.out.println(message); //show chat messages
+                        System.out.println("CHAT: " + message); //show chat messages
                     }
                 }
 

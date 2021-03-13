@@ -1,6 +1,7 @@
 package chessNetwork;
 
 import core.Move;
+import gui.DialogMessage;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -65,9 +66,10 @@ public class ChessClient extends Thread {
             socket = new Socket(ip, port);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            sendingThread = new SendingThread(bufferedWriter, delayMilliSec);
-            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, moveQueue);
+            sendingThread = new SendingThread(bufferedWriter, delayMilliSec,"CLIENT SENDER");
+            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, moveQueue,"CLIENT RECEIVER");
             System.out.println("CONNECTED TO SERVER");
+            new DialogMessage("Erfolgreich mit Server verbunden.");
             return true;
         } catch (UnknownHostException ex) {
             System.err.println("DON'T KNOW HO(R)ST: TRY AGAIN.");
@@ -84,6 +86,8 @@ public class ChessClient extends Thread {
     public void killThreads() {
         if (receivingThread != null) receivingThread.interrupt();
         if (sendingThread != null) sendingThread.interrupt();
+        receivingThread = null;
+        sendingThread = null;
     }
 
     public void tryToConnect() {

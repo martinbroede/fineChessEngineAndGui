@@ -1,7 +1,7 @@
 package chessNetwork;
 
-import com.sun.scenario.effect.impl.state.LinearConvolveKernel;
 import core.Move;
+import gui.DialogMessage;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -15,11 +15,9 @@ public class ChessServer extends Thread {
 
     private ServerSocket serverSocket;
     private InetAddress inetAddress;
-    private int port = 3777;
-    private int delayMilliSec = 150;
+    private int port;
+    private final int delayMilliSec;
     private Socket socket;
-    private BufferedReader bufferedReader;
-    private BufferedWriter bufferedWriter;
     private ReceivingThread receivingThread;
     private SendingThread sendingThread;
     private Queue<Move> moveQueue;
@@ -47,7 +45,7 @@ public class ChessServer extends Thread {
     }
 
     public static void main(String[] ar) {
-        ChessServer server = new ChessServer("192.168.178.27/3777",2000, new LinkedList<Move>());
+        ChessServer server = new ChessServer("192.168.178.27/3777",2000, new LinkedList<>());
 
         server.start();
 
@@ -71,17 +69,18 @@ public class ChessServer extends Thread {
         tryToHost();
     }
 
-    public boolean prepareServerSocket(int portToUse) {
+    public boolean prepareServerSocket() {
         try {
             serverSocket = new ServerSocket(port, 2, inetAddress);
-            System.out.println("SERVER SOCKET PROVIDED. LOCAL SOCKET ADRESS: " + serverSocket.getLocalSocketAddress());
+            System.out.println("SERVER SOCKET PROVIDED. ADRESS: " + serverSocket.getLocalSocketAddress());
             socket = serverSocket.accept();
-            bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            new DialogMessage("Server: Verbinden erfolgreich");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             bufferedWriter.write("SERVER WELCOMES CLIENT");
             bufferedWriter.newLine();
-            sendingThread = new SendingThread(bufferedWriter, delayMilliSec);
-            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec,moveQueue);
+            sendingThread = new SendingThread(bufferedWriter, delayMilliSec, "SERVER SENDER");
+            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec,moveQueue, "SERVER RECEIVER");
             System.out.println("SERVER READY");
             return true;
         } catch (Exception e) {
@@ -91,13 +90,22 @@ public class ChessServer extends Thread {
     }
 
     public void killThreads() {
+
         if (receivingThread != null) receivingThread.interrupt();
         if (sendingThread != null) sendingThread.interrupt();
+        receivingThread = null;
+        sendingThread = null;
+
+        try{
+            serverSocket.close();
+        }catch(IOException ex){
+            ex.printStackTrace();
+        }
     }
 
     public void tryToHost() {
 
-        if (prepareServerSocket(port)) {
+        if (prepareServerSocket()) {
             sendingThread.start();
             receivingThread.start();
         }
@@ -107,7 +115,6 @@ public class ChessServer extends Thread {
                 try {
                     sleep(delayMilliSec);
                 } catch (InterruptedException ex) {
-                    ex.printStackTrace();
                 }
             }
             sendingThread.interrupt(); //close both if one thread is dead.

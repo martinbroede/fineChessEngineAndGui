@@ -22,10 +22,14 @@ public class MainWindow {
     final JLabel labelPlaceHolderWest;
     final JLabel labelPlaceHolderEast;
 
+    final JTextField chatInput;
+    final JTextArea chatOutput;
+
     final JMenuItem itemStartServer;
     final JMenuItem itemStartClient;
     final JMenuItem itemNetworkDestroy;
     final JMenuItem itemSynchronize;
+    final JMenuItem itemShowChat;
 
     final JMenuItem itemNew;
     final JMenuItem itemStore;
@@ -102,6 +106,7 @@ public class MainWindow {
         itemStartClient = new JMenuItem("Spiel beitreten");
         itemSynchronize = new JMenuItem("Spiel beginnen");
         itemNetworkDestroy = new JMenuItem("Verbindung trennen");
+        itemShowChat = new JMenuItem("Chat anzeigen");
 
         itemNew = new JMenuItem("Neu");
         itemStore = new JMenuItem("Speichern");
@@ -168,9 +173,15 @@ public class MainWindow {
         networkMenu.add(itemSynchronize);
         networkMenu.addSeparator();
         networkMenu.add(itemNetworkDestroy);
+        networkMenu.addSeparator();
+        networkMenu.addSeparator();
+        networkMenu.add(itemShowChat);
 
         castlingMenu.add(itemCastlingKingside);
         castlingMenu.add(itemCastlingQueenside);
+
+        chatInput = new JTextField();
+        chatOutput = new JTextArea();
 
         menuPromotion.add(itemPromotionQueen);
         menuPromotion.add(itemPromotionRook);
@@ -189,13 +200,12 @@ public class MainWindow {
         frame.setVisible(true);
         setStyleSettings();
 
-        content.add(labelCapturedWhitePieces, BorderLayout.PAGE_START);
+        content.add(labelCapturedWhitePieces, BorderLayout.NORTH);
         content.add(labelPlaceHolderWest, BorderLayout.WEST);
         content.add(board, BorderLayout.CENTER);
         content.add(labelPlaceHolderEast, BorderLayout.EAST);
-        content.add(labelCapturedBlackPieces, BorderLayout.PAGE_END);
+        content.add(labelCapturedBlackPieces, BorderLayout.SOUTH);
         adjustBoardAndFrameSize(SIZE_S);
-
 
         /*  ###################################### add action listeners ############################################# */
 
@@ -241,6 +251,9 @@ public class MainWindow {
                 appearanceSettings.getSizeFactor() * 2);
         labelCapturedWhitePieces.setPreferredSize(newDim);
         labelCapturedBlackPieces.setPreferredSize(newDim);
+
+        newDim = new Dimension(appearanceSettings.getSizeFactor()*4, appearanceSettings.getMargin()*2);
+        chatOutput.setPreferredSize(newDim);
 
         board.adjustSize();
         setStyleSettings();

@@ -20,8 +20,6 @@ public class Constants {
     final byte[][] RANK_DISTANCE;
     final byte[][] DIAGONAL_DISTANCE;
     final byte[][] ANTI_DIAGONAL_DISTANCE;// TODO don't need these ... ?
-/*    final char[] FILES = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'}; //"COLUMNS"
-    final char[] RANKS = {'1', '2', '3', '4', '5', '6', '7', '8'}; //"ROWS"*/
     Square[] allSquares; // todo remove
 
     public Constants() {
@@ -352,6 +350,7 @@ public class Constants {
         return outp;
     }
 
+    // knight moves. look like an L so i call it getL()
     private static byte[] getL(int inp) {
         byte[] result = new byte[8];
         byte[][] L = {

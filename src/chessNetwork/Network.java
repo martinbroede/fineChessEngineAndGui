@@ -66,7 +66,7 @@ public class Network {
         adviseUpdate = false;
     }
 
-    public void send(String message) {
+    public void sendToNet(String message) {
 
         if (client != null) {
             client.send(message);
@@ -113,8 +113,8 @@ public class Network {
     public void startGame(){
         chess.newGame();
         adviseUpdate = true;
-        send("LET'S START!");
-        send("MOVE " + Move.START_GAME);
+        sendToNet("LET'S START!");
+        sendToNet("MOVE " + Move.START_GAME);
     }
 
     public void showServerIpDialog(Point location) {
@@ -165,6 +165,7 @@ public class Network {
                     }else {
                         chess.movePieceUser(move);
                     }
+
                     adviseUpdate = true;
                 }
             }

@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class IpAndPortDialog {
+
     public JTextField ipField;
     public JTextField portField;
     public JButton okButton;
@@ -18,7 +19,7 @@ public class IpAndPortDialog {
         setUp();
     }
 
-    private void setUp(){
+    private void setUp() {
         dialog.setTitle("IP Konfiguration");
         dialog.setSize(200, 130);
         dialog.setLayout(new FlowLayout());

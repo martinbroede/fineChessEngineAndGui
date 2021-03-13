@@ -6,8 +6,8 @@ import java.util.Stack;
 public class Chess extends MoveGenerator implements Serializable {
 
     public final String INIT_STANDARD_BOARD = ""
-             + "RNBQKBNRPPPPPPPP                "
-             + "                pppppppprnbqkbnr";
+            + "RNBQKBNRPPPPPPPP                "
+            + "                pppppppprnbqkbnr";
 
     private final String init = ""
             + "R   KBNRPPPPPPPPppp             "
@@ -32,15 +32,15 @@ public class Chess extends MoveGenerator implements Serializable {
         newGame("K                                                              k", Castling.NO_RIGHTS);
     }
 
-    public void newGame(){
+    public void newGame() {
         newGame(INIT_STANDARD_BOARD);
     }
 
-    public void newGame(String init, int castlingRights){
+    public void newGame(String init, int castlingRights) {
         newGame(init);
         hashGenerator.hashCastling(Castling.ALL_RIGHTS);
-        castling.setRights((byte)castlingRights);
-        hashGenerator.hashCastling((byte)castlingRights);
+        castling.setRights((byte) castlingRights);
+        hashGenerator.hashCastling((byte) castlingRights);
     }
 
     public void newGame(String init) { //todo new game from FEN
@@ -133,8 +133,10 @@ public class Chess extends MoveGenerator implements Serializable {
 
     /** checks if legal, if so move piece */
     public boolean movePieceUser(Move move) {
+        if (move.getInformation() < 0) System.err.println("MOVE INFO < 0. CAN'T PROCESS HERE.");
 
         if (!getUserLegalMoves().contains(move)) return false;
+
         undoneMovesHistory.clear();
         movePiece(move);
         return true;

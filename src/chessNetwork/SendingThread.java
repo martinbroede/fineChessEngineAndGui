@@ -2,45 +2,48 @@ package chessNetwork;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Queue;
 
 class SendingThread extends Thread {
 
-    private Queue<String> sendQueue;
-    private int delayMilliSec;
     BufferedWriter bWriter;
+    private int delayMilliSec;
+    private boolean hasNews = false;
 
-    public SendingThread(BufferedWriter bWriter, int delayMilliSec) {
-        this.sendQueue = new LinkedList<String>();
+    public SendingThread(BufferedWriter bWriter, int delayMilliSec, String threadName) {
+        setName(threadName);
         this.bWriter = bWriter;
         this.delayMilliSec = delayMilliSec;
     }
 
-    public void prepareToSend(String message){
-        sendQueue.add(message);
+    public void prepareToSend(String message) {
+        try {
+            bWriter.write(message);
+            bWriter.newLine();
+            hasNews = true;
+        } catch (IOException ex) {
+            System.out.println("PREPARING TO SEND FROM " + getName() + " DID NOT GO WELL");
+        }
     }
 
     public void run() {
         String message = "";
 
-        while (!message.equals("ciao")) {
-            try {
-                while(sendQueue.size() > 0){
-                    message = sendQueue.poll();
-                    bWriter.write(message);
-                    bWriter.newLine();
+        try{
+            while(true){
+                if(hasNews){
                     bWriter.flush();
+                    hasNews = false;
                 }
-            } catch (IOException ex) {
-                ex.printStackTrace();
+
+                try {
+                    sleep(delayMilliSec);
+                } catch (InterruptedException ex) {
+                    System.out.println("SENDER INTERRUPTED");
+                    break;
+                }
             }
-            try {
-                sleep(delayMilliSec);
-            } catch (InterruptedException ex) {
-                System.out.println("SENDER INTERRUPTED");
-                break;
-            }
+        } catch(IOException ex){
+            ex.printStackTrace();
         }
         System.out.println("SENDER SAYS GOODBYE");
     }
