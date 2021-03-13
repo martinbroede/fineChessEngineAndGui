@@ -11,6 +11,11 @@ public class Move {
     public static final short PROMOTION_ROOK =/*        */0b0110000000000000;
     public static final short PROMOTION_QUEEN =/*       */0b0111000000000000;
 
+    /* codes for online games */
+    public static final short START_GAME = -1000;
+    public static final short OPPONENT_BLACK =  -1001;
+    public static final short OPPONENT_WHITE = -1002;
+
     private short information; //todo can be short right?
 
     public Move(byte from, byte to) {

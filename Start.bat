@@ -1,2 +1,2 @@
 java -jar fineChess.jar
-timeout /t 10
+timeout /t 3

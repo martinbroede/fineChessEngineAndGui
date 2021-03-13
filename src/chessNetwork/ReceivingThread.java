@@ -23,17 +23,16 @@ class ReceivingThread extends Thread {
 
         String message = "";
 
-        while ((message != null) && (!message.equals("ciao"))) {
+        while (!message.equals("ciao")) {
             try {
                 message = bReader.readLine();
-
-                System.out.println(message);
-
+                if(message == null) break;
                 String[] args = message.split(" ");
                 if (args.length >= 2) {
                     if (args[0].equals("MOVE")) {
-
                         moveQueue.add(new Move(Short.parseShort(args[1])));
+                    }else{
+                        System.out.println(message); //show chat messages
                     }
                 }
 

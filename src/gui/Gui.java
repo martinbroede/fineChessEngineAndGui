@@ -11,11 +11,9 @@ import java.awt.event.MouseEvent;
 
 public class Gui extends MainWindow {
 
-    private final String storagePath = "chessUserData/currentGame.txt";
-
     final boolean WHITE = Constants.WHITE; //for readability reasons
-
     final Network network;
+    private final String storagePath = "chessUserData/currentGame.txt";
     private Chess chess;
     private String moveString;
     private String moveStringSpecialMoves; //for promotion, castling, enPassant
@@ -48,7 +46,6 @@ public class Gui extends MainWindow {
             BoardUpdater boardUpdater = new BoardUpdater();
             boardUpdater.start();
         }
-
 
         /* add action listeners */
         itemNew.addActionListener(e -> {
@@ -84,11 +81,15 @@ public class Gui extends MainWindow {
 
         itemCastlingKingside.addActionListener(e -> {
             if (chess.getTurnColor() == WHITE) {
-                if (!chess.movePieceUser(new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING)))
+                Move nextMove = new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING);
+                if (!movePiece(nextMove))
                     System.err.println("CASTLING o-o ILLEGAL");
+
             } else { //BLACK
-                if (!chess.movePieceUser(new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING)))
+                Move nextMove = new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING);
+                if (!movePiece(nextMove))
                     System.err.println("CASTLING o-o ILLEGAL");
+
             }
 
             refreshFrameContent(-1); // -1 : don't want to paint legal moves.
@@ -96,33 +97,37 @@ public class Gui extends MainWindow {
 
         itemCastlingQueenside.addActionListener(e -> {
             if (chess.getTurnColor() == WHITE) {
-                if (!chess.movePieceUser(new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING)))
+                Move nextMove = new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING);
+                if (!movePiece(nextMove))
                     System.err.println("CASTLING o-o-o ILLEGAL");
+
             } else { //BLACK
-                if (!chess.movePieceUser(new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING)))
+                Move nextMove = new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING);
+                if (!movePiece(nextMove))
                     System.err.println("CASTLING o-o-o ILLEGAL");
+
             }
 
             refreshFrameContent(-1); // -1 : don't want to paint legal moves.
         });
 
         itemPromotionQueen.addActionListener(e -> {
-            chess.movePieceUser(new Move(moveStringSpecialMoves + "Q"));
+            movePiece(new Move(moveStringSpecialMoves + "Q"));
             refreshFrameContent(-1);
         });
 
         itemPromotionRook.addActionListener(e -> {
-            chess.movePieceUser(new Move(moveStringSpecialMoves + "R"));
+            movePiece(new Move(moveStringSpecialMoves + "R"));
             refreshFrameContent(-1);
         });
 
         itemPromotionKnight.addActionListener(e -> {
-            chess.movePieceUser(new Move(moveStringSpecialMoves + "N"));
+            movePiece(new Move(moveStringSpecialMoves + "N"));
             refreshFrameContent(-1);
         });
 
         itemPromotionBishop.addActionListener(e -> {
-            chess.movePieceUser(new Move(moveStringSpecialMoves + "B"));
+            movePiece(new Move(moveStringSpecialMoves + "B"));
             refreshFrameContent(-1);
         });
 
@@ -150,23 +155,15 @@ public class Gui extends MainWindow {
             refreshFrameContent(-1);
         });
 
-        itemStartClient.addActionListener(e -> network.createClient());
-        itemStartServer.addActionListener(e -> network.createServer());
-        itemSynchronize.addActionListener(e -> network.startMoveUpdater());
+        itemStartClient.addActionListener(e -> network.showClientIpDialog(frame.getLocation()));
+        itemStartServer.addActionListener(e -> network.showServerIpDialog(frame.getLocation()));
+        itemSynchronize.addActionListener(e -> network.startGame());
         itemNetworkDestroy.addActionListener(e -> network.safeDeleteServerOrClient());
 
         frame.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == 'C') {
-                    network.createClient();
-                } else if (e.getKeyChar() == 'D') {
-                    network.safeDeleteServerOrClient();
-                } else if (e.getKeyChar() == 'S') {
-                    network.createServer();
-                } else if (e.getKeyChar() == 'M') {
-                    network.startMoveUpdater();
-                }
+                if (e.getKeyChar() == 'H') System.out.println("HELLO.");
             }
 
             @Override
@@ -206,13 +203,20 @@ public class Gui extends MainWindow {
         });
     }
 
+    private boolean movePiece(Move move) {
+        if (chess.movePieceUser(move)) {
+            if (network.isActive()) network.send("MOVE " + move.getInformation());
+            return true;
+        } else return false;
+    }
+
     private void movePieceFromEvent(MouseEvent mouseEvent) {
 
         byte pos = Parser.coordFromEvent(mouseEvent,
                 appearanceSettings.getOffset(),
                 appearanceSettings.getSizeFactor());
 
-        if (moveString.equals("")) {
+        if (moveString.equals("")) { // no square chosen yet
             if (chess.pieceAtSquare(pos, chess.getTurnColor())) {
 
                 moveString += Parser.parse(pos) + " ";
@@ -221,27 +225,27 @@ public class Gui extends MainWindow {
         else if (!moveString.equals(Parser.parse(pos) + " ")) //avoids moves like A1->A1! :
             moveString += Parser.parse(pos) + " ";
 
-        if (moveString.length() > 5) {
+        if (moveString.length() > 5) { // "A1 A2 ": from A1 to A2
             Move nextMove = new Move(moveString);
 
             if (network.isActive()) { //todo remove
-                network.send("MOVE " + nextMove.getInformation() + ' ');
+                network.send("MOVE " + nextMove.getInformation());
             } //todo remove
 
 
-            if (!chess.movePieceUser(nextMove)) {
+            if (!movePiece(nextMove)) {
                 /* move illegal? try castling moves */
                 if (nextMove.isFrom(Parser.parse("E1")) && nextMove.getTo() == Parser.parse("G1")) {
-                    if (!chess.movePieceUser(new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING)))
+                    if (!movePiece(new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING)))
                         System.err.println("CASTLING o-o ILLEGAL");
                 } else if (nextMove.isFrom(Parser.parse("E1")) && nextMove.getTo() == Parser.parse("C1")) {
-                    if (!chess.movePieceUser(new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING)))
+                    if (!movePiece(new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING)))
                         System.err.println("CASTLING o-o-o ILLEGAL");
                 } else if (nextMove.isFrom(Parser.parse("E8")) && nextMove.getTo() == Parser.parse("G8")) {
-                    if (!chess.movePieceUser(new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING)))
+                    if (!movePiece(new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING)))
                         System.err.println("CASTLING o-o ILLEGAL");
                 } else if (nextMove.isFrom(Parser.parse("E8")) && nextMove.getTo() == Parser.parse("C8")) {
-                    if (!chess.movePieceUser(new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING)))
+                    if (!movePiece(new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING)))
                         System.err.println("CASTLING o-o-o ILLEGAL");
                 } else {
                     byte from = nextMove.getFrom();
@@ -268,7 +272,6 @@ public class Gui extends MainWindow {
                     System.err.println("MOVE ILLEGAL");
                 }
             }
-            /* moveStringSpecialMoves = moveString;*/
             moveString = "";
         }
         refreshFrameContent(pos);

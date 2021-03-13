@@ -3,17 +3,18 @@ package chessNetwork;
 import core.Chess;
 import core.Move;
 
+import java.awt.*;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class Network {
 
-    private Queue<Move> moveQueue;
+    private final Queue<Move> moveQueue;
     private ChessServer server;
     private ChessClient client;
     private boolean active = false;
-    private int delayMilliSec = 150;
-    private Chess chess;
+    private final int delayMilliSec = 100;
+    private final Chess chess;
     private MoveUpdater moveUpdater;
     private boolean adviseUpdate = false;
 
@@ -23,27 +24,31 @@ public class Network {
         moveQueue = new LinkedList<>();
     }
 
-    public void createServer() {
+    public static void main(String[] args) {
+        Chess chess = new Chess();
+        Network net = new Network(chess);
+        net.showClientIpDialog(new Point(100,100));
+    }
+
+    public void createServer(String configIpAndPort) {
 
         if ((server == null) && (client == null)) {
-            server = new ChessServer(delayMilliSec, moveQueue);
+            server = new ChessServer(configIpAndPort, delayMilliSec, moveQueue);
             server.start();
             active = true;
-
+            startMoveUpdater();
         } else {
-
             System.err.println("SERVER OR CLIENT ALREADY EXISTS");
         }
     }
 
-    public void createClient() {
+    public void createClient(String configIpAndPort) {
 
         if ((server == null) && (client == null)) {
-
-            client = new ChessClient(delayMilliSec, moveQueue); //todo adjust delay
+            client = new ChessClient(configIpAndPort, delayMilliSec, moveQueue); //todo adjust delay
             client.start();
             active = true;
-
+            startMoveUpdater();
         } else {
             System.err.println("SERVER OR CLIENT ALREADY EXISTS");
         }
@@ -53,11 +58,11 @@ public class Network {
         return active;
     }
 
-    public boolean updateAdvised(){
+    public boolean updateAdvised() {
         return adviseUpdate;
     }
 
-    public void reportUpdate(){
+    public void reportUpdate() {
         adviseUpdate = false;
     }
 
@@ -91,21 +96,54 @@ public class Network {
     public void startMoveUpdater() {
 
         if (moveUpdater == null) {
-
             moveQueue.clear();
             System.out.println("STARTED SYNC.");
             moveUpdater = new MoveUpdater();
             moveUpdater.start();
-
         } else if (!moveUpdater.isAlive()) {
-
             moveUpdater = new MoveUpdater();
             System.out.println("RESTARTED SYNC.");
             moveUpdater.start();
-
         } else {
 
             System.out.println("SYNC IS ALREADY ACTIVE.");
+        }
+    }
+
+    public void startGame(){
+        chess.newGame();
+        adviseUpdate = true;
+        send("LET'S START!");
+        send("MOVE " + Move.START_GAME);
+    }
+
+    public void showServerIpDialog(Point location) {
+        new ServerIpDialog(location);
+    }
+
+    public void showClientIpDialog(Point location) {
+        new ClientIpDialog(location);
+    }
+
+    class ServerIpDialog extends IpAndPortDialog {
+        public ServerIpDialog(Point location) {
+            super(location);
+            okButton.addActionListener(e -> {
+                String config = ipField.getText() + "/" + portField.getText();
+                createServer(config);
+                dialog.dispose();
+            });
+        }
+    }
+
+    class ClientIpDialog extends IpAndPortDialog {
+        public ClientIpDialog(Point location) {
+            super(location);
+            okButton.addActionListener(e -> {
+                String config = ipField.getText() + "/" + portField.getText();
+                createClient(config);
+                dialog.dispose();
+            });
         }
     }
 
@@ -118,9 +156,15 @@ public class Network {
                 try {
                     sleep(delayMilliSec);
                 } catch (InterruptedException ex) {
+                    ex.printStackTrace();
                 }
                 if (moveQueue.size() > 0) {
-                    chess.movePieceUser(moveQueue.poll());
+                    Move move = moveQueue.poll();
+                    if(move.getInformation()==Move.START_GAME){
+                        chess.newGame();
+                    }else {
+                        chess.movePieceUser(move);
+                    }
                     adviseUpdate = true;
                 }
             }

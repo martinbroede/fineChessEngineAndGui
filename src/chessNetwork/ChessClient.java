@@ -11,43 +11,39 @@ import java.util.Queue;
 
 public class ChessClient extends Thread {
 
+    private final int delayMilliSec;
+    Queue<Move> moveQueue;
     private String ip = "0.0.0.0";
     private int port = 3777;
-    private int delayMilliSec = 150;
     private Socket socket;
-    private BufferedReader bufferedReader;
-    private BufferedWriter bufferedWriter;
     private ReceivingThread receivingThread;
     private SendingThread sendingThread;
-    Queue<Move> moveQueue;
 
-    public ChessClient(int delayMilliSec,  Queue<Move> moveQueue) {
-        System.out.println("CLIENT CREATED. CLIENT IS LAZY.");
+    public ChessClient(String configIpAndPort, int delayMilliSec, Queue<Move> moveQueue) {
+
+        System.out.println("NEW CLIENT FOR " + configIpAndPort + " CLIENT NOT STARTED.");
+        String[] args = configIpAndPort.split("/");
+        if (args.length != 2) {
+            System.err.println("WRONG NUMBER OF ARGUMENTS FOR CLIENT");
+        } else {
+            ip = args[0];
+            port = Integer.parseInt(args[1]);
+        }
         this.delayMilliSec = delayMilliSec;
         this.moveQueue = moveQueue;
     }
 
     public static void main(String[] ar) {
-        ChessClient client = new ChessClient(150, new LinkedList<Move>());
 
+        ChessClient client = new ChessClient("192.168.178.27/3777", 150, new LinkedList<>());
         client.send("hello my friend"); //will cause error message
-
         client.start();
-
         try { // need some time to connect
             sleep(client.delayMilliSec);
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
-
         client.send("hello server!"); // will work if connection successful
-    }
-
-    public BufferedReader getBufferedReader() {
-        return bufferedReader;
-    }
-
-    public BufferedWriter getBufferedWriter() {
-        return bufferedWriter;
     }
 
     @Override
@@ -67,8 +63,8 @@ public class ChessClient extends Thread {
 
         try {
             socket = new Socket(ip, port);
-            bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             sendingThread = new SendingThread(bufferedWriter, delayMilliSec);
             receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, moveQueue);
             System.out.println("CONNECTED TO SERVER");
@@ -98,12 +94,12 @@ public class ChessClient extends Thread {
         }
 
         if ((sendingThread != null) || (receivingThread != null)) {
-            while (sendingThread.isAlive() && receivingThread.isAlive()) {
-                try {
+            try {
+                while (sendingThread.isAlive() && receivingThread.isAlive()) {
                     sleep(1000);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
                 }
+            } catch (InterruptedException ex){
+                ex.printStackTrace();
             }
             sendingThread.interrupt();
             receivingThread.interrupt();

@@ -1,7 +1,8 @@
-#V1.31
+#V1.35
 =most recent version
 
-V1.0 initial commit
-V1.1 add castling
-V1.2 add promotion
-V1.3 add simple network connection
+V1.0    initial commit
+V1.1    add castling
+V1.2    add promotion
+V1.3    add simple network connection
+V1.35   network works fine now with both IPv4 and IPv6 addresses

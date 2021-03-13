@@ -32,6 +32,10 @@ public class Chess extends MoveGenerator implements Serializable {
         newGame("K                                                              k", Castling.NO_RIGHTS);
     }
 
+    public void newGame(){
+        newGame(INIT_STANDARD_BOARD);
+    }
+
     public void newGame(String init, int castlingRights){
         newGame(init);
         hashGenerator.hashCastling(Castling.ALL_RIGHTS);

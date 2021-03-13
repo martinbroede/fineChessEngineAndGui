@@ -4,14 +4,17 @@ import com.sun.scenario.effect.impl.state.LinearConvolveKernel;
 import core.Move;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class ChessServer extends Thread {
 
-    ServerSocket serverSocket;
+    private ServerSocket serverSocket;
+    private InetAddress inetAddress;
     private int port = 3777;
     private int delayMilliSec = 150;
     private Socket socket;
@@ -21,14 +24,30 @@ public class ChessServer extends Thread {
     private SendingThread sendingThread;
     private Queue<Move> moveQueue;
 
-    public ChessServer(int delayMilliSec, Queue<Move> moveQueue) {
+    public ChessServer(String configIpAndPort, int delayMilliSec, Queue<Move> moveQueue) {
+
+        System.out.println("START SERVER FOR " + configIpAndPort);
+        String[] args = configIpAndPort.split("/");
+        String ipString = "";
+        if (args.length != 2) {
+            System.err.println("WRONG NUMBER OF ARGUMENTS FOR SERVER");
+        } else {
+            ipString = args[0];
+            port = Integer.parseInt(args[1]);
+        }
+        try {
+            inetAddress = InetAddress.getByName(ipString);
+        } catch (UnknownHostException ex) {
+            ex.printStackTrace();
+        }
+
         this.moveQueue = moveQueue;
         System.out.println("SERVER CREATED. SERVER IS LAZY.");
         this.delayMilliSec = delayMilliSec;
     }
 
     public static void main(String[] ar) {
-        ChessServer server = new ChessServer(1000, new LinkedList<Move>());
+        ChessServer server = new ChessServer("192.168.178.27/3777",2000, new LinkedList<Move>());
 
         server.start();
 
@@ -37,14 +56,6 @@ public class ChessServer extends Thread {
         } catch (Exception ex) {
         }
         server.send("SERVER SAYS HELLO TO THE WORLD!");
-    }
-
-    public BufferedReader getBufferedReader() {
-        return bufferedReader;
-    }
-
-    public BufferedWriter getBufferedWriter() {
-        return bufferedWriter;
     }
 
     public void send(String message) {
@@ -62,7 +73,7 @@ public class ChessServer extends Thread {
 
     public boolean prepareServerSocket(int portToUse) {
         try {
-            serverSocket = new ServerSocket(portToUse);
+            serverSocket = new ServerSocket(port, 2, inetAddress);
             System.out.println("SERVER SOCKET PROVIDED. LOCAL SOCKET ADRESS: " + serverSocket.getLocalSocketAddress());
             socket = serverSocket.accept();
             bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
