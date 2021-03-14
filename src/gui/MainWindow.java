@@ -57,6 +57,7 @@ public class MainWindow {
     final int SIZE_L = 70;
     final int SIZE_M = 45;
     final int SIZE_S = 30;
+    String VERSION = "VERSION UNKNOWN";
 
     public MainWindow(char[] boardArray) {
 
@@ -75,7 +76,8 @@ public class MainWindow {
             String title = "Schach ";
             FileInputStream stream = new FileInputStream("version.txt");
             Scanner scanner = new Scanner(stream);
-            title += scanner.nextLine();
+            VERSION = scanner.nextLine();
+            title += VERSION;
             frame.setTitle(title);
         }catch(FileNotFoundException ex){
             System.err.println("VERSION FILE NOT FOUND");

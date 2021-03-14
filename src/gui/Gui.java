@@ -1,6 +1,7 @@
 package gui;
 
 import chessNetwork.Network;
+import chessNetwork.TestReachability;
 import core.*;
 import fileHandling.ReadWrite;
 
@@ -15,23 +16,24 @@ import java.util.NoSuchElementException;
 public class Gui extends MainWindow {
 
     final boolean WHITE = Constants.WHITE; //for readability reasons
+    final boolean BLACK = Constants.BLACK;
     final Network network;
     private final String storagePath = "chessUserData/currentGame.txt";
     private final ChatDialog chatDialog;
     private Chess chess;
     private String moveString;
     private String moveStringSpecialMoves; //for promotion, castling, enPassant
+    private boolean allowUndoMoves = true;
+    private boolean userPlaysColor = WHITE;
+    private boolean userPlaysBothColors = true;
 
     public Gui(Chess chessGame) {
 
         super(chessGame.getBoard());
-
         chatDialog = new ChatDialog();
-
         this.chess = chessGame;
         moveString = "";
         moveStringSpecialMoves = "";
-
 
         network = new Network();
 
@@ -52,20 +54,18 @@ public class Gui extends MainWindow {
                             String[] args = message.split(" ");
                             if (args[0].equals("MOVE")) {
                                 Move nextMove = new Move(Short.parseShort(args[1]));
-                                if (nextMove.getInformation() == Move.START_GAME){
+                                if (nextMove.getInformation() == Move.START_GAME) {
                                     chess.newGame();
                                     showPopup("Spiel beginnen");
-                                }
-                                else chess.movePieceUser(nextMove);
-                            } else chatOutput.append("\t: "+ message + "\n");
-
+                                } else chess.movePieceUser(nextMove,!userPlaysColor,true); // todo should work with false
+                                refreshFrameContent(-1);
+                            } else chatOutput.append("\t: " + message + "\n");
 
                         } catch (NoSuchElementException ex) {
                             System.err.println("MESSAGE QUEUE IS EMPTY.");
                         }
-
-                        refreshFrameContent(-1);
                     }
+
                     try {
                         sleep(300);
                     } catch (InterruptedException ex) {
@@ -197,6 +197,27 @@ public class Gui extends MainWindow {
         });
         itemNetworkDestroy.addActionListener(e -> network.safeDeleteServerOrClient());
 
+        frame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == 'R')
+                    new TestReachability();
+                if (e.getKeyChar() == 'W')
+                    userPlaysColor = WHITE;
+                else if(e.getKeyChar() == 'B')
+                    userPlaysColor = BLACK;
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
+
         chatInput.addKeyListener(new KeyListener() {
 
             @Override
@@ -244,7 +265,7 @@ public class Gui extends MainWindow {
     }
 
     private boolean movePiece(Move move) {
-        if (chess.movePieceUser(move)) {
+        if (chess.movePieceUser(move, userPlaysColor, userPlaysBothColors)) {
             if (network.isActive()) network.sendToNet("MOVE " + move.getInformation());
             return true;
         } else return false;
@@ -319,7 +340,7 @@ public class Gui extends MainWindow {
         } else {
             short lastMove = chess.history.getLastMoveCoordinate();
             board.refreshChessBoard(true, true,
-                    chess.getUserLegalMoves().getMovesFrom((byte) pos), lastMove);
+                    chess.getUserLegalMoves(userPlaysColor, userPlaysBothColors).getMovesFrom((byte) pos), lastMove);
 
             labelCapturedWhitePieces.setText(" " + chess.whitePieces.getCapturedPiecesAsSymbols() + " ");
             labelCapturedBlackPieces.setText(" " + chess.blackPieces.getCapturedPiecesAsSymbols() + " ");

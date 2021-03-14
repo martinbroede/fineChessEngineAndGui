@@ -18,7 +18,7 @@ public class CoreTest {
             try
             {
                 Move nextMove = new Move(nextMoveInput);
-                if(!chess.movePieceUser(nextMove)) System.err.println("MOVE ILLEGAL");
+                if(!chess.movePieceUser(nextMove,Constants.WHITE,true)) System.err.println("MOVE ILLEGAL");
             }
             catch(InputMismatchException exception)
             {

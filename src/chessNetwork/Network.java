@@ -24,24 +24,18 @@ public class Network {
 
     public void createServer(String configIpAndPort) {
 
-        if ((server == null) && (client == null)) {
-            server = new ChessServer(configIpAndPort, delayMilliSec, messageQueue);
-            server.start();
-            active = true;
-        } else {
-            System.err.println("SERVER OR CLIENT ALREADY EXISTS");
-        }
+        if ((server != null) | (client != null)) safeDeleteServerOrClient();
+        server = new ChessServer(configIpAndPort, delayMilliSec, messageQueue);
+        server.start();
+        active = true;
     }
 
     public void createClient(String configIpAndPort) {
 
-        if ((server == null) && (client == null)) {
-            client = new ChessClient(configIpAndPort, delayMilliSec, messageQueue); //todo adjust delay
-            client.start();
-            active = true;
-        } else {
-            System.err.println("SERVER OR CLIENT ALREADY EXISTS");
-        }
+        if ((server != null) | (client != null)) safeDeleteServerOrClient();
+        client = new ChessClient(configIpAndPort, delayMilliSec, messageQueue); //todo adjust delay
+        client.start();
+        active = true;
     }
 
     public boolean isActive() {

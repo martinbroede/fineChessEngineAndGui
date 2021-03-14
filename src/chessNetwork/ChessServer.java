@@ -26,6 +26,7 @@ public class ChessServer extends Thread {
     public ChessServer(String configIpAndPort, int delayMilliSec, LinkedList<String> messageQueue) {
 
         setName("SERVER FOR " + configIpAndPort);
+
         System.out.println("START SERVER FOR " + configIpAndPort);
         String[] args = configIpAndPort.split("/");
         String ipString = "";
@@ -47,7 +48,10 @@ public class ChessServer extends Thread {
     }
 
     public static void main(String[] ar) {
-        ChessServer server = new ChessServer("192.168.178.27/3777", 2000, new LinkedList<>());
+
+
+        ChessServer server = new ChessServer("2003:c8:9706:2700:d933:17e8:c402:XXXX/50005",
+                2000, new LinkedList<>());
 
         server.start();
 
@@ -100,7 +104,10 @@ public class ChessServer extends Thread {
             serverSocket.close();
         } catch (IOException ex) {
             ex.printStackTrace();
+        } catch (NullPointerException ex){
+            System.err.println("SERVER SOCKET = NULL");
         }
+        serverSocket = null;
     }
 
     public void tryToHost() {

@@ -78,7 +78,13 @@ public class Chess extends MoveGenerator implements Serializable {
         blackPieces.updateThreats();
     }
 
-    public Moves getUserLegalMoves() {
+    public Moves getUserLegalMoves(boolean color, boolean userPlaysBothColors) {
+        if(userPlaysBothColors) return getUserLegalMoves();
+        else if(whiteToMove == color) return getUserLegalMoves();
+        else return new Moves();
+    }
+
+    private Moves getUserLegalMoves() {
 
         if (whiteToMove) {
 
@@ -132,10 +138,10 @@ public class Chess extends MoveGenerator implements Serializable {
     }
 
     /** checks if legal, if so move piece */
-    public boolean movePieceUser(Move move) {
+    public boolean movePieceUser(Move move, boolean userColor, boolean userPlaysBoth) {
         if (move.getInformation() < 0) System.err.println("MOVE INFO < 0. CAN'T PROCESS HERE.");
 
-        if (!getUserLegalMoves().contains(move)) return false;
+        if (!getUserLegalMoves(userColor,userPlaysBoth).contains(move)) return false;
 
         undoneMovesHistory.clear();
         movePiece(move);
