@@ -4,9 +4,6 @@ import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
 
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.FileInputStream;
@@ -31,7 +28,7 @@ public class MainWindow {
     final JMenuItem itemStartServer;
     final JMenuItem itemStartClient;
     final JMenuItem itemNetworkDestroy;
-    final JMenuItem itemSynchronize;
+    final JMenuItem itemNewNetworkGame;
     final JMenuItem itemShowChat;
 
     final JMenuItem itemNewGame;
@@ -42,6 +39,8 @@ public class MainWindow {
     final JMenuItem itemSize1;
     final JMenuItem itemSize2;
     final JMenuItem itemSize3;
+    final JMenuItem itemEnlarge;
+    final JMenuItem itemDiminish;
     final JMenuItem itemChangePieceStyle;
 
     final JMenuItem itemCastlingQueenside;
@@ -57,8 +56,10 @@ public class MainWindow {
     final JMenuItem itemRedo;
 
     final JMenuItem itemRotateBoard;
+
     final JMenuItem itemAssignOpponentBlack;
     final JMenuItem itemAssignOpponentWhite;
+    final JMenuItem itemResign;
 
     final ColorScheme colorScheme;
     final int SIZE_L = 70;
@@ -113,7 +114,7 @@ public class MainWindow {
 
         itemStartServer = new JMenuItem("Spiel erstellen");
         itemStartClient = new JMenuItem("Spiel beitreten");
-        itemSynchronize = new JMenuItem("Spiel beginnen");
+        itemNewNetworkGame = new JMenuItem("Neues Spiel");
         itemNetworkDestroy = new JMenuItem("Verbindung trennen");
         itemShowChat = new JMenuItem("Chat anzeigen");
 
@@ -125,6 +126,8 @@ public class MainWindow {
         itemSize1 = new JMenuItem("groß");
         itemSize2 = new JMenuItem("mittel");
         itemSize3 = new JMenuItem("klein");
+        itemEnlarge = new JMenuItem("+ + +");
+        itemDiminish = new JMenuItem( "- - -");
         itemChangePieceStyle = new JMenuItem("Schachfiguren");
 
         itemCastlingKingside = new JMenuItem("kurz");
@@ -146,6 +149,7 @@ public class MainWindow {
 
         itemAssignOpponentBlack = new JMenuItem("Ich spiele WEISS");
         itemAssignOpponentWhite = new JMenuItem("Ich spiele SCHWARZ");
+        itemResign = new JMenuItem("AUFGEBEN");
 
         itemRotateBoard = new JMenuItem("drehen");
 
@@ -172,6 +176,9 @@ public class MainWindow {
         sizeMenu.add(itemSize1);
         sizeMenu.add(itemSize2);
         sizeMenu.add(itemSize3);
+        sizeMenu.addSeparator();
+        sizeMenu.add(itemEnlarge);
+        sizeMenu.add(itemDiminish);
 
         styleMenu.add(itemColorStandard);
         styleMenu.add(itemColorPlain);
@@ -186,16 +193,18 @@ public class MainWindow {
 
         networkMenu.add(itemStartServer);
         networkMenu.add(itemStartClient);
-        networkMenu.add(itemSynchronize);
+        networkMenu.addSeparator();
+        networkMenu.add(itemNewNetworkGame);
+        networkMenu.add(itemAssignOpponentBlack);
+        networkMenu.add(itemAssignOpponentWhite);
+        networkMenu.add(itemResign);
+        networkMenu.addSeparator();
         networkMenu.addSeparator();
         networkMenu.add(itemNetworkDestroy);
         networkMenu.addSeparator();
         networkMenu.addSeparator();
-        networkMenu.add(itemAssignOpponentBlack);
-        networkMenu.add(itemAssignOpponentWhite);
-        networkMenu.addSeparator();
-        networkMenu.addSeparator();
         networkMenu.add(itemShowChat);
+        networkMenu.addSeparator();
 
         castlingMenu.add(itemCastlingKingside);
         castlingMenu.add(itemCastlingQueenside);
@@ -242,6 +251,14 @@ public class MainWindow {
         });
         itemSize3.addActionListener(e -> {
             adjustBoardAndFrameSize(SIZE_S);
+            board.repaint();
+        });
+        itemEnlarge.addActionListener(e -> {
+            adjustBoardAndFrameSize(appearanceSettings.getSizeFactor()*6/5);
+            board.repaint();
+        });
+        itemDiminish.addActionListener(e -> {
+            adjustBoardAndFrameSize(appearanceSettings.getSizeFactor()*5/6);
             board.repaint();
         });
 

@@ -38,7 +38,8 @@ public class IpAndPortDialog {
         dialog.setSize(370, 100);
         dialog.setLayout(new FlowLayout());
         JLabel ipLabel = new JLabel(" ip - Adresse: ");
-        ipField = new JTextField("0.0.0.0                                        ");
+        ipField = new JTextField("2003:00c8:9706:2700:d933:XXXX:c402:2f3c");
+        /*ipField = new JTextField("0.0.0.0                                        ");*/
         JLabel portLabel = new JLabel(" Port: ");
         portField = new JTextField(" 50005 ");
         okButton = new JButton("          OK          ");

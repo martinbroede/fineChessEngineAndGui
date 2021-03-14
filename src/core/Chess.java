@@ -137,12 +137,21 @@ public class Chess extends MoveGenerator implements Serializable {
         }
     }
 
-    /** checks if legal, if so move piece */
-    public boolean movePieceUser(Move move, boolean userColor, boolean userPlaysBoth) {
-        if (move.getInformation() < 0) System.err.println("MOVE INFO < 0. CAN'T PROCESS HERE.");
+    /** check if legal, if so move piece */
+    public boolean userMove(Move move, boolean userColor, boolean userPlaysBoth) {
 
-        if (!getUserLegalMoves(userColor,userPlaysBoth).contains(move)) return false;
-
+        if (move.getInformation() < 0) {
+            if (move.getInformation() == Move.RESIGN) {
+                if (whiteToMove) {
+                    gameStatus.setStatusCode(GameStatus.WHITE_RESIGNED);
+                }
+                else {
+                    gameStatus.setStatusCode(GameStatus.BLACK_RESIGNED);
+                }
+                return true;
+            }
+        }
+        else if (!getUserLegalMoves(userColor,userPlaysBoth).contains(move)) return false;
         undoneMovesHistory.clear();
         movePiece(move);
         return true;

@@ -1,10 +1,11 @@
 package core;
 
 public class GameStatus {
-
+    public static final int WHITE_RESIGNED = -2;
     public static final int BLACK_CHECKMATED = -1;
     public static final int UNDECIDED = 0;
     public static final int WHITE_CHECKMATED = 1;
+    public static final int BLACK_RESIGNED = 2;
     public static final int DRAW_STALEMATE = 10;
     public static final int DRAW_ACCEPTED = 11; //    draw due to an accepted offer
     public static final int DRAW_MOVES = 12; //       draw due to fifty moves rule
@@ -65,6 +66,10 @@ public class GameStatus {
                 return "Remis durch Überschreitung der 50-Züge-Regel";
             case DRAW_REPETITION:
                 return "Remis durch dreifache Stellungswiederholung";
+            case BLACK_RESIGNED:
+                return "Weiß gewinnt durch Aufgabe";
+            case WHITE_RESIGNED:
+                return "Schwarz gewinnt durch Aufgabe";
             default:
                 System.err.println("STATUS CODE NOT KNOWN");
                 return "NOT KNOWN";

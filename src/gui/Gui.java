@@ -25,7 +25,7 @@ public class Gui extends MainWindow {
     private String moveStringSpecialMoves; //for promotion, castling, enPassant
     private boolean allowUndoMoves = true;
     private boolean userPlaysColor = WHITE;
-    private boolean userPlaysBothColors = true;
+    private boolean userPlaysBothColors = false;
 
     public Gui(Chess chessGame) {
 
@@ -34,10 +34,9 @@ public class Gui extends MainWindow {
         this.chess = chessGame;
         moveString = "";
         moveStringSpecialMoves = "";
-
         network = new Network(VERSION);
 
-        class BoardUpdater extends Thread {
+        class NetworkUpdater extends Thread {
 
             @Override
             public void run() {
@@ -54,21 +53,26 @@ public class Gui extends MainWindow {
                             String[] args = message.split(" ");
                             if (args[0].equals("MOVE")) {
                                 Move nextMove = new Move(Short.parseShort(args[1]));
-                                if (nextMove.getInformation() == Move.START_GAME) {
-                                    chess.newGame();
-                                    showPopup("Spiel beginnen");
-                                } else if (nextMove.getInformation() == Move.OPPONENT_BLACK) {
-                                    userPlaysColor = BLACK;
-                                    board.setWhitePlayerNorth();
-                                    userPlaysBothColors = false;
-                                    showPopup("Du spielst SCHWARZ");
-                                } else if (nextMove.getInformation() == Move.OPPONENT_WHITE) {
-                                    userPlaysColor = WHITE;
-                                    board.setWhitePlayerSouth();
-                                    userPlaysBothColors = false;
-                                    showPopup("Du spielst WEISS");
-                                } else
-                                    chess.movePieceUser(nextMove, !userPlaysColor, true); // todo should work with false
+                                switch(nextMove.getInformation()) {
+                                    case Move.START_GAME:
+                                        chess.newGame();
+                                        showPopup("Spiel beginnen");
+                                        break;
+                                    case Move.OPPONENT_BLACK:
+                                        userPlaysColor = BLACK;
+                                        board.setWhitePlayerNorth();
+                                        userPlaysBothColors = false;
+                                        showPopup("Du spielst SCHWARZ");
+                                        break;
+                                    case Move.OPPONENT_WHITE:
+                                        userPlaysColor = WHITE;
+                                        board.setWhitePlayerSouth();
+                                        userPlaysBothColors = false;
+                                        showPopup("Du spielst WEISS");
+                                        break;
+                                    default:
+                                        chess.userMove(nextMove, !userPlaysColor, false); // todo should work with false
+                                }
                                 refreshFrameContent(-1);
                             }else if(args[0].equals("NOTE")) {
                                 showPopup(message.replace("NOTE ",""));
@@ -90,8 +94,8 @@ public class Gui extends MainWindow {
                 }
             }
         }
-        BoardUpdater boardUpdater = new BoardUpdater();
-        boardUpdater.start();
+        NetworkUpdater networkUpdater = new NetworkUpdater();
+        networkUpdater.start();
 
 
         /* add action listeners */
@@ -207,7 +211,7 @@ public class Gui extends MainWindow {
 
         itemStartClient.addActionListener(e -> network.showClientIpDialog(frame.getLocation()));
         itemStartServer.addActionListener(e -> network.showServerIpDialog(frame.getLocation()));
-        itemSynchronize.addActionListener(e -> {
+        itemNewNetworkGame.addActionListener(e -> {
             chess.newGame();
             network.startGame();
             showPopup("Spiel beginnen");
@@ -243,6 +247,7 @@ public class Gui extends MainWindow {
         itemAssignOpponentBlack.addActionListener(e -> {
             network.sendToNet("MOVE " + Move.OPPONENT_BLACK);
             userPlaysColor = WHITE;
+            userPlaysBothColors = false;
             board.setWhitePlayerSouth();
             refreshFrameContent(-1);
             showPopup("Du spielst WEISS");
@@ -251,9 +256,20 @@ public class Gui extends MainWindow {
         itemAssignOpponentWhite.addActionListener(e -> {
             network.sendToNet("MOVE " + Move.OPPONENT_WHITE);
             userPlaysColor = BLACK;
+            userPlaysBothColors = false;
             board.setWhitePlayerNorth();
             refreshFrameContent(-1);
             showPopup("Du spielst SCHWARZ");
+        });
+
+        itemResign.addActionListener(e -> {
+            if(chess.getTurnColor() == userPlaysColor) {
+                network.sendToNet("MOVE " + Move.RESIGN);
+                chess.userMove(new Move(Move.RESIGN), userPlaysColor, userPlaysBothColors);
+                showPopup(chess.gameStatus.getStatusNotice());
+            }else{
+                showPopup("Gib auf, wenn du am Zug bist.");
+            }
         });
 
         chatInput.addKeyListener(new KeyListener() {
@@ -303,7 +319,7 @@ public class Gui extends MainWindow {
     }
 
     private boolean movePiece(Move move) {
-        if (chess.movePieceUser(move, userPlaysColor, userPlaysBothColors)) {
+        if (chess.userMove(move, userPlaysColor, userPlaysBothColors)) {
             if (network.isActive()) network.sendToNet("MOVE " + move.getInformation());
             return true;
         } else return false;
