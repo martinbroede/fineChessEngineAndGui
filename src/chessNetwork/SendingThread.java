@@ -11,13 +11,16 @@ class SendingThread extends Thread {
     BufferedWriter bWriter;
     private boolean hasNews = false;
 
-    public SendingThread(BufferedWriter bWriter, int delayMilliSec, String threadName) {
+    public SendingThread(int delayMilliSec, String threadName) {
         setName(threadName);
         this.bWriter = bWriter;
         sendingQueue = new LinkedList<>();
         this.delayMilliSec = delayMilliSec;
     }
 
+    public void setWriter(BufferedWriter bWriter){
+        this.bWriter = bWriter;
+    }
     public void prepareToSend(String message) {
 
         sendingQueue.add(message);
@@ -33,9 +36,9 @@ class SendingThread extends Thread {
             } catch (IOException ex) {
                 System.out.println("SENDING FROM " + getName() + " DID NOT GO WELL");
             }
+        }else{
+            System.out.println(getName() + " NOT READY TO SEND" + message);
         }
-
-        for (String line : sendingQueue) System.out.println("#" + line + "#"); //todo remove
         sendingQueue.removeAll(successfullySent);
     }
 

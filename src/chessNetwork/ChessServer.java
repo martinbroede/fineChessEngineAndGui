@@ -45,6 +45,7 @@ public class ChessServer extends Thread {
         this.messageQueue = messageQueue;
         this.delayMilliSec = delayMilliSec;
         System.out.println("SERVER CREATED. SERVER IS LAZY.");
+        sendingThread = new SendingThread(delayMilliSec, "SERVER SENDER");
     }
 
     public static void main(String[] ar) {
@@ -63,10 +64,7 @@ public class ChessServer extends Thread {
     }
 
     public void send(String message) {
-        if (sendingThread != null) sendingThread.prepareToSend(message);
-        else {
-            System.err.println("SERVER NOT READY TO SEND: " + message);
-        }
+        sendingThread.prepareToSend(message);
     }
 
     @Override
@@ -83,9 +81,10 @@ public class ChessServer extends Thread {
             new DialogMessage("Server: Verbinden erfolgreich");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            sendingThread = new SendingThread(bufferedWriter, delayMilliSec, "SERVER SENDER");
+            sendingThread.setWriter(bufferedWriter);
             receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, messageQueue, "SERVER RECEIVER");
             System.out.println("SERVER READY");
+            send(""); //to send messages in queue
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -118,14 +117,18 @@ public class ChessServer extends Thread {
         }
 
         if ((sendingThread != null) || (receivingThread != null)) {
-            while (sendingThread.isAlive() && receivingThread.isAlive()) {
-                try {
-                    sleep(delayMilliSec);
-                } catch (InterruptedException ex) {
+            try {
+                while (sendingThread.isAlive() && receivingThread.isAlive()) {
+                    try {
+                        sleep(delayMilliSec);
+                    } catch (InterruptedException ex) {
+                    }
                 }
+                sendingThread.interrupt(); //close both if one thread is dead.
+                receivingThread.interrupt();
+            } catch(NullPointerException ex){
+                System.err.println("SENDER/REVEIVER ALREADY DEAD");
             }
-            sendingThread.interrupt(); //close both if one thread is dead.
-            receivingThread.interrupt();
         }
 
         if (socket != null) {

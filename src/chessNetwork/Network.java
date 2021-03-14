@@ -30,6 +30,7 @@ public class Network {
         server = new ChessServer(configIpAndPort, delayMilliSec, messageQueue);
         server.start();
         active = true;
+        sendToNet(CHESS_VERSION);
     }
 
     public void createClient(String configIpAndPort) {
@@ -38,6 +39,7 @@ public class Network {
         client = new ChessClient(configIpAndPort, delayMilliSec, messageQueue);
         client.start();
         active = true;
+        sendToNet(CHESS_VERSION);
     }
 
     public boolean isActive() {
@@ -50,7 +52,7 @@ public class Network {
             client.send(message);
         } else if (server != null) {
             server.send(message);
-        } else System.err.println("NETWORK IS NOT ACTIVE.");
+        } else System.err.println("NETWORK IS NOT ACTIVE");
     }
 
     public void safeDeleteServerOrClient() {

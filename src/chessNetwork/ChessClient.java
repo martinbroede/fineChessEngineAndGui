@@ -34,6 +34,7 @@ public class ChessClient extends Thread {
         }
         this.delayMilliSec = delayMilliSec;
         this.messageQueue = messageQueue;
+        sendingThread = new SendingThread(delayMilliSec,"CLIENT SENDER");
     }
 
     public static void main(String[] ar) {
@@ -56,10 +57,7 @@ public class ChessClient extends Thread {
     }
 
     public void send(String message) {
-        if (sendingThread != null) sendingThread.prepareToSend(message);
-        else {
-            System.err.println("CLIENT NOT READY TO SEND: " + message);
-        }
+        sendingThread.prepareToSend(message);
     }
 
     public boolean prepareSocket(String ip, int port) {
@@ -68,10 +66,11 @@ public class ChessClient extends Thread {
             socket = new Socket(ip, port);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            sendingThread = new SendingThread(bufferedWriter, delayMilliSec,"CLIENT SENDER");
+            sendingThread.setWriter(bufferedWriter);
             receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, messageQueue,"CLIENT RECEIVER");
             System.out.println("CONNECTED TO SERVER");
             new DialogMessage("Erfolgreich mit Server verbunden.");
+            send(""); //to send messages in queue
             return true;
         } catch (UnknownHostException ex) {
             System.err.println("DON'T KNOW HO(R)ST: TRY AGAIN.");
@@ -107,8 +106,12 @@ public class ChessClient extends Thread {
             } catch (InterruptedException ex){
                 ex.printStackTrace();
             }
-            sendingThread.interrupt();
-            receivingThread.interrupt();
+            try {
+                sendingThread.interrupt();
+                receivingThread.interrupt();
+            } catch(NullPointerException ex){
+                System.err.println("SENDER/RECEIVER ALREADY DEAD");
+            }
         }
 
         if (socket != null) {

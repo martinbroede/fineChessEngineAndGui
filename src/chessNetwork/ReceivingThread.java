@@ -30,7 +30,7 @@ class ReceivingThread extends Thread {
 
                 message = bReader.readLine();
                 if(message == null) break;
-                else messageQueue.add(message);
+                else if(!message.equals("")) messageQueue.add(message);
 
                 try {
                     sleep(delayMilliSec);
