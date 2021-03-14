@@ -37,7 +37,7 @@ public class TestReachability {
     class ReachableDialog extends IpAndPortDialog {
         public ReachableDialog() {
             okButton.addActionListener(e -> {
-                reachable(ipField.getText(), Integer.parseInt(portField.getText()));
+                reachable(getIp(),Integer.parseInt(getPort()));
                 dialog.dispose();
             });
         }

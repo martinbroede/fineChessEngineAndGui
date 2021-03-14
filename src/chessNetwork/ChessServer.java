@@ -43,14 +43,14 @@ public class ChessServer extends Thread {
         }
 
         this.messageQueue = messageQueue;
-        System.out.println("SERVER CREATED. SERVER IS LAZY.");
         this.delayMilliSec = delayMilliSec;
+        System.out.println("SERVER CREATED. SERVER IS LAZY.");
     }
 
     public static void main(String[] ar) {
 
 
-        ChessServer server = new ChessServer("2003:c8:9706:2700:d933:17e8:c402:XXXX/50005",
+        ChessServer server = new ChessServer("2003:c8:9706:2700:d933:17e8:c402:0000/50005",
                 2000, new LinkedList<>());
 
         server.start();

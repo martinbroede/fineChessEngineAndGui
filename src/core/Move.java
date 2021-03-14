@@ -11,10 +11,12 @@ public class Move {
     public static final short PROMOTION_ROOK =/*        */0b0110000000000000;
     public static final short PROMOTION_QUEEN =/*       */0b0111000000000000;
 
-    /* codes for online games */
+    /* negative code values reserved for for online games: */
     public static final short START_GAME = -1000;
     public static final short OPPONENT_BLACK =  -1001;
     public static final short OPPONENT_WHITE = -1002;
+    public static final short OFFER_DRAW = -1010;
+    public static final short RESIGN = -1011;
 
     private short information; //todo can be short right?
 

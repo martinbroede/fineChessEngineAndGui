@@ -4,6 +4,9 @@ import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.Caret;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.FileInputStream;
@@ -31,7 +34,7 @@ public class MainWindow {
     final JMenuItem itemSynchronize;
     final JMenuItem itemShowChat;
 
-    final JMenuItem itemNew;
+    final JMenuItem itemNewGame;
     final JMenuItem itemStore;
     final JMenuItem itemRestore;
     final JMenuItem itemBegin;
@@ -52,6 +55,10 @@ public class MainWindow {
 
     final JMenuItem itemUndo;
     final JMenuItem itemRedo;
+
+    final JMenuItem itemRotateBoard;
+    final JMenuItem itemAssignOpponentBlack;
+    final JMenuItem itemAssignOpponentWhite;
 
     final ColorScheme colorScheme;
     final int SIZE_L = 70;
@@ -110,7 +117,7 @@ public class MainWindow {
         itemNetworkDestroy = new JMenuItem("Verbindung trennen");
         itemShowChat = new JMenuItem("Chat anzeigen");
 
-        itemNew = new JMenuItem("Neu");
+        itemNewGame = new JMenuItem("Neu");
         itemStore = new JMenuItem("Speichern");
         itemRestore = new JMenuItem("Wiederherstellen");
         itemBegin = new JMenuItem("Siel starten");
@@ -137,6 +144,11 @@ public class MainWindow {
         itemUndo.setAccelerator(ctrlZ);
         itemRedo.setAccelerator(ctrlR);
 
+        itemAssignOpponentBlack = new JMenuItem("Ich spiele WEISS");
+        itemAssignOpponentWhite = new JMenuItem("Ich spiele SCHWARZ");
+
+        itemRotateBoard = new JMenuItem("drehen");
+
         JMenuItem itemColorStandard = new JMenuItem("standard");
         JMenuItem itemColorPlain = new JMenuItem("schlicht");
         JMenuItem itemColorDark = new JMenuItem("dunkel");
@@ -147,10 +159,12 @@ public class MainWindow {
         JMenu moveMenu = new JMenu("Zug...");
         JMenu castlingMenu = new JMenu("Rochade...");
         JMenu networkMenu =new JMenu("Netzwerk...");
+        JMenu boardMenu = new JMenu("Brett..");
+
         menuPromotion = new JPopupMenu();
         menuPromotion.setFont(promotionItemFont);
 
-        mainMenu.add(itemNew);
+        mainMenu.add(itemNewGame);
         mainMenu.add(itemStore);
         mainMenu.add(itemRestore);
         mainMenu.add(itemBegin);
@@ -177,10 +191,16 @@ public class MainWindow {
         networkMenu.add(itemNetworkDestroy);
         networkMenu.addSeparator();
         networkMenu.addSeparator();
+        networkMenu.add(itemAssignOpponentBlack);
+        networkMenu.add(itemAssignOpponentWhite);
+        networkMenu.addSeparator();
+        networkMenu.addSeparator();
         networkMenu.add(itemShowChat);
 
         castlingMenu.add(itemCastlingKingside);
         castlingMenu.add(itemCastlingQueenside);
+
+        boardMenu.add(itemRotateBoard);
 
         chatInput = new JTextField();
         chatOutput = new JTextArea();
@@ -193,6 +213,7 @@ public class MainWindow {
         menuBar = new JMenuBar();
         menuBar.add(mainMenu);
         menuBar.add(moveMenu);
+        menuBar.add(boardMenu);
         menuBar.add(sizeMenu);
         menuBar.add(styleMenu);
         menuBar.add(networkMenu);
@@ -239,6 +260,10 @@ public class MainWindow {
             setStyleSettings();
             board.repaint();
         });
+
+        itemRestore.setEnabled(false);
+        itemStore.setEnabled(false);
+        itemBegin.setEnabled(false);
     }
 
     private void adjustBoardAndFrameSize(int size_factor) {
@@ -321,8 +346,8 @@ public class MainWindow {
         @Override
         public void windowClosing(WindowEvent e) {
             System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY.");
-            e.getWindow().dispose(); //close window
-            System.exit(0); //close virtual machine.
+            e.getWindow().dispose();
+            System.exit(0);
         }
     }
 }

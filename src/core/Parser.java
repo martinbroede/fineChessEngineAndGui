@@ -93,13 +93,6 @@ public final class Parser {
         return outp;
     }
 
-    public static byte coordFromEvent(MouseEvent e, int offset, int size_factor) {
-
-        int x = (e.getX() - offset) / size_factor;
-        int y = 7 - (e.getY() - offset) / size_factor;
-        return parse(x, y);
-    }
-
     public static char getFileName(int i) {
         return (char) ((int) 'A' + i);
     }

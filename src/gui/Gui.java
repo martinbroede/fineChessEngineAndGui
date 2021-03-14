@@ -35,7 +35,7 @@ public class Gui extends MainWindow {
         moveString = "";
         moveStringSpecialMoves = "";
 
-        network = new Network();
+        network = new Network(VERSION);
 
         class BoardUpdater extends Thread {
 
@@ -46,7 +46,7 @@ public class Gui extends MainWindow {
                 while (true) {
 
                     if (network.messageQueue.size() > 0) {
-                        String message = "";
+                        String message;
                         try {
                             message = network.messageQueue.getFirst();
                             network.messageQueue.removeFirst();
@@ -57,9 +57,25 @@ public class Gui extends MainWindow {
                                 if (nextMove.getInformation() == Move.START_GAME) {
                                     chess.newGame();
                                     showPopup("Spiel beginnen");
-                                } else chess.movePieceUser(nextMove,!userPlaysColor,true); // todo should work with false
+                                } else if (nextMove.getInformation() == Move.OPPONENT_BLACK) {
+                                    userPlaysColor = BLACK;
+                                    board.setWhitePlayerNorth();
+                                    userPlaysBothColors = false;
+                                    showPopup("Du spielst SCHWARZ");
+                                } else if (nextMove.getInformation() == Move.OPPONENT_WHITE) {
+                                    userPlaysColor = WHITE;
+                                    board.setWhitePlayerSouth();
+                                    userPlaysBothColors = false;
+                                    showPopup("Du spielst WEISS");
+                                } else
+                                    chess.movePieceUser(nextMove, !userPlaysColor, true); // todo should work with false
                                 refreshFrameContent(-1);
-                            } else chatOutput.append("\t: " + message + "\n");
+                            }else if(args[0].equals("NOTE")) {
+                                showPopup(message.replace("NOTE ",""));
+                            }else if(args[0].equals("ERROR")){
+                                new DialogMessage(message.replace("ERROR ",""));
+                            }
+                            else chatOutput.append("\t: " + message + "\n");
 
                         } catch (NoSuchElementException ex) {
                             System.err.println("MESSAGE QUEUE IS EMPTY.");
@@ -79,9 +95,10 @@ public class Gui extends MainWindow {
 
 
         /* add action listeners */
-        itemNew.addActionListener(e -> {
+        itemNewGame.addActionListener(e -> {
             System.out.println("NEW GAME!");
             chess.newGame(chess.INIT_STANDARD_BOARD);
+            userPlaysBothColors = true;
             refreshFrameContent(-1);
             resetMoveString();
             showPopup("Spiel beginnen");
@@ -197,6 +214,11 @@ public class Gui extends MainWindow {
         });
         itemNetworkDestroy.addActionListener(e -> network.safeDeleteServerOrClient());
 
+        itemRotateBoard.addActionListener(e -> {
+            board.toggleBoardOrientation();
+            refreshFrameContent(-1);
+        });
+
         frame.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -204,7 +226,7 @@ public class Gui extends MainWindow {
                     new TestReachability();
                 if (e.getKeyChar() == 'W')
                     userPlaysColor = WHITE;
-                else if(e.getKeyChar() == 'B')
+                else if (e.getKeyChar() == 'B')
                     userPlaysColor = BLACK;
             }
 
@@ -216,6 +238,22 @@ public class Gui extends MainWindow {
             public void keyReleased(KeyEvent e) {
 
             }
+        });
+
+        itemAssignOpponentBlack.addActionListener(e -> {
+            network.sendToNet("MOVE " + Move.OPPONENT_BLACK);
+            userPlaysColor = WHITE;
+            board.setWhitePlayerSouth();
+            refreshFrameContent(-1);
+            showPopup("Du spielst WEISS");
+        });
+
+        itemAssignOpponentWhite.addActionListener(e -> {
+            network.sendToNet("MOVE " + Move.OPPONENT_WHITE);
+            userPlaysColor = BLACK;
+            board.setWhitePlayerNorth();
+            refreshFrameContent(-1);
+            showPopup("Du spielst SCHWARZ");
         });
 
         chatInput.addKeyListener(new KeyListener() {
@@ -273,7 +311,7 @@ public class Gui extends MainWindow {
 
     private void movePieceFromEvent(MouseEvent mouseEvent) {
 
-        byte pos = Parser.coordFromEvent(mouseEvent,
+        byte pos = board.coordFromEvent(mouseEvent,
                 appearanceSettings.getOffset(),
                 appearanceSettings.getSizeFactor());
 

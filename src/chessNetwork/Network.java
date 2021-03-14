@@ -7,18 +7,20 @@ import java.util.LinkedList;
 
 public class Network {
 
-    public final LinkedList<String> messageQueue;
-    private final int delayMilliSec = 100;
+    public final LinkedList<String> messageQueue = new LinkedList<>();
+    private final int delayMilliSec = 100; // todo find reasonable value...
     private ChessServer server;
     private ChessClient client;
-    private boolean active = false;
+    private boolean active = false; //
+    private boolean connectionSuccessful = false;
+    private String CHESS_VERSION;
 
-    public Network() {
-        messageQueue = new LinkedList<>();
+    public Network(String version) {
+        CHESS_VERSION = version;
     }
 
     public static void main(String[] args) {
-        Network net = new Network();
+        Network net = new Network("V1.0");
         net.showClientIpDialog(new Point(100, 100));
     }
 
@@ -33,7 +35,7 @@ public class Network {
     public void createClient(String configIpAndPort) {
 
         if ((server != null) | (client != null)) safeDeleteServerOrClient();
-        client = new ChessClient(configIpAndPort, delayMilliSec, messageQueue); //todo adjust delay
+        client = new ChessClient(configIpAndPort, delayMilliSec, messageQueue);
         client.start();
         active = true;
     }
@@ -82,8 +84,10 @@ public class Network {
     class ServerIpDialog extends IpAndPortDialog {
         public ServerIpDialog(Point location) {
             super(location);
+            dialog.setTitle("IP Konfiguration Server");
             okButton.addActionListener(e -> {
-                String config = ipField.getText() + "/" + portField.getText();
+
+                String config = getIp() + "/" + getPort();
                 createServer(config);
                 dialog.dispose();
             });
@@ -93,8 +97,9 @@ public class Network {
     class ClientIpDialog extends IpAndPortDialog {
         public ClientIpDialog(Point location) {
             super(location);
+            dialog.setTitle("IP Konfiguration Client");
             okButton.addActionListener(e -> {
-                String config = ipField.getText() + "/" + portField.getText();
+                String config = getIp() + "/" + getPort();
                 createClient(config);
                 dialog.dispose();
             });

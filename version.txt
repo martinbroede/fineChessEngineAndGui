@@ -1,4 +1,4 @@
-#V1.4
+#V1.41
 (most recent version)
 
 V1.0    initial commit
@@ -8,3 +8,4 @@ V1.3    add simple network connection
 V1.35   network for both IPv4 and IPv6 addresses
 V1.36   bugfix promotion and castling in online games
 V1.4    add user chat
+V1.41   add board rotation. add color choice -> you can define who plays white in online games
