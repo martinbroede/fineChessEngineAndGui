@@ -88,11 +88,16 @@ public class Network {
             super(location);
             dialog.setTitle("IP Konfiguration Server");
             okButton.addActionListener(e -> {
+                okAction();
 
-                String config = getIp() + "/" + getPort();
-                createServer(config);
-                dialog.dispose();
             });
+        }
+        
+        @Override
+        public void okAction(){
+            String config = getIp() + "/" + getPort();
+            createServer(config);
+            dialog.dispose();
         }
     }
 
@@ -101,10 +106,15 @@ public class Network {
             super(location);
             dialog.setTitle("IP Konfiguration Client");
             okButton.addActionListener(e -> {
-                String config = getIp() + "/" + getPort();
-                createClient(config);
-                dialog.dispose();
+                okAction();
             });
+        }
+
+        @Override
+        public void okAction() {
+            String config = getIp() + "/" + getPort();
+            createClient(config);
+            dialog.dispose();
         }
     }
 }

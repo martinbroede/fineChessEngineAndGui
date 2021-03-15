@@ -39,7 +39,7 @@ public class PiecePatterns {
         whiteKingPattern = new WhiteKingPattern();
         blackKingPattern = new BlackKingPattern();
 
-        System.out.println("PIECE PATTERNS CALCULATED.");
+        System.out.println("CHESS PIECES INITIALIZED");
     }
 
     public PiecePattern getWhitePiecePattern(char c) {

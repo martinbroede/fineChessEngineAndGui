@@ -9,9 +9,6 @@ public class Chess extends MoveGenerator implements Serializable {
             + "RNBQKBNRPPPPPPPP                "
             + "                pppppppprnbqkbnr";
 
-    private final String init = ""
-            + "R   KBNRPPPPPPPPppp             "
-            + "             PPPpppppppprnbqk  r";
 
     public History history;
     public Stack<Move> undoneMovesHistory;
@@ -73,23 +70,26 @@ public class Chess extends MoveGenerator implements Serializable {
 
         long h = hashGenerator.generateHashCode(board, whiteToMove, castling.getRights(), recentEnPassantPawn);
         hashGenerator.setHashCode(h); //todo unify after tests.
-        System.out.println("HASH CALCULATED: " + hashGenerator.getHashCode());
+        System.out.println("BOARD HASHED " + hashGenerator.getHashCode());
         whitePieces.updateThreats();
         blackPieces.updateThreats();
     }
 
     public Moves getUserLegalMoves(boolean color, boolean userPlaysBothColors) {
-        if(userPlaysBothColors) return getUserLegalMoves();
-        else if(whiteToMove == color) return getUserLegalMoves();
+        if (userPlaysBothColors) return getUserLegalMoves();
+        else if (whiteToMove == color) return getUserLegalMoves();
         else return new Moves();
     }
 
+    /** return fully legal moves. Also detect Checkmate, Stalemate */
     private Moves getUserLegalMoves() {
+
+        Moves pseudoMoves;
+        Moves illegalMoves = new Moves();
 
         if (whiteToMove) {
 
-            Moves pseudoMoves = whitePieces.getPseudoLegalMoves();
-            Moves illegalMoves = new Moves();
+            pseudoMoves = whitePieces.getPseudoLegalMoves();
             for (Move pMove : pseudoMoves) {
                 movePiece(pMove);
                 blackPieces.updateThreats();
@@ -108,12 +108,9 @@ public class Chess extends MoveGenerator implements Serializable {
                     gameStatus.setStatusCode(GameStatus.DRAW_STALEMATE);
             }
 
-            return pseudoMoves;
-
         } else {
 
-            Moves pseudoMoves = blackPieces.getPseudoLegalMoves();
-            Moves illegalMoves = new Moves();
+            pseudoMoves = blackPieces.getPseudoLegalMoves();
             for (Move pMove : pseudoMoves) {
                 movePiece(pMove);
                 whitePieces.updateThreats();
@@ -132,9 +129,8 @@ public class Chess extends MoveGenerator implements Serializable {
                     gameStatus.setStatusCode(GameStatus.DRAW_STALEMATE);
             }
 
-            return pseudoMoves;
-
         }
+        return pseudoMoves;
     }
 
     /** check if legal, if so move piece */
@@ -144,14 +140,15 @@ public class Chess extends MoveGenerator implements Serializable {
             if (move.getInformation() == Move.RESIGN) {
                 if (whiteToMove) {
                     gameStatus.setStatusCode(GameStatus.WHITE_RESIGNED);
-                }
-                else {
+                } else {
                     gameStatus.setStatusCode(GameStatus.BLACK_RESIGNED);
                 }
                 return true;
             }
+        } else if (!getUserLegalMoves(userColor, userPlaysBoth).contains(move)){
+            System.out.println("USER MOVE IS ILLEGAL");
+            return false;
         }
-        else if (!getUserLegalMoves(userColor,userPlaysBoth).contains(move)) return false;
         undoneMovesHistory.clear();
         movePiece(move);
         return true;
@@ -433,6 +430,45 @@ public class Chess extends MoveGenerator implements Serializable {
         else whitePieces.updateThreats();
 
         return state.moveInformation;
+    }
+
+    public byte[] getWhiteThreats(){
+        whitePieces.updateThreats();
+        return whitePieces.getThreats();
+    }
+
+    public byte[] getBlackThreats(){
+        blackPieces.updateThreats();
+        return blackPieces.getThreats();
+    }
+
+    public byte[] getCombinedThreats() {
+        whitePieces.updateThreats();
+        blackPieces.updateThreats();
+        byte[] combinedThreats = new byte[64];
+        for (int i = 0; i <= 63; i++) {
+            combinedThreats[i] += whitePieces.getThreats()[i];
+            combinedThreats[i] -= blackPieces.getThreats()[i];
+        }
+        for (int i = 0; i <= 63; i++) {
+            if((combinedThreats[i] == 0) && (whitePieces.getThreats()[i] !=0)) //threats balanced
+                combinedThreats[i] = Byte.MAX_VALUE;
+        }
+        return combinedThreats;
+
+        /*String outp = "";
+        String line = "|";
+        for (int i = 0; i <= 63; i++) {
+            if (combinedThreats[i] >= 0) line += " ";
+            line += combinedThreats[i] + "|";
+            if (i % 8 == 7) {
+                outp = line + " " + (i / 8 + 1) + "\n" + outp;
+                line = "|";
+            }
+        }
+        outp = outp + "| A. B. C. D. E. F. G. H|" + "\n";
+
+        System.out.println(outp);*/
     }
 
     public boolean pieceAtSquare(int i, boolean color) {

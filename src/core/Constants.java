@@ -214,8 +214,7 @@ public class Constants {
                 ANTI_DIAGONAL_DISTANCE[i][j] = 0; //todo
             }
         }
-        System.out.println("CONSTANTS CALCULATED.");
-        assert test();
+        System.out.println("MOVES PRECALCULATED");
     }
 
     public static boolean getDiagonalDistance(int sq1, int sq2) {
@@ -408,27 +407,6 @@ public class Constants {
         return allSquares[pos];
     }
 
-    public boolean test() {
-        assert getFileDistance(Parser.parse("A1"), Parser.parse("A4")) == 3;
-        assert getFileDistance(Parser.parse("C2"), Parser.parse("C8")) == 6;
-        assert getFileDistance(Parser.parse("A1"), Parser.parse("B4")) == -1;
-        assert getFileDistance(Parser.parse("H8"), Parser.parse("H1")) == 7;
-
-        assert getRankDistance(Parser.parse("A7"), Parser.parse("A2")) == -1;
-        assert getRankDistance(Parser.parse("A7"), Parser.parse("F7")) == 5;
-        assert getRankDistance(Parser.parse("A7"), Parser.parse("G6")) == -1;
-        assert getRankDistance(Parser.parse("H7"), Parser.parse("A7")) == 7;
-
-        assert RANK_DISTANCE[0][63] == -1;
-        assert RANK_DISTANCE[8][12] == 4;
-
-        assert FILE_DISTANCE[0][16] == 2;
-        assert FILE_DISTANCE[7][15] == 1;
-        assert FILE_DISTANCE[5][55] == -1;
-
-        System.out.println("CONSTANTS TESTS ENABLED. TESTS OK.");
-        return true;
-    }
 
     /**
      * get distance between sq1 and sq2

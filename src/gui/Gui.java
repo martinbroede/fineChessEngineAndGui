@@ -25,11 +25,12 @@ public class Gui extends MainWindow {
     private String moveStringSpecialMoves; //for promotion, castling, enPassant
     private boolean allowUndoMoves = true;
     private boolean userPlaysColor = WHITE;
-    private boolean userPlaysBothColors = false;
+    private boolean userPlaysBothColors = true;
+    private boolean hiddenFeature = false;
 
     public Gui(Chess chessGame) {
 
-        super(chessGame.getBoard());
+        super(chessGame);
         chatDialog = new ChatDialog();
         this.chess = chessGame;
         moveString = "";
@@ -40,8 +41,6 @@ public class Gui extends MainWindow {
 
             @Override
             public void run() {
-
-                System.out.println("GUI WILL UPDATE MOVES FROM NETWORK.");
                 while (true) {
 
                     if (network.messageQueue.size() > 0) {
@@ -71,7 +70,8 @@ public class Gui extends MainWindow {
                                         showPopup("Du spielst WEISS");
                                         break;
                                     default:
-                                        chess.userMove(nextMove, !userPlaysColor, false); // todo should work with false
+                                        System.out.println(nextMove.getInformation());
+                                        chess.userMove(nextMove, !userPlaysColor, true); // todo should work with false
                                 }
                                 refreshFrameContent(-1);
                             }else if(args[0].equals("NOTE")) {
@@ -82,7 +82,7 @@ public class Gui extends MainWindow {
                             else chatOutput.append("\t: " + message + "\n");
 
                         } catch (NoSuchElementException ex) {
-                            System.err.println("MESSAGE QUEUE IS EMPTY.");
+                            System.err.println("MESSAGE QUEUE IS EMPTY");
                         }
                     }
 
@@ -100,7 +100,7 @@ public class Gui extends MainWindow {
 
         /* add action listeners */
         itemNewGame.addActionListener(e -> {
-            System.out.println("NEW GAME!");
+            System.out.println("NEW GAME");
             chess.newGame(chess.INIT_STANDARD_BOARD);
             userPlaysBothColors = true;
             refreshFrameContent(-1);
@@ -223,27 +223,6 @@ public class Gui extends MainWindow {
             refreshFrameContent(-1);
         });
 
-        frame.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == 'R')
-                    new TestReachability();
-                if (e.getKeyChar() == 'W')
-                    userPlaysColor = WHITE;
-                else if (e.getKeyChar() == 'B')
-                    userPlaysColor = BLACK;
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-
-            }
-        });
-
         itemAssignOpponentBlack.addActionListener(e -> {
             network.sendToNet("MOVE " + Move.OPPONENT_BLACK);
             userPlaysColor = WHITE;
@@ -292,6 +271,30 @@ public class Gui extends MainWindow {
             }
         });
 
+        frame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == 'R')
+                    new TestReachability();
+                if(hiddenFeature && e.getKeyChar()=='\\') {
+                    System.out.println("TRAINER MODE");
+                    board.toggleShowHints();
+                    refreshFrameContent(-1);
+                }
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.isControlDown() && e.isAltDown()) hiddenFeature = true;
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                hiddenFeature = false;
+            }
+        });
+
 
         board.addMouseListener(new MouseAdapter() {
             @Override
@@ -327,9 +330,7 @@ public class Gui extends MainWindow {
 
     private void movePieceFromEvent(MouseEvent mouseEvent) {
 
-        byte pos = board.coordFromEvent(mouseEvent,
-                appearanceSettings.getOffset(),
-                appearanceSettings.getSizeFactor());
+        byte pos = board.coordFromEvent(mouseEvent);
 
         if (moveString.equals("")) { // no square chosen yet
             if (chess.pieceAtSquare(pos, chess.getTurnColor())) {

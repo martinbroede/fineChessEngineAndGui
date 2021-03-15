@@ -1,5 +1,6 @@
 package gui.chessBoard;
 
+import core.Chess;
 import core.Moves;
 import core.Parser;
 
@@ -17,15 +18,18 @@ public class Board extends JPanel {
     private boolean active;
     private BufferedImage img;
     private Graphics bufferGraphics;
-    private boolean boardOrientation = WHITE_PLAYER_NORTH;
+    private boolean boardOrientation = WHITE_PLAYER_SOUTH;
+    private boolean showHints = false;
+    private Chess chess;
 
-    public Board(int size_factor, char[] boardArray, AppearanceSettings appearanceSettings) {
+    public Board(int size_factor, Chess chess, AppearanceSettings appearanceSettings) {
 
         active = true;
         s = appearanceSettings;
         s.adjustSize(size_factor);
-        this.boardArray = boardArray;
+        boardArray = chess.getBoard();
         adjustSize();
+        this.chess = chess;
     }
 
     public void setActive(boolean active) {
@@ -57,6 +61,10 @@ public class Board extends JPanel {
         repaint();
     }
 
+    public void toggleShowHints() {
+        showHints = !showHints;
+    }
+
     public void adjustSize() {
 
         img = new BufferedImage(s.getMargin(), s.getMargin(), BufferedImage.TYPE_INT_RGB);
@@ -67,24 +75,26 @@ public class Board extends JPanel {
     }
 
     public void refreshChessBoard(boolean showMoves, boolean showLastMove, Moves moves, short move) {
+
         active = true;
 
         Painter.paintBoard(bufferGraphics, s, boardOrientation);
-        if (showMoves) Painter.paintHighlights(bufferGraphics, s, moves, true, boardOrientation);
+        if (showHints) Painter.paintHints(bufferGraphics, s, boardOrientation,
+                chess.getCombinedThreats(), chess.getWhiteThreats(), chess.getBlackThreats());
+        else if (showMoves) Painter.paintHighlights(bufferGraphics, s, moves, true, boardOrientation);
         if (showLastMove) Painter.paintLastMove(bufferGraphics, s, move, boardOrientation);
         Painter.paintPieces(bufferGraphics, s, boardArray, boardOrientation);
         Painter.paintFilesAndRanks(bufferGraphics, s, boardOrientation);
-
         getGraphics().drawImage(img, 0, 0, this);
     }
 
-    public byte coordFromEvent(MouseEvent e, int offset, int size_factor) {
+    public byte coordFromEvent(MouseEvent e) {
 
-        int x = (e.getX() - offset) / size_factor;
-        int y = 7 - (e.getY() - offset) / size_factor;
+        int x = (e.getX() - s.getOffset()) / s.getSizeFactor();
+        int y = 7 - (e.getY() - s.getOffset()) / s.getSizeFactor();
 
-        x = boardOrientation? x : 7 - x;
-        y = boardOrientation? y : 7 - y;
+        x = boardOrientation ? x : 7 - x;
+        y = boardOrientation ? y : 7 - y;
 
         return Parser.parse(x, y);
     }

@@ -1,4 +1,4 @@
-#V1.43
+#V1.44
 (most recent version)
 
 V1.0    initial commit
@@ -11,3 +11,4 @@ V1.4    add user chat
 V1.41   add board rotation. add color choice -> you can define who plays white in online games
 V1.42   implement sendingQueue
 V1.43   add user resign
+V1.44   add menu items

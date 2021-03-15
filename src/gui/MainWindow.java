@@ -1,5 +1,6 @@
 package gui;
 
+import core.Chess;
 import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
 
@@ -35,6 +36,7 @@ public class MainWindow {
     final JMenuItem itemStore;
     final JMenuItem itemRestore;
     final JMenuItem itemBegin;
+    final JMenuItem itemLicense;
 
     final JMenuItem itemSize1;
     final JMenuItem itemSize2;
@@ -67,7 +69,7 @@ public class MainWindow {
     final int SIZE_S = 30;
     String VERSION = "VERSION UNKNOWN";
 
-    public MainWindow(char[] boardArray) {
+    public MainWindow(Chess chess) {
 
         frame = new JFrame();
         frame.setResizable(false);
@@ -77,7 +79,7 @@ public class MainWindow {
         labelPlaceHolderEast = new JLabel(" ", JLabel.CENTER);
         colorScheme = new ColorScheme();
         appearanceSettings = new AppearanceSettings(colorScheme);
-        board = new Board(SIZE_S, boardArray, appearanceSettings);
+        board = new Board(SIZE_S, chess, appearanceSettings);
 
         frame.setTitle("Schach");
         try {
@@ -122,6 +124,7 @@ public class MainWindow {
         itemStore = new JMenuItem("Speichern");
         itemRestore = new JMenuItem("Wiederherstellen");
         itemBegin = new JMenuItem("Siel starten");
+        itemLicense = new JMenuItem("Info und Lizenz");
 
         itemSize1 = new JMenuItem("groß");
         itemSize2 = new JMenuItem("mittel");
@@ -172,6 +175,8 @@ public class MainWindow {
         mainMenu.add(itemStore);
         mainMenu.add(itemRestore);
         mainMenu.add(itemBegin);
+        mainMenu.addSeparator();
+        mainMenu.add(itemLicense);
 
         sizeMenu.add(itemSize1);
         sizeMenu.add(itemSize2);
@@ -276,6 +281,22 @@ public class MainWindow {
             colorScheme.setColors(ColorScheme.DARK);
             setStyleSettings();
             board.repaint();
+        });
+
+        itemLicense.addActionListener(e -> {
+            try {
+                FileInputStream stream = new FileInputStream("LICENSE");
+                Scanner scanner = new Scanner(stream);
+                String text = "";
+                while(scanner.hasNext()){
+                    text += scanner.nextLine() + '\n';
+                }
+                text = "Schach " + VERSION + "\n\n" + text;
+                TextDialog license = new TextDialog(text);
+                license.setVisible(true);
+            }catch(FileNotFoundException ex){
+                System.err.println("FILE NOT FOUND");
+            }
         });
 
         itemRestore.setEnabled(false);

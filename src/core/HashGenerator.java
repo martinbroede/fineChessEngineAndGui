@@ -56,7 +56,7 @@ public class HashGenerator {
     public void reset() {
         counter.clear();
         hashCode = 0;
-        System.out.println("HASH GENERATOR CLEARED. HASH CODE = 0");
+        System.out.println("HASH CLEARED");
     }
 
     public long generateHashCode(char[] board, boolean whiteToMove, byte castling, byte enPassant) {

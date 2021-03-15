@@ -12,7 +12,6 @@ public class Painter {
 
         int orientation = boardOrientation ? 0 : 1;
 
-        g.setFont(settings.font);
         g.setColor(settings.getColorScheme().MARGIN_COLOR);
         g.fillRect(0, 0, settings.getMargin(), settings.getMargin());
         for (int x = 0; x < 8; x++) {
@@ -20,9 +19,47 @@ public class Painter {
                 if (((x + y) % 2) == orientation) {
                     g.setColor(settings.getColorScheme().WHITE_SQUARES_COLOR);
                 } else g.setColor(settings.getColorScheme().BLACK_SQUARES_COLOR);
+
                 g.fillRect(x * settings.getSizeFactor() + settings.getOffset(),
                         y * settings.getSizeFactor() + settings.getOffset(),
                         settings.getSizeFactor(), settings.getSizeFactor());
+
+                g.setColor(settings.getColorScheme().FILL_COLOR);
+                g.drawRect(x * settings.getSizeFactor() + settings.getOffset(),
+                        y * settings.getSizeFactor() + settings.getOffset(),
+                        settings.getSizeFactor(), settings.getSizeFactor());
+            }
+        }
+    }
+
+    protected static void paintHints(Graphics g, AppearanceSettings settings, boolean boardOrientation,
+                                     byte[] combinedThreats, byte[] whiteThreats, byte[] blackThreats){
+
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+
+                int pos = boardOrientation ? x + (7 - y) * 8 : (7 - x) + y * 8;
+
+                g.setColor(Color.black);//todo remove
+
+                if (boardOrientation) { // white's point of view
+                    byte val = combinedThreats[pos];
+                    if(val == Byte.MAX_VALUE) continue; //threats balanced.
+                    else if(val > 0) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
+                    else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
+                    if(blackThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
+                } else{ //black's point of view
+                    byte val = combinedThreats[pos];
+                    if(val == Byte.MAX_VALUE) continue; //threats balanced.
+                    else if(val < 0) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
+                    else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
+                    if(whiteThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
+                }
+
+                g.fillRect(x * settings.getSizeFactor() + settings.getOffset(),
+                        y * settings.getSizeFactor() + settings.getOffset(),
+                        settings.getSizeFactor(), settings.getSizeFactor());
+
                 g.setColor(settings.getColorScheme().FILL_COLOR);
                 g.drawRect(x * settings.getSizeFactor() + settings.getOffset(),
                         y * settings.getSizeFactor() + settings.getOffset(),
@@ -89,7 +126,7 @@ public class Painter {
                             + settings.getSizeFactor() / 2 + settings.font.getSize() * 45 / 100);
         }
         for (int y = 1; y < 8; y++) {
-            int rank = boardOrientation? y : 7 - y;
+            int rank = boardOrientation ? y : 7 - y;
             g2.setColor(settings.getColorScheme().PIECE_COLOR);
             g2.drawString("" + Parser.getRankName(rank),
                     settings.getOffset() + settings.getSizeFactor() / 2 - settings.font.getSize() / 2,
@@ -128,8 +165,8 @@ public class Painter {
         int to = Move.getTo(moveInformation);
         int[] squares = {from, to};
         for (int square : squares) {
-            int x = boardOrientation? square % 8 : 7 - square % 8;
-            int y = boardOrientation? 7 - square / 8 : square / 8;
+            int x = boardOrientation ? square % 8 : 7 - square % 8;
+            int y = boardOrientation ? 7 - square / 8 : square / 8;
             g.setColor(settings.getColorScheme().MARGIN_COLOR);
             g.drawRect(x * settings.getSizeFactor() + settings.getOffset() + diminish,
                     y * settings.getSizeFactor() + settings.getOffset() + diminish,
