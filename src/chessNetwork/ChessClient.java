@@ -39,15 +39,11 @@ public class ChessClient extends Thread {
 
     public static void main(String[] ar) {
 
-        ChessClient client = new ChessClient("192.168.178.27/3777", 150, new LinkedList<>());
-        client.send("hello my friend"); //will cause error message
+        ChessClient client = new ChessClient("0.0.0.0/50005", 150, new LinkedList<>());
         client.start();
-        try { // need some time to connect
-            sleep(client.delayMilliSec);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        client.send("hello server!"); // will work if connection successful
+        client.send("Tom");
+        client.send("Hello World!");
+        client.send("What's up!?");
     }
 
     @Override
@@ -68,8 +64,8 @@ public class ChessClient extends Thread {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             sendingThread.setWriter(bufferedWriter);
             receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, messageQueue,"CLIENT RECEIVER");
-            System.out.println("CONNECTED TO SERVER");
-            new DialogMessage("Erfolgreich mit Server verbunden.");
+            System.out.println("CONNECTED TO SERVER " + socket.getRemoteSocketAddress());
+            new DialogMessage("Erfolgreich mit Server " + socket.getRemoteSocketAddress() + " verbunden.");
             send(""); //to send messages in queue
             return true;
         } catch (UnknownHostException ex) {

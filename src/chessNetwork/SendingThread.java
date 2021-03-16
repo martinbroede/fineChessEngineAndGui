@@ -38,7 +38,7 @@ class SendingThread extends Thread {
                 System.out.println("SENDING FROM " + getName() + " DID NOT GO WELL");
             }
         } else {
-            System.out.println(getName() + " NOT READY TO SEND" + message);
+            System.out.println(getName() + " NOT READY TO SEND " + message);
         }
         sendingQueue.removeAll(successfullySent);
     }

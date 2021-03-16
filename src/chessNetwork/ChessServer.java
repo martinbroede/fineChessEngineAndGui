@@ -78,16 +78,20 @@ public class ChessServer extends Thread {
             serverSocket = new ServerSocket(port, 2, inetAddress);
             System.out.println("SERVER SOCKET PROVIDED. ADRESS: " + serverSocket.getLocalSocketAddress());
             socket = serverSocket.accept();
-            new DialogMessage("Server: Verbinden erfolgreich");
+            System.out.println("CONNECTED WITH " + socket.getRemoteSocketAddress());
+            new DialogMessage("Server - Verbinden mit " + socket.getRemoteSocketAddress() + " erfolgreich");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             sendingThread.setWriter(bufferedWriter);
             receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, messageQueue, "SERVER RECEIVER");
             System.out.println("SERVER READY");
+
             send(""); //to send messages in queue
+
+            serverSocket.close();
             return true;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
             return false;
         }
     }

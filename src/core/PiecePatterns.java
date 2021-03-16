@@ -140,10 +140,6 @@ public class PiecePatterns {
         return (byte) c >= 65 && (byte) c <= 90;
     }
 
-    public boolean pieceAtSquare(int i) {
-        return board[i] != ' ';
-    }
-
     class WhitePawnPattern extends PiecePattern {
 
         public Moves getMoves(byte from) {

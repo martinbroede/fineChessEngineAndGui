@@ -8,15 +8,13 @@ import java.awt.*;
 
 public class Painter {
 
-    protected static void paintBoard(Graphics g, AppearanceSettings settings, boolean boardOrientation) {
-
-        int orientation = boardOrientation ? 0 : 1;
+    protected static void paintBoard(Graphics g, AppearanceSettings settings) {
 
         g.setColor(settings.getColorScheme().MARGIN_COLOR);
         g.fillRect(0, 0, settings.getMargin(), settings.getMargin());
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                if (((x + y) % 2) == orientation) {
+                if (((x + y) % 2) == 0) {
                     g.setColor(settings.getColorScheme().WHITE_SQUARES_COLOR);
                 } else g.setColor(settings.getColorScheme().BLACK_SQUARES_COLOR);
 
@@ -44,14 +42,14 @@ public class Painter {
 
                 if (boardOrientation) { // white's point of view
                     byte val = combinedThreats[pos];
-                    if(val == Byte.MAX_VALUE) continue; //threats balanced.
-                    else if(val > 0) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
+                    if(val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
+                    else if(val > 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
                     else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
                     if(blackThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
                 } else{ //black's point of view
                     byte val = combinedThreats[pos];
-                    if(val == Byte.MAX_VALUE) continue; //threats balanced.
-                    else if(val < 0) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
+                    if(val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
+                    else if(val < 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
                     else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
                     if(whiteThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
                 }

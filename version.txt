@@ -1,4 +1,4 @@
-#V1.44
+#V1.45 (beta)
 (most recent version)
 
 V1.0    initial commit
@@ -12,3 +12,5 @@ V1.41   add board rotation. add color choice -> you can define who plays white i
 V1.42   implement sendingQueue
 V1.43   add user resign
 V1.44   add menu items
+V1.45   minor bugfix board rotation -> square colors correct now
+        add updater for Windows10

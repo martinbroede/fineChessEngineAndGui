@@ -5,28 +5,25 @@ import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
-public class DialogMessage extends JDialog {
+public class DialogText extends JDialog {
 
-    public DialogMessage(String message){
-        setUp(message);
+    public DialogText(String text, Point location){
+        setLocation(location);
+        setUp(text);
+    }
+    public DialogText(String text){
+        setUp(text);
     }
 
-    public DialogMessage(String message, Point location){
-        this.setLocation(location);
-        setUp(message);
-    }
-
-    public void setUp(String message) {
-        setTitle("INFO");
-        JLabel label = new JLabel(" " + message + " ");
-        JButton ok = new JButton(" OK ");
-        setLayout(new FlowLayout());
-        add(label);
-        add(ok);
+    private void setUp(String text){
+        JTextArea textArea = new JTextArea();
+        textArea.setText(text);
+        add(textArea);
         pack();
-        setLocation(new Point(400, 200));
+        textArea.setEnabled(false);
+        textArea.setBackground(new Color(238, 242, 246));
+        textArea.setDisabledTextColor(Color.darkGray);
         setVisible(true);
-        ok.addActionListener(e -> this.dispose());
         addWindowListener(new WindowListener() {
             @Override
             public void windowOpened(WindowEvent e) {
@@ -66,6 +63,6 @@ public class DialogMessage extends JDialog {
     }
 
     public static void main(String[] args) {
-        DialogMessage dialogMessage = new DialogMessage("Verbinden erfolgreich");
+        new DialogText("Hello\nWorld");
     }
 }

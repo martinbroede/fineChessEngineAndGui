@@ -1,6 +1,6 @@
 package core;
 
-import java.awt.event.MouseEvent;
+
 import java.util.HashMap;
 import java.util.InputMismatchException;
 
@@ -23,7 +23,7 @@ public final class Parser {
         put(' ', ' ');
     }};
 
-    private static final HashMap<Character, Character> SYMBOLSCF = new HashMap<Character, Character>() {{
+    private static final HashMap<Character, Character> SYMBOL_SCF = new HashMap<Character, Character>() {{
         put('K', 'k');
         put('Q', 'q');
         put('R', 'r');
@@ -39,14 +39,15 @@ public final class Parser {
         put(' ', ' ');
     }};
 
-    private Parser() {} // ne need to instantiate parser
+    private Parser() {
+    } // ne need to instantiate parser
 
     public static char parseSymbol(char c) {
         return SYMBOLS.get(c);
     }
 
     public static char parseSymbolFromChessFont(char c) {
-        return SYMBOLSCF.get(c);
+        return SYMBOL_SCF.get(c);
     }
 
     public static byte parse(String inp) {

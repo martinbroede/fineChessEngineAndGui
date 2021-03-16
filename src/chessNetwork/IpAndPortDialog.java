@@ -11,8 +11,8 @@ import static java.awt.event.KeyEvent.VK_ENTER;
 
 public class IpAndPortDialog {
 
-    private JTextField ipField;
-    private JTextField portField;
+    public JTextField ipField;
+    public JTextField portField;
     public JButton okButton;
     public JDialog dialog = new JDialog();
 

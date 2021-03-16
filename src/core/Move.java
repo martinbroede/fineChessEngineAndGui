@@ -18,7 +18,7 @@ public class Move {
     public static final short OFFER_DRAW = -1010;
     public static final short RESIGN = -1011;
 
-    private short information; //todo can be short right?
+    private final short information; //todo can be short right?
 
     public Move(byte from, byte to) {
         information = (short) (from + to * 64);
@@ -102,10 +102,6 @@ public class Move {
             return true;
         Move other = (Move) obj;
         return other.information == this.information;
-    }
-
-    public boolean equalToMove(byte from, byte to) {
-        return from + to * 64 == this.information;
     }
 
     @Override

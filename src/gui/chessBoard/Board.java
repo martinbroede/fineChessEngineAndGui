@@ -78,7 +78,7 @@ public class Board extends JPanel {
 
         active = true;
 
-        Painter.paintBoard(bufferGraphics, s, boardOrientation);
+        Painter.paintBoard(bufferGraphics, s);
         if (showHints) Painter.paintHints(bufferGraphics, s, boardOrientation,
                 chess.getCombinedThreats(), chess.getWhiteThreats(), chess.getBlackThreats());
         else if (showMoves) Painter.paintHighlights(bufferGraphics, s, moves, true, boardOrientation);
@@ -122,7 +122,7 @@ public class Board extends JPanel {
     public void paint(Graphics g) {
 
         if (bufferGraphics != null) {
-            Painter.paintBoard(bufferGraphics, s, boardOrientation);
+            Painter.paintBoard(bufferGraphics, s);
             Painter.paintPieces(bufferGraphics, s, boardArray, boardOrientation);
             Painter.paintFilesAndRanks(bufferGraphics, s, boardOrientation);
         }

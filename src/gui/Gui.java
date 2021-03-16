@@ -114,7 +114,6 @@ public class Gui extends MainWindow {
         });
 
         itemRestore.addActionListener(e -> {
-            chess.pieceAtSquare(0);
             Object obj = null;
             try {
                 obj = ReadWrite.readFromFile(storagePath);

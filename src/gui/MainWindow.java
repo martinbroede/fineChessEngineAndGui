@@ -292,7 +292,7 @@ public class MainWindow {
                     text += scanner.nextLine() + '\n';
                 }
                 text = "Schach " + VERSION + "\n\n" + text;
-                TextDialog license = new TextDialog(text);
+                DialogText license = new DialogText(text);
                 license.setVisible(true);
             }catch(FileNotFoundException ex){
                 System.err.println("FILE NOT FOUND");
@@ -383,7 +383,7 @@ public class MainWindow {
     static class WindowListener extends WindowAdapter {
         @Override
         public void windowClosing(WindowEvent e) {
-            System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY.");
+            System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY");
             e.getWindow().dispose();
             System.exit(0);
         }
