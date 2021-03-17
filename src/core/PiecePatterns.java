@@ -142,7 +142,7 @@ public class PiecePatterns {
 
     class WhitePawnPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -167,6 +167,14 @@ public class PiecePatterns {
                 }
             }
 
+            if(enPassantRights >= 0){
+
+                byte to = constants.WHITE_PAWN_EN_PASSANT_CAPTURE[enPassantRights][from];
+                if (to >= 0) {
+                    legalMoves.add(new Move(from, to, Move.EN_PASSANT));
+                }
+            }
+
             return legalMoves;
         }
 
@@ -180,7 +188,7 @@ public class PiecePatterns {
 
     class BlackPawnPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -204,6 +212,15 @@ public class PiecePatterns {
                     } else legalMoves.add(new Move(from, to)); // REGULAR MOVE
                 }
             }
+
+            if(enPassantRights >= 0){
+
+                byte to = constants.BLACK_PAWN_EN_PASSANT_CAPTURE[enPassantRights][from];
+                if (to >= 0) {
+                    legalMoves.add(new Move(from,to, Move.EN_PASSANT));
+                }
+            }
+
             return legalMoves;
         }
 
@@ -217,7 +234,7 @@ public class PiecePatterns {
 
     class WhiteKnightPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -239,7 +256,7 @@ public class PiecePatterns {
 
     class BlackKnightPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -261,7 +278,7 @@ public class PiecePatterns {
 
     class WhiteRookPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -297,7 +314,7 @@ public class PiecePatterns {
 
     class BlackRookPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -333,7 +350,7 @@ public class PiecePatterns {
 
     public class WhiteBishopPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -369,7 +386,7 @@ public class PiecePatterns {
 
     public class BlackBishopPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -405,7 +422,7 @@ public class PiecePatterns {
 
     public class WhiteQueenPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -442,7 +459,7 @@ public class PiecePatterns {
 
     public class BlackQueenPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
@@ -478,7 +495,7 @@ public class PiecePatterns {
 
     public class WhiteKingPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
             return new Moves(); //todo optimize...
         }
 
@@ -523,7 +540,7 @@ public class PiecePatterns {
 
     public class BlackKingPattern extends PiecePattern {
 
-        public Moves getMoves(byte from) {
+        public Moves getMoves(byte from, byte enPassantRights) {
             return new Moves();//todo optimize...
         }
 

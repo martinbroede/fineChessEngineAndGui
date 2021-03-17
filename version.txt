@@ -1,4 +1,4 @@
-#V1.45 (beta)
+#V1.46 (beta)
 (most recent version)
 
 V1.0    initial commit
@@ -14,3 +14,4 @@ V1.43   add user resign
 V1.44   add menu items
 V1.45   minor bugfix board rotation -> square colors correct now
         add updater for Windows10
+V1.46   represent en passant captures correctly - not playable yet though!

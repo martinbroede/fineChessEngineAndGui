@@ -12,7 +12,7 @@ abstract class PiecePattern {
      * @param from Position of piece
      * @return Moves
      */
-    abstract Moves getMoves(byte from);
+    abstract Moves getMoves(byte from, byte enPassantRights);
 
     /**
      * Update squares the piece is threatening.

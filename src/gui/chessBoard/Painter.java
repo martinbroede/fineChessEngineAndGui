@@ -38,8 +38,6 @@ public class Painter {
 
                 int pos = boardOrientation ? x + (7 - y) * 8 : (7 - x) + y * 8;
 
-                g.setColor(Color.black);//todo remove
-
                 if (boardOrientation) { // white's point of view
                     byte val = combinedThreats[pos];
                     if(val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());

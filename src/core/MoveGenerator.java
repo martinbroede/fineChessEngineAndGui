@@ -13,6 +13,7 @@ public class MoveGenerator extends PiecePatterns {
     protected boolean whiteToMove;
     protected short moveCounter;
     protected short moveCounterLastCaptureOrPawnMove;
+    protected byte enPassantPawn;
 
 
     public Moves getPseudoLegalMoves() {
@@ -121,7 +122,7 @@ public class MoveGenerator extends PiecePatterns {
         }
 
         public Moves getPseudoLegalMoves() {
-            return pattern.getMoves(position);
+            return pattern.getMoves(position, enPassantPawn);
         }
 
         public Moves getPseudoLegalKingMoves(byte[] threats, boolean kingSideCastling, boolean queenSideCastling) {
@@ -176,7 +177,7 @@ public class MoveGenerator extends PiecePatterns {
          * @return piece that moves
          */
         public Piece changePosition(byte from, byte to) {
-            for (Piece p : this) { //todo this is not efficient. find better method later
+            for (Piece p : this) { //todo hashMap with squares should be faster than a loop...
                 if (p.getPosition() == from) {
                     p.setPosition(to);
                     return p;
@@ -268,6 +269,7 @@ public class MoveGenerator extends PiecePatterns {
 
             moves.addAll(king.getPseudoLegalKingMoves(blackPieces.getThreats(),
                     castling.whiteKingSide(), castling.whiteQueenSide()));
+
             return moves;
         }
 

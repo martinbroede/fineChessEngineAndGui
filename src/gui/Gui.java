@@ -15,6 +15,7 @@ import java.util.NoSuchElementException;
 
 public class Gui extends MainWindow {
 
+    private final int DELAY_MILLISEC = 100; //update interval
     final boolean WHITE = Constants.WHITE; //for readability reasons
     final boolean BLACK = Constants.BLACK;
     final Network network;
@@ -71,7 +72,7 @@ public class Gui extends MainWindow {
                                         break;
                                     default:
                                         System.out.println(nextMove.getInformation());
-                                        chess.userMove(nextMove, !userPlaysColor, true); // todo should work with false
+                                        chess.userMove(nextMove, userPlaysColor, true); // todo should work with false
                                 }
                                 refreshFrameContent(-1);
                             }else if(args[0].equals("NOTE")) {
@@ -80,14 +81,13 @@ public class Gui extends MainWindow {
                                 new DialogMessage(message.replace("ERROR ",""));
                             }
                             else chatOutput.append("\t: " + message + "\n");
-
                         } catch (NoSuchElementException ex) {
                             System.err.println("MESSAGE QUEUE IS EMPTY");
                         }
                     }
 
                     try {
-                        sleep(300);
+                        sleep(DELAY_MILLISEC);
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     }
@@ -379,7 +379,7 @@ public class Gui extends MainWindow {
                             return;
                         }
                     }
-                    System.err.println("MOVE ILLEGAL");
+                    System.err.println("MOVE ILLEGAL (GUI)");
                 }
             }
             moveString = "";

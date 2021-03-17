@@ -8,12 +8,11 @@ import java.util.LinkedList;
 public class Network {
 
     public final LinkedList<String> messageQueue = new LinkedList<>();
-    private final int delayMilliSec = 100; // todo find reasonable value...
+    private final int DELAY_MILLISEC = 10;
+    private final String CHESS_VERSION;
     private ChessServer server;
     private ChessClient client;
-    private boolean active = false; //
-    private boolean connectionSuccessful = false;
-    private String CHESS_VERSION;
+    private boolean active = false;
 
     public Network(String version) {
         CHESS_VERSION = version;
@@ -27,7 +26,7 @@ public class Network {
     public void createServer(String configIpAndPort) {
 
         if ((server != null) | (client != null)) safeDeleteServerOrClient();
-        server = new ChessServer(configIpAndPort, delayMilliSec, messageQueue);
+        server = new ChessServer(configIpAndPort, DELAY_MILLISEC, messageQueue);
         server.start();
         active = true;
         sendToNet(CHESS_VERSION);
@@ -36,7 +35,7 @@ public class Network {
     public void createClient(String configIpAndPort) {
 
         if ((server != null) | (client != null)) safeDeleteServerOrClient();
-        client = new ChessClient(configIpAndPort, delayMilliSec, messageQueue);
+        client = new ChessClient(configIpAndPort, DELAY_MILLISEC, messageQueue);
         client.start();
         active = true;
         sendToNet(CHESS_VERSION);
@@ -92,9 +91,9 @@ public class Network {
 
             });
         }
-        
+
         @Override
-        public void okAction(){
+        public void okAction() {
             String config = getIp() + "/" + getPort();
             createServer(config);
             dialog.dispose();

@@ -18,7 +18,7 @@ public class Move {
     public static final short OFFER_DRAW = -1010;
     public static final short RESIGN = -1011;
 
-    private final short information; //todo can be short right?
+    private final short information;
 
     public Move(byte from, byte to) {
         information = (short) (from + to * 64);

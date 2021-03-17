@@ -8,18 +8,16 @@ public class Constants {
     static public final boolean BLACK = false;
     static public final boolean WHITE = !BLACK;
     final byte[][] WHITE_PAWN_CAPTURE_SQUARES;
+    final byte[][] WHITE_PAWN_EN_PASSANT_CAPTURE;
     final byte[][] WHITE_PAWN_STRAIGHT_SQUARES;
     final byte[][] BLACK_PAWN_CAPTURE_SQUARES;
+    final byte[][] BLACK_PAWN_EN_PASSANT_CAPTURE;
     final byte[][] BLACK_PAWN_STRAIGHT_SQUARES;
     final byte[][][] ROOK_SQUARES;
     final byte[][][] BISHOP_SQUARES;
     final byte[][] KNIGHT_SQUARES;
     final byte[][][] QUEEN_SQUARES;
     final byte[][] KING_SQUARES;
-    final byte[][] FILE_DISTANCE;// TODO don't need these ... ?
-    final byte[][] RANK_DISTANCE;
-    final byte[][] DIAGONAL_DISTANCE;
-    final byte[][] ANTI_DIAGONAL_DISTANCE;// TODO don't need these ... ?
     Square[] allSquares; // todo remove
 
     public Constants() {
@@ -70,6 +68,32 @@ public class Constants {
             }
         }
 
+        WHITE_PAWN_EN_PASSANT_CAPTURE = new byte[8][64];
+        for (int i = 0; i <= 63; i++) {
+            for (int eP = 0; eP <= 7; eP++) {
+                if (inRank('5', i)) {
+                    if (inFile('A', i) && inFile('B', eP)) {
+
+                        WHITE_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (i + 9);
+
+                    } else if (inFile('H', i) && inFile('G', eP)) {
+
+                        WHITE_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (i + 7);
+
+                    } else {
+
+                        if (i % 8 == eP - 1) {
+                            WHITE_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (i + 9);
+                        } else if (i % 8 == eP + 1) {
+                            WHITE_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (i + 7);
+                        } else
+                            WHITE_PAWN_EN_PASSANT_CAPTURE[eP][i] = -1;
+
+                    }
+                } else WHITE_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (-1); // no eP capture possible
+            }
+        }
+
         WHITE_PAWN_STRAIGHT_SQUARES = new byte[64][];
         for (int i = 0; i <= 63; i++) {
             byte pos, pos1, pos2;
@@ -109,6 +133,33 @@ public class Constants {
                 BLACK_PAWN_CAPTURE_SQUARES[i] = POS;
             }
         }
+
+        BLACK_PAWN_EN_PASSANT_CAPTURE = new byte[8][64];
+        for (int i = 0; i <= 63; i++) {
+            for (int eP = 0; eP <= 7; eP++) {
+                if (inRank('4', i)) {
+                    if (inFile('A', i) && inFile('B', eP)) {
+
+                        BLACK_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (i - 7);
+
+                    } else if (inFile('H', i) && inFile('G', eP)) {
+
+                        BLACK_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (i - 9);
+
+                    } else {
+
+                        if (i % 8 == eP - 1) {
+                            BLACK_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (i - 7);
+                        } else if (i % 8 == eP + 1) {
+                            BLACK_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (i - 9);
+                        } else
+                            BLACK_PAWN_EN_PASSANT_CAPTURE[eP][i] = -1;
+
+                    }
+                } else BLACK_PAWN_EN_PASSANT_CAPTURE[eP][i] = (byte) (-1); // no eP capture possible
+            }
+        }
+
 
         BLACK_PAWN_STRAIGHT_SQUARES = new byte[64][];
         for (int i = 0; i <= 63; i++) {
@@ -186,39 +237,7 @@ public class Constants {
                 KING_SQUARES[i] = temp;
             }
         }
-
-        RANK_DISTANCE = new byte[64][64];
-        for (int i = 0; i <= 63; i++) {
-            for (int j = 0; j <= 63; j++) {
-                RANK_DISTANCE[i][j] = getRankDistance(i, j);
-            }
-        }
-
-        FILE_DISTANCE = new byte[64][64];
-        for (int i = 0; i <= 63; i++) {
-            for (int j = 0; j <= 63; j++) {
-                FILE_DISTANCE[i][j] = getFileDistance(i, j);
-            }
-        }
-
-        DIAGONAL_DISTANCE = new byte[64][64];
-        for (int i = 0; i <= 63; i++) {
-            for (int j = 0; j <= 63; j++) {
-                DIAGONAL_DISTANCE[i][j] = 0; // todo
-            }
-        }
-
-        ANTI_DIAGONAL_DISTANCE = new byte[64][64];
-        for (int i = 0; i <= 63; i++) {
-            for (int j = 0; j <= 63; j++) {
-                ANTI_DIAGONAL_DISTANCE[i][j] = 0; //todo
-            }
-        }
         System.out.println("MOVES PRECALCULATED");
-    }
-
-    public static boolean getDiagonalDistance(int sq1, int sq2) {
-        return true;
     }
 
     private static byte goNorth(int inp) {
@@ -407,32 +426,4 @@ public class Constants {
         return allSquares[pos];
     }
 
-
-    /**
-     * get distance between sq1 and sq2
-     * return -1 if sq1 and sq2 are not in same file.
-     *
-     * @param sq1 Square1 between 0 and 63
-     * @param sq2 Square2 between 0 and 63
-     * @return Distance between sq1 and sq2
-     */
-    private byte getFileDistance(int sq1, int sq2) {
-        if (sq1 % 8 == sq2 % 8) {
-            return (byte) (Math.max(sq1 >> 3, sq2 >> 3) - Math.min(sq1 >> 3, sq2 >> 3));
-        } else return -1;
-    }
-
-    /**
-     * get distance between sq1 and sq2
-     * return -1 if sq1 and sq2 are not in same rank.
-     *
-     * @param sq1 Square1 between 0 and 63
-     * @param sq2 Square2 between 0 and 63
-     * @return Distance between sq1 and sq2
-     */
-    private byte getRankDistance(int sq1, int sq2) {
-        if (sq1 >> 3 == sq2 >> 3) {
-            return (byte) (Math.max(sq1 % 8, sq2 % 8) - Math.min(sq1 % 8, sq2 % 8));
-        } else return -1;
-    }
 }

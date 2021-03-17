@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
+import static java.lang.Thread.sleep;
+
 public class DialogMessage extends JDialog {
 
     public DialogMessage(String message){
@@ -12,8 +14,8 @@ public class DialogMessage extends JDialog {
     }
 
     public DialogMessage(String message, Point location){
-        this.setLocation(location);
         setUp(message);
+        this.setLocation(location);
     }
 
     public void setUp(String message) {
