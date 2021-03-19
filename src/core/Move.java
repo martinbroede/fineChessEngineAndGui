@@ -3,6 +3,7 @@ package core;
 import java.util.InputMismatchException;
 
 public class Move {
+
     public static final short KING_SIDE_CASTLING =/*    */0b0001000000000000; // readability
     public static final short QUEEN_SIDE_CASTLING =/*   */0b0010000000000000;
     public static final short EN_PASSANT =/*            */0b0011000000000000;
@@ -13,12 +14,17 @@ public class Move {
 
     /* negative code values reserved for for online games: */
     public static final short START_GAME = -1000;
-    public static final short OPPONENT_BLACK =  -1001;
+    public static final short OPPONENT_BLACK = -1001;
     public static final short OPPONENT_WHITE = -1002;
-    public static final short OFFER_DRAW = -1010;
-    public static final short RESIGN = -1011;
+
+    public static final short RESIGN = -1010;
+    public static final short OFFER_DRAW = -1100;
+    public static final short ACCEPT_DRAW = -1200;
+    public static final short DECLINE_DRAW = -1300;
 
     private final short information;
+
+    // todo implement static factory method to restrict access
 
     public Move(byte from, byte to) {
         information = (short) (from + to * 64);
@@ -37,12 +43,21 @@ public class Move {
         if (moveExpressions.length <= 1) throw new InputMismatchException(moveString +
                 " is not a move. Coordinates must be separated like: A1 A2");
 
-        byte from = Parser.parse(moveExpressions[0]);
-        byte to = Parser.parse(moveExpressions[1]);
+        byte from = Util.parse(moveExpressions[0]);
+        byte to = Util.parse(moveExpressions[1]);
         short special = 0;
 
         if (moveExpressions.length > 2) {
             switch (moveExpressions[2]) {
+                case "k":
+                    special |= KING_SIDE_CASTLING;
+                    break;
+                case "q":
+                    special |= QUEEN_SIDE_CASTLING;
+                    break;
+                case "e":
+                    special |= EN_PASSANT;
+                    break;
                 case "Q":
                     special |= PROMOTION_QUEEN;
                     break;
@@ -53,14 +68,14 @@ public class Move {
                     special |= PROMOTION_KNIGHT;
                     break;
                 case "R":
-                    special |=PROMOTION_ROOK;
+                    special |= PROMOTION_ROOK;
                     break;
             }
         }
         information = (short) ((short) (from + to * 64) | special);
     }
 
-    public Move(short information){
+    public Move(short information) {
         this.information = information;
     }
 
@@ -96,6 +111,11 @@ public class Move {
         return information % 64 == from;
     }
 
+    public boolean isFromRank(char rank) {
+        if (Util.getRankName((information % 64) / 8) == rank) return true;
+        return false;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -112,7 +132,7 @@ public class Move {
 
     @Override
     public String toString() {
-        String outp = " | (" + Parser.parse(information % 64) + "->" + Parser.parse((information / 64) % 64) + ')';
+        String outp = " | (" + Util.parse(information % 64) + "->" + Util.parse((information / 64) % 64) + ')';
         if (information < KING_SIDE_CASTLING) return outp; //no castling, enPassant or promotion
         else if ((information & 0b1111000000000000) == QUEEN_SIDE_CASTLING) return " | o-o-o";
         else if ((information & 0b1111000000000000) == KING_SIDE_CASTLING) return " | o-o";

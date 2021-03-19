@@ -15,6 +15,7 @@ public class GameStatus {
     private int whiteScore;
     private int blackScore;
     private int statusCode;
+    private boolean drawOffered;
 
     public GameStatus() {
         reset();
@@ -34,6 +35,14 @@ public class GameStatus {
 
     public void setBlackScore(int blackScore) {
         this.blackScore = blackScore;
+    }
+
+    public void setDrawOffered(boolean drawOffered){
+       this.drawOffered = drawOffered;
+    }
+
+    public boolean getDrawOffered(){
+        return drawOffered;
     }
 
     public int getStatusCode() {

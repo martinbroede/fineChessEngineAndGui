@@ -95,7 +95,7 @@ public class HashGenerator {
     }
 
     public void hashEnPassant(byte enP) {
-        hashCode ^= enPassantValues[enP];
+        if(enP >= 0) hashCode ^= enPassantValues[enP];
     }
 
     public void hashCastling(byte cRights) {

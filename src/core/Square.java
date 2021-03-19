@@ -1,6 +1,6 @@
 package core;
 
-public class Square { // todo most probably remove...
+public class Square { // todo ... this is never used...
     private byte position;
 
     private Square(byte pos){
@@ -12,7 +12,7 @@ public class Square { // todo most probably remove...
     }
 
     public void print(){
-        System.out.print("#"+ Parser.parse(this.position) + " ");
+        System.out.print("#"+ Util.parse(this.position) + " ");
     }
 
     public static Square[] createAllSquares() {

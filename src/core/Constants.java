@@ -5,8 +5,10 @@ import java.util.HashSet;
 import java.util.InputMismatchException;
 
 public class Constants {
+
     static public final boolean BLACK = false;
     static public final boolean WHITE = !BLACK;
+    static public final int MAX_MOVES = 100;
     final byte[][] WHITE_PAWN_CAPTURE_SQUARES;
     final byte[][] WHITE_PAWN_EN_PASSANT_CAPTURE;
     final byte[][] WHITE_PAWN_STRAIGHT_SQUARES;

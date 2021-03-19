@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.lang.reflect.AccessibleObject;
 import java.util.Scanner;
 
 public class MainWindow {
@@ -54,14 +55,22 @@ public class MainWindow {
     final JMenuItem itemPromotionRook;
     final JPopupMenu menuPromotion;
 
+    final JMenuItem itemAccept;
+    final JMenuItem itemDecline;
+    final JPopupMenu menuDraw;
+
     final JMenuItem itemUndo;
     final JMenuItem itemRedo;
 
     final JMenuItem itemRotateBoard;
+    final JMenuItem itemFromFEN;
 
     final JMenuItem itemAssignOpponentBlack;
     final JMenuItem itemAssignOpponentWhite;
     final JMenuItem itemResign;
+    final JMenuItem itemOfferDraw;
+
+
 
     final ColorScheme colorScheme;
     final int SIZE_L = 70;
@@ -142,6 +151,8 @@ public class MainWindow {
         itemPromotionBishop = new JMenuItem("\u2657 \u265D");
         itemPromotionRook = new JMenuItem("\u2656 \u265C");
 
+        itemAccept = new JMenuItem(" ja ");
+        itemDecline = new JMenuItem( "nein");
 
         KeyStroke ctrlZ = KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         KeyStroke ctrlR = KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
@@ -153,8 +164,10 @@ public class MainWindow {
         itemAssignOpponentBlack = new JMenuItem("Ich spiele WEISS");
         itemAssignOpponentWhite = new JMenuItem("Ich spiele SCHWARZ");
         itemResign = new JMenuItem("AUFGEBEN");
+        itemOfferDraw = new JMenuItem("REMIS ANBIETEN");
 
-        itemRotateBoard = new JMenuItem("drehen");
+        itemRotateBoard = new JMenuItem("Brett drehen");
+        itemFromFEN = new JMenuItem("Spiel beginnen aus FEN");
 
         JMenuItem itemColorStandard = new JMenuItem("standard");
         JMenuItem itemColorPlain = new JMenuItem("schlicht");
@@ -166,10 +179,11 @@ public class MainWindow {
         JMenu moveMenu = new JMenu("Zug...");
         JMenu castlingMenu = new JMenu("Rochade...");
         JMenu networkMenu =new JMenu("Netzwerk...");
-        JMenu boardMenu = new JMenu("Brett..");
+        JMenu extrasMenu = new JMenu("Extras...");
 
         menuPromotion = new JPopupMenu();
         menuPromotion.setFont(promotionItemFont);
+        menuDraw = new JPopupMenu();
 
         mainMenu.add(itemNewGame);
         mainMenu.add(itemStore);
@@ -202,7 +216,9 @@ public class MainWindow {
         networkMenu.add(itemNewNetworkGame);
         networkMenu.add(itemAssignOpponentBlack);
         networkMenu.add(itemAssignOpponentWhite);
+        networkMenu.addSeparator();
         networkMenu.add(itemResign);
+        networkMenu.add(itemOfferDraw);
         networkMenu.addSeparator();
         networkMenu.addSeparator();
         networkMenu.add(itemNetworkDestroy);
@@ -214,7 +230,8 @@ public class MainWindow {
         castlingMenu.add(itemCastlingKingside);
         castlingMenu.add(itemCastlingQueenside);
 
-        boardMenu.add(itemRotateBoard);
+        extrasMenu.add(itemRotateBoard);
+        extrasMenu.add(itemFromFEN);
 
         chatInput = new JTextField();
         chatOutput = new JTextArea();
@@ -224,10 +241,13 @@ public class MainWindow {
         menuPromotion.add(itemPromotionBishop);
         menuPromotion.add(itemPromotionKnight);
 
+        menuDraw.add(itemAccept);
+        menuDraw.add(itemDecline);
+
         menuBar = new JMenuBar();
         menuBar.add(mainMenu);
         menuBar.add(moveMenu);
-        menuBar.add(boardMenu);
+        menuBar.add(extrasMenu);
         menuBar.add(sizeMenu);
         menuBar.add(styleMenu);
         menuBar.add(networkMenu);
@@ -292,7 +312,7 @@ public class MainWindow {
                     text += scanner.nextLine() + '\n';
                 }
                 text = "Schach " + VERSION + "\n\n" + text;
-                DialogText license = new DialogText(text);
+                DialogText license = new DialogText(text, frame.getLocation());
                 license.setVisible(true);
             }catch(FileNotFoundException ex){
                 System.err.println("FILE NOT FOUND");
@@ -333,7 +353,7 @@ public class MainWindow {
 
         JPopupMenu menu = new JPopupMenu();
         menu.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        menu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor());
+        menu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor()*2);
 
         JMenuItem item = new JMenuItem(message);
         item.setFont(new Font("Times", Font.PLAIN, appearanceSettings.getSizeFactor() / 3));
@@ -363,6 +383,23 @@ public class MainWindow {
         itemPromotionKnight.setFont(appearanceSettings.getFont());
         itemPromotionQueen.setFont(appearanceSettings.getFont());
         itemPromotionRook.setFont(appearanceSettings.getFont());
+
+        menu.show(board, board.getWidth(), 0);
+    }
+
+    public void showDrawPopup(){
+
+        labelCapturedWhitePieces.setText(" Remis akzeptieren? ");
+        board.setActive(false); //makes board diffuse
+
+        JPopupMenu menu = menuDraw;
+        menu.setPopupSize(appearanceSettings.getSizeFactor() * 4 / 2, appearanceSettings.getMargin());
+
+        itemAccept.setBackground(appearanceSettings.getColorScheme().BLACK_SQUARES_COLOR);
+        itemDecline.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+
+        itemAccept.setFont(appearanceSettings.getFont());
+        itemDecline.setFont(appearanceSettings.getFont());
 
         menu.show(board, board.getWidth(), 0);
     }

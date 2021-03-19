@@ -3,15 +3,22 @@ package gui;
 import chessGameServer.MultiClientServer;
 import core.Chess;
 import core.CoreASCII;
-import fineChessUpdater.Updater;
+import fineChessUpdater.Downloader;
 
 public class Main {
     public static void main(String[] args) {
+
+        Chess chess;
+        Gui gui;
+
         if(args.length > 0){
             switch (args[0]){
+
+
+
                 case "UPDATE":
                     System.out.println("TRY DOWNLOADING LATEST RELEASE");
-                    new Updater();
+                    new Downloader();
                     break;
                 case "ASCII":
                     new CoreASCII().run();
@@ -25,12 +32,21 @@ public class Main {
                     MultiClientServer server = new MultiClientServer("0.0.0.0/50005");
                     server.start();
                     break;
+                case "PROVIDE":
+                    chess = new Chess();
+                     gui = new Gui(chess);
+                    gui.network.createServer(args[1]);
+                    break;
+                case "CONNECT":
+                    chess = new Chess();
+                    gui = new Gui(chess);
+                    gui.network.createClient(args[1]);
                 default:
                     System.err.println("DO NOT KNOW COMMAND " + args[0]);
             }
         }else{
-            Chess chess = new Chess();
-            Gui gui = new Gui(chess);
+            chess = new Chess();
+            gui = new Gui(chess);
         }
     }
 }

@@ -11,21 +11,21 @@ import java.net.URL;
 
 import static java.lang.Thread.sleep;
 
-public class Updater {
+public class Downloader {
     final static String OUTPUT_FILE = "latestRelease.zip";
     final static String DOWNLOAD_RESOURCE = "https://github.com/martinbro2021/fineChessEngineAndGui/archive/main.zip";
     final static int BUFFER_SIZE = 65536;
 
-    public Updater() {
+    public Downloader() {
         download(DOWNLOAD_RESOURCE);
     }
 
-    public Updater(String downloadUrl) {
+    public Downloader(String downloadUrl) {
         download(downloadUrl);
     }
 
     public static void main(String[] args) {
-        new Updater(DOWNLOAD_RESOURCE);
+        new Downloader(DOWNLOAD_RESOURCE);
     }
 
     private void download(String downloadUrl) {
@@ -44,13 +44,13 @@ public class Updater {
             text.setVisible(true);
         } finally {
             try {
-                sleep(2000);
+                sleep(1000);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
             if (dialog != null) dialog.dispose();
             if (text != null) text.dispose();
-            System.out.println("UPDATER GOODBYE");
+            System.out.println("DOWNLOADER GOODBYE");
         }
     }
 }

@@ -5,27 +5,14 @@ import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
-import static java.lang.Thread.sleep;
-
 public class DialogMessage extends JDialog {
-
-    public DialogMessage(String message){
-        setUp(message);
-    }
-
-    public DialogMessage(String message, Point location){
-        setUp(message);
-        this.setLocation(location);
-    }
-
-    public void setUp(String message) {
+    JLabel label = new JLabel();
+    {
         setTitle("INFO");
-        JLabel label = new JLabel(" " + message + " ");
         JButton ok = new JButton(" OK ");
         setLayout(new FlowLayout());
         add(label);
         add(ok);
-        pack();
         setLocation(new Point(400, 200));
         setVisible(true);
         ok.addActionListener(e -> this.dispose());
@@ -67,7 +54,21 @@ public class DialogMessage extends JDialog {
         });
     }
 
+    public DialogMessage(String message) {
+        label.setText(" " + message + " ");
+        pack();
+
+    }
+
+    public DialogMessage(String message, Point location) {
+        this.setLocation(location);
+        label.setText(" " + message + " ");
+        pack();
+    }
+
+
     public static void main(String[] args) {
         DialogMessage dialogMessage = new DialogMessage("Verbinden erfolgreich");
+        DialogMessage dialogMessage2 = new DialogMessage("verschieben möglich.", new Point(100,200));
     }
 }

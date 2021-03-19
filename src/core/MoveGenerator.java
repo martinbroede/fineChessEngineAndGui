@@ -13,6 +13,7 @@ public class MoveGenerator extends PiecePatterns {
     protected boolean whiteToMove;
     protected short moveCounter;
     protected short moveCounterLastCaptureOrPawnMove;
+    /** the file number ('A' = 0) in which the pawn to be captured is located */
     protected byte enPassantPawn;
 
 
@@ -130,7 +131,7 @@ public class MoveGenerator extends PiecePatterns {
         }
 
         public void print() {
-            System.out.print(Parser.parseSymbol(type) + " #" + Parser.parse(position) + " | ");
+            System.out.print(Util.parseSymbol(type) + " #" + Util.parse(position) + " | ");
         }
 
     }
@@ -183,7 +184,7 @@ public class MoveGenerator extends PiecePatterns {
                     return p;
                 }
             }
-            throw new InputMismatchException("NO PIECE AT " + Parser.parse(from));
+            throw new InputMismatchException("NO PIECE AT " + Util.parse(from));
         }
 
         public void removePiece(byte position) {
@@ -246,7 +247,7 @@ public class MoveGenerator extends PiecePatterns {
                 String outp = "";
 
                 for (Piece p : this) {
-                    outp += Parser.parseSymbol(p.type);
+                    outp += Util.parseSymbol(p.type);
                 }
 
                 return outp;

@@ -1,13 +1,9 @@
 package chessNetwork;
 
-import javafx.scene.input.KeyCode;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
-import static java.awt.event.KeyEvent.VK_ENTER;
 
 public class IpAndPortDialog {
 
@@ -15,31 +11,7 @@ public class IpAndPortDialog {
     public JTextField portField;
     public JButton okButton;
     public JDialog dialog = new JDialog();
-
-    public IpAndPortDialog(Point location) {
-        dialog.setLocation(location);
-        setUp();
-    }
-
-    public static void main(String[] args) {
-        new IpAndPortDialog();
-    }
-
-    public String getIp(){
-        String ip = ipField.getText();
-        return ip.replace(" ", "");
-    }
-
-    public String getPort(){
-        String port = portField.getText();
-        return port.replace(" ", "");
-    }
-
-    public IpAndPortDialog() {
-        setUp();
-    }
-
-    private void setUp() {
+    {
         dialog.setTitle("IP Konfiguration");
         dialog.setSize(370, 100);
         dialog.setLayout(new FlowLayout());
@@ -74,7 +46,49 @@ public class IpAndPortDialog {
                 }
             }
         });
+
+        portField.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    okAction();
+                }
+            }
+        });
     }
 
-    public void okAction(){}
+    public IpAndPortDialog(Point location) {
+        dialog.setLocation(location);
+    }
+
+    public IpAndPortDialog() {
+    }
+
+    public static void main(String[] args) {
+        new IpAndPortDialog();
+    }
+
+    public String getIp() {
+        String ip = ipField.getText();
+        return ip.replace(" ", "");
+    }
+
+    public String getPort() {
+        String port = portField.getText();
+        return port.replace(" ", "");
+    }
+
+    /** will be performed after a you klick on OK button or you hit enter*/
+    public void okAction() {
+    }
 }

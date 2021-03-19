@@ -1,5 +1,7 @@
 package core;
 
+import gui.DialogMessage;
+
 import java.io.Serializable;
 import java.util.Stack;
 
@@ -8,15 +10,11 @@ public class Chess extends MoveGenerator implements Serializable {
     public final String INIT_STANDARD_BOARD = ""
             + "RNBQKBNRPPPPPPPP                "
             + "                pppppppprnbqkbnr";
-
-
     public History history;
     public Stack<Move> undoneMovesHistory;
     public GameStatus gameStatus;
     HashGenerator hashGenerator;
-
-    public Chess() {
-
+    {
         whitePieces = new PieceCollectionWhite();
         blackPieces = new PieceCollectionBlack();
         castling = new Castling();
@@ -24,7 +22,9 @@ public class Chess extends MoveGenerator implements Serializable {
         undoneMovesHistory = new Stack<>();
         hashGenerator = new HashGenerator();
         gameStatus = new GameStatus();
+    }
 
+    public Chess() {
         newGame("K                                                              k", Castling.NO_RIGHTS);
     }
 
@@ -39,7 +39,7 @@ public class Chess extends MoveGenerator implements Serializable {
         hashGenerator.hashCastling((byte) castlingRights);
     }
 
-    public void newGame(String init) { //todo new game from FEN
+    public void newGame(String init) {
 
         moveCounter = 0;
         moveCounterLastCaptureOrPawnMove = 0;
@@ -73,6 +73,73 @@ public class Chess extends MoveGenerator implements Serializable {
         System.out.println("BOARD HASHED " + hashGenerator.getHashCode());
         whitePieces.updateThreats();
         blackPieces.updateThreats();
+    }
+
+    public void startFromFEN(String FEN) {
+
+        whitePieces.clear();
+        blackPieces.clear();
+        history.clear();
+        undoneMovesHistory.clear();
+        hashGenerator.reset();
+        gameStatus.reset();
+
+        try {
+            String[] args = FEN.split(" ");
+            whiteToMove = args[1].equals("w");
+            castling.setRights(Castling.ALL_RIGHTS);
+            if (!args[2].contains("K")) castling.disableWhiteKingSide();
+            if (!args[2].contains("Q")) castling.disableWhiteQueenSide();
+            if (!args[2].contains("q")) castling.disableBlackQueenSide();
+            if (!args[2].contains("k")) castling.disableBlackKingSide();
+
+            enPassantPawn = -1;
+            //todo get en Passant from FEN
+
+            moveCounterLastCaptureOrPawnMove = Short.parseShort(args[4]);
+            moveCounter = (short)(Short.parseShort(args[5]) - 1);
+
+            String init = args[0]
+                    .replaceAll("8", "        ")
+                    .replaceAll("7", "       ")
+                    .replaceAll("6", "      ")
+                    .replaceAll("5", "     ")
+                    .replaceAll("4", "    ")
+                    .replaceAll("3", "   ")
+                    .replaceAll("2", "  ")
+                    .replaceAll("1", " ")
+                    .replaceAll("/", "");
+
+            for (byte pos = 0; pos <= 63; pos++) {
+                char c = init.toCharArray()[63 - pos];
+                board[pos] = c;
+                if (is_white_piece(c)) {
+                    Piece piece = new Piece(pos, c);
+                    whitePieces.add(piece);
+                    if (c == 'K') whitePieces.setKing(piece);
+                }
+                if (is_black_piece(c)) {
+                    Piece piece = new Piece(pos, c);
+                    blackPieces.add(piece);
+                    if (c == 'k') blackPieces.setKing(piece);
+                }
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("FEN NOT ACCEPTED");
+            new DialogMessage("FEN wurde nicht akzeptiert");
+            return;
+        }
+
+        long h = hashGenerator.generateHashCode(board, whiteToMove, castling.getRights(), enPassantPawn);
+        hashGenerator.setHashCode(h);
+        System.out.println("BOARD HASHED " + hashGenerator.getHashCode());
+        whitePieces.updateThreats();
+        blackPieces.updateThreats();
+
+        castling.print();
+        System.out.println("MOVE COUNTER:" + moveCounter + "/LAST CAPTURE: " + moveCounterLastCaptureOrPawnMove);
     }
 
     public Moves getUserLegalMoves(boolean userColor, boolean userPlaysBothColors) {
@@ -137,6 +204,8 @@ public class Chess extends MoveGenerator implements Serializable {
     /** check if legal, if so move piece */
     public boolean userMove(Move move, boolean userColor, boolean userPlaysBoth) {
 
+        if (gameStatus.getStatusCode() != GameStatus.UNDECIDED) return false;
+
         if (move.getInformation() < 0) {
             if (move.getInformation() == Move.RESIGN) {
                 if (whiteToMove) {
@@ -145,13 +214,32 @@ public class Chess extends MoveGenerator implements Serializable {
                     gameStatus.setStatusCode(GameStatus.BLACK_RESIGNED);
                 }
                 return true;
+
+            } else if (move.getInformation() == Move.OFFER_DRAW) {
+                gameStatus.setDrawOffered(true);
+                return true;
+
+            } else if (move.getInformation() == Move.ACCEPT_DRAW) {
+                if (gameStatus.getDrawOffered()) {
+                    gameStatus.setStatusCode(GameStatus.DRAW_ACCEPTED);
+                    return true;
+                }
+                return false; // nothing to accept if not offered
+
+            } else if (move.getInformation() == Move.DECLINE_DRAW) {
+                gameStatus.setDrawOffered(false);
+                return true;
+
             }
         } else if (!getUserLegalMoves(userColor, userPlaysBoth).contains(move)) {
-            System.out.print("USER MOVE IS ILLEGAL (CHESS) / ");
+            System.out.print("USER MOVE" + move + " IS ILLEGAL (CHESS) / ");
             return false;
+
         }
+        gameStatus.setDrawOffered(false);
         undoneMovesHistory.clear();
         movePiece(move);
+        System.out.println("LAST CAPTURE OR PAWN MOVE:" + (moveCounter - moveCounterLastCaptureOrPawnMove)); //todo remove
         return true;
     }
 
@@ -173,7 +261,6 @@ public class Chess extends MoveGenerator implements Serializable {
                 blackPieces.removePiece(to);
                 moveCounterLastCaptureOrPawnMove = moveCounter;
             }
-
 
             Piece movingPiece = whitePieces.changePosition(from, to);
             board[to] = board[from];
@@ -220,10 +307,17 @@ public class Chess extends MoveGenerator implements Serializable {
                     hashGenerator.hashPosition('R', (byte) 3); // C1
                 }
             }
+
+            hashGenerator.hashEnPassant(enPassantPawn);
             enPassantPawn = -1;
+
             if (typeMovingPiece == 'P') {
+
+                moveCounterLastCaptureOrPawnMove = moveCounter;
+
                 if (to - from == 16) {
                     enPassantPawn = (byte) (to % 8);
+                    hashGenerator.hashEnPassant(enPassantPawn);
                 } else if (move.getSpecial() == Move.PROMOTION_QUEEN) {
                     board[to] = 'Q';
                     typePromotedPiece = 'Q';
@@ -240,6 +334,10 @@ public class Chess extends MoveGenerator implements Serializable {
                     board[to] = 'R';
                     typePromotedPiece = 'R';
                     movingPiece.setPattern(whiteRookPattern);
+                } else if (move.getSpecial() == Move.EN_PASSANT) {
+                    board[to - 8] = ' ';
+                    hashGenerator.hashPosition('p', (byte) (to - 8));
+                    blackPieces.removePiece((byte) (to - 8));
                 }
             }
         } else { // "blackToMove"
@@ -294,10 +392,17 @@ public class Chess extends MoveGenerator implements Serializable {
                     hashGenerator.hashPosition('r', (byte) 59);
                 }
             }
+
+            hashGenerator.hashEnPassant(enPassantPawn);
             enPassantPawn = -1;
+
             if (typeMovingPiece == 'p') {
+
+                moveCounterLastCaptureOrPawnMove = moveCounter;
+
                 if (from - to == 16) {
                     enPassantPawn = (byte) (to % 8);
+                    hashGenerator.hashEnPassant(enPassantPawn);
                 } else if (move.getSpecial() == Move.PROMOTION_QUEEN) {
                     board[to] = 'q';
                     typePromotedPiece = 'q';
@@ -314,11 +419,14 @@ public class Chess extends MoveGenerator implements Serializable {
                     board[to] = 'r';
                     typePromotedPiece = 'r';
                     movingPiece.setPattern(blackRookPattern);
+                } else if (move.getSpecial() == Move.EN_PASSANT) {
+                    board[to + 8] = ' ';
+                    hashGenerator.hashPosition('P', (byte) (to + 8));
+                    whitePieces.removePiece((byte) (to + 8));
                 }
             }
 
         }
-
 
         if (whiteToMove) whitePieces.updateThreats();
         else blackPieces.updateThreats();
@@ -332,7 +440,10 @@ public class Chess extends MoveGenerator implements Serializable {
 
         hashGenerator.hashTurn(); // 2nd
 
-        /*assert testHashGenerator();*/
+        if (moveCounter - moveCounterLastCaptureOrPawnMove >= Constants.MAX_MOVES)
+            gameStatus.setStatusCode(GameStatus.DRAW_MOVES);
+
+        assert testHashGenerator();
     }
 
     public boolean testHashGenerator() {
@@ -343,7 +454,7 @@ public class Chess extends MoveGenerator implements Serializable {
             System.err.println("HASHES NOT IDENTICAL:");
             System.err.println("GENERATE:  \t\t" + generateHashCode);
             System.err.println("GET:\t\t\t" + hashGenerator.getHashCode());
-            return true;
+            return false;
         }
         return true;
     }
@@ -368,7 +479,7 @@ public class Chess extends MoveGenerator implements Serializable {
      *
      * @return information: Information about the revoked move (see in Move.java)
      */
-    public short undo() {
+    private short undo() {
 
         gameStatus.setStatusCode(GameStatus.UNDECIDED);
         State state = history.pop();
@@ -377,7 +488,7 @@ public class Chess extends MoveGenerator implements Serializable {
         byte to = Move.getTo(state.moveInformation);
 
         if (state.capture != ' ') {
-            if (whiteToMove) whitePieces.activateLastCapturedPiece();
+            if (whiteToMove) whitePieces.activateLastCapturedPiece(); //todo unify with "if" below
             else blackPieces.activateLastCapturedPiece();
         }
 
@@ -401,6 +512,11 @@ public class Chess extends MoveGenerator implements Serializable {
                         (Move.getSpecial(state.moveInformation) == Move.PROMOTION_BISHOP)) {
                     board[to] = 'p';
                     movingPiece.setPattern(blackPawnPattern);
+                } else if ((Move.getSpecial(state.moveInformation) == Move.EN_PASSANT)) {
+                    board[to + 8] = 'P';
+                    state.capture = ' ';
+                    hashGenerator.hashPosition('P', (byte) (to + 8));
+                    whitePieces.activateLastCapturedPiece();
                 }
             }
         } else {
@@ -422,6 +538,11 @@ public class Chess extends MoveGenerator implements Serializable {
                         (Move.getSpecial(state.moveInformation) == Move.PROMOTION_BISHOP)) {
                     board[to] = 'P';
                     movingPiece.setPattern(whitePawnPattern);
+                } else if ((Move.getSpecial(state.moveInformation) == Move.EN_PASSANT)) {
+                    board[to - 8] = 'p';
+                    state.capture = ' ';
+                    hashGenerator.hashPosition('p', (byte) (to - 8));
+                    blackPieces.activateLastCapturedPiece();
                 }
             }
 
@@ -535,7 +656,7 @@ public class Chess extends MoveGenerator implements Serializable {
         }
 
         public void print() {
-            System.out.print(Parser.parse(moveInformation) +
+            System.out.print(Util.parse(moveInformation) +
                     "CAPTURED: " + capture);
         }
     }
@@ -549,11 +670,11 @@ public class Chess extends MoveGenerator implements Serializable {
                 count++;
                 if (count % 2 == 1) outp.append(count / 2).append(". ");
                 else outp.append(" - ");
-                outp.append(Parser.parseSymbol(state.pieceType)).
+                outp.append(Util.parseSymbol(state.pieceType)).
                         append(" ").
-                        append(Parser.parseLowerCase(state.moveInformation % 64)).
+                        append(Util.parseLowerCase(state.moveInformation % 64)).
                         append(" ").
-                        append(Parser.parseLowerCase(state.moveInformation >> 6));
+                        append(Util.parseLowerCase(state.moveInformation >> 6));
                 if (count % 2 == 0) outp.append("\n");
             }
             return outp.toString();

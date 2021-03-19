@@ -1,17 +1,20 @@
-#V1.46 (beta)
+#V0.48 (beta)
 (most recent version)
 
-V1.0    initial commit
-V1.1    add castling
-V1.2    add promotion
-V1.3    add simple network connection
-V1.35   network for both IPv4 and IPv6 addresses
-V1.36   bugfix promotion and castling in online games
-V1.4    add user chat
-V1.41   add board rotation. add color choice -> you can define who plays white in online games
-V1.42   implement sendingQueue
-V1.43   add user resign
-V1.44   add menu items
-V1.45   minor bugfix board rotation -> square colors correct now
+V0.01   initial commit
+V0.1    add castling
+V0.2    add promotion
+V0.3    add simple network connection
+V0.35   network for both IPv4 and IPv6 addresses
+V0.36   bugfix promotion and castling in online games
+V0.4    add user chat
+V0.41   add board rotation. add color choice -> you can define who plays white in online games
+V0.42   implement sendingQueue
+V0.43   add user resign
+V0.44   add menu items
+V0.45   minor bugfix board rotation -> square colors correct now
         add updater for Windows10
-V1.46   represent en passant captures correctly - not playable yet though!
+V0.46   represent en passant captures correctly - not playable yet though!
+V0.47   add en passant capture - FINALLY!
+        add draw offer + accept draw for online games
+V0.48   add FEN initialization

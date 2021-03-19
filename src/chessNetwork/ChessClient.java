@@ -106,14 +106,14 @@ public class ChessClient extends Thread {
                 sendingThread.interrupt();
                 receivingThread.interrupt();
             } catch(NullPointerException ex){
-                System.err.println("SENDER/RECEIVER ALREADY DEAD");
+                System.err.println("SENDER/RECEIVER DEAD");
             }
         }
 
         if (socket != null) {
             try {
                 socket.close();
-                System.out.println("CLIENT CLOSED HIS SOCKET.");
+                System.out.println("CLIENT CLOSED SOCKET.");
             } catch (IOException ex) {
                 ex.printStackTrace();
                 System.exit(-1);

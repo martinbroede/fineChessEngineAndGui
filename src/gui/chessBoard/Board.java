@@ -2,7 +2,7 @@ package gui.chessBoard;
 
 import core.Chess;
 import core.Moves;
-import core.Parser;
+import core.Util;
 
 import javax.swing.*;
 import java.awt.*;
@@ -96,7 +96,7 @@ public class Board extends JPanel {
         x = boardOrientation ? x : 7 - x;
         y = boardOrientation ? y : 7 - y;
 
-        return Parser.parse(x, y);
+        return Util.parse(x, y);
     }
 
     @Override

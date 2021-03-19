@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.InputMismatchException;
 
 /** includes all parsing functions */
-public final class Parser {
+public final class Util {
 
     private static final HashMap<Character, Character> SYMBOLS = new HashMap<Character, Character>() {{
         put('K', '\u2654');
@@ -39,8 +39,8 @@ public final class Parser {
         put(' ', ' ');
     }};
 
-    private Parser() {
-    } // ne need to instantiate parser
+    private Util() {
+    } // no need to instantiate parser
 
     public static char parseSymbol(char c) {
         return SYMBOLS.get(c);

@@ -2,7 +2,7 @@ package gui.chessBoard;
 
 import core.Move;
 import core.Moves;
-import core.Parser;
+import core.Util;
 
 import java.awt.*;
 
@@ -77,7 +77,7 @@ public class Painter {
                 g2.setColor(settings.getColorScheme().PIECE_COLOR);
                 switch (settings.font.getFontName()) {
                     case "DejaVu Sans":
-                        g2.drawString("" + Parser.parseSymbol(board[pos]),
+                        g2.drawString("" + Util.parseSymbol(board[pos]),
                                 x * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
                                         - settings.font.getSize() / 2 + settings.getOffset() / 5,
                                 y * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
@@ -85,14 +85,14 @@ public class Painter {
                         break;
                     case "Dialog.plain": // "Times"
                     case "MS Gothic":
-                        g2.drawString("" + Parser.parseSymbol(board[pos]),
+                        g2.drawString("" + Util.parseSymbol(board[pos]),
                                 x * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
                                         - settings.font.getSize() / 2,
                                 y * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
                                         + settings.font.getSize() * 2 / 5);
                         break;
                     default:
-                        g2.drawString("" + Parser.parseSymbolFromChessFont(board[pos]),
+                        g2.drawString("" + Util.parseSymbolFromChessFont(board[pos]),
                                 x * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
                                         - settings.font.getSize() / 2,
                                 y * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
@@ -115,7 +115,7 @@ public class Painter {
             int file = boardOrientation ? x : 7 - x;
             int y = 7;
             g2.setColor(settings.getColorScheme().PIECE_COLOR);
-            g2.drawString("" + Parser.getFileName(file),
+            g2.drawString("" + Util.getFileName(file),
                     x * settings.getSizeFactor() + settings.getOffset()
                             + settings.getSizeFactor() / 2 - settings.font.getSize() / 2,
                     y * settings.getSizeFactor() + settings.getOffset()
@@ -124,7 +124,7 @@ public class Painter {
         for (int y = 1; y < 8; y++) {
             int rank = boardOrientation ? y : 7 - y;
             g2.setColor(settings.getColorScheme().PIECE_COLOR);
-            g2.drawString("" + Parser.getRankName(rank),
+            g2.drawString("" + Util.getRankName(rank),
                     settings.getOffset() + settings.getSizeFactor() / 2 - settings.font.getSize() / 2,
                     (7 - y) * settings.getSizeFactor() + settings.getOffset()
                             + settings.getSizeFactor() / 2 + settings.font.getSize() * 45 / 100);

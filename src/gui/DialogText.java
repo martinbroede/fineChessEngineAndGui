@@ -6,20 +6,9 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 public class DialogText extends JDialog {
-
-    public DialogText(String text, Point location){
-        setLocation(location);
-        setUp(text);
-    }
-    public DialogText(String text){
-        setUp(text);
-    }
-
-    private void setUp(String text){
-        JTextArea textArea = new JTextArea();
-        textArea.setText(text);
+    JTextArea textArea = new JTextArea();
+    {
         add(textArea);
-        pack();
         textArea.setEnabled(false);
         textArea.setBackground(new Color(238, 242, 246));
         textArea.setDisabledTextColor(Color.darkGray);
@@ -62,7 +51,19 @@ public class DialogText extends JDialog {
         });
     }
 
+    public DialogText(String text, Point location) {
+        setLocation(location);
+        textArea.setText(text);
+        pack();
+    }
+
+    public DialogText(String text) {
+        textArea.setText(text);
+        pack();
+    }
+
     public static void main(String[] args) {
-        new DialogText("Hello\nWorld");
+        new DialogText("Default\nPosition");
+        new DialogText("other\nPosition", new Point(100,100));
     }
 }

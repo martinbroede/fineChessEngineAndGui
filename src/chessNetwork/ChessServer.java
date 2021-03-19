@@ -1,6 +1,5 @@
 package chessNetwork;
 
-import core.Move;
 import gui.DialogMessage;
 
 import java.io.*;
@@ -9,7 +8,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
-import java.util.Queue;
 
 public class ChessServer extends Thread {
 
@@ -26,7 +24,6 @@ public class ChessServer extends Thread {
     public ChessServer(String configIpAndPort, int delayMilliSec, LinkedList<String> messageQueue) {
 
         setName("SERVER FOR " + configIpAndPort);
-
         System.out.println("START SERVER FOR " + configIpAndPort);
         String[] args = configIpAndPort.split("/");
         String ipString = "";
@@ -49,7 +46,6 @@ public class ChessServer extends Thread {
     }
 
     public static void main(String[] ar) {
-
 
         ChessServer server = new ChessServer("2003:c8:9706:2700:d933:17e8:c402:0000/50005",
                 2000, new LinkedList<>());
@@ -74,6 +70,7 @@ public class ChessServer extends Thread {
     }
 
     public boolean prepareServerSocket() {
+
         try {
             serverSocket = new ServerSocket(port, 2, inetAddress);
             System.out.println("SERVER SOCKET PROVIDED. ADRESS: " + serverSocket.getLocalSocketAddress());
@@ -107,7 +104,7 @@ public class ChessServer extends Thread {
             serverSocket.close();
         } catch (IOException ex) {
             ex.printStackTrace();
-        } catch (NullPointerException ex){
+        } catch (NullPointerException ex) {
             System.err.println("SERVER SOCKET = NULL");
         }
         serverSocket = null;
@@ -130,8 +127,8 @@ public class ChessServer extends Thread {
                 }
                 sendingThread.interrupt(); //close both if one thread is dead.
                 receivingThread.interrupt();
-            } catch(NullPointerException ex){
-                System.err.println("SENDER/REVEIVER ALREADY DEAD");
+            } catch (NullPointerException ex) {
+                System.err.println("SENDER/REVEIVER DEAD");
             }
         }
 

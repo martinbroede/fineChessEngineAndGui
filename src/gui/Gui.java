@@ -15,10 +15,10 @@ import java.util.NoSuchElementException;
 
 public class Gui extends MainWindow {
 
-    private final int DELAY_MILLISEC = 100; //update interval
     final boolean WHITE = Constants.WHITE; //for readability reasons
     final boolean BLACK = Constants.BLACK;
     final Network network;
+    private final int DELAY_MILLISEC = 100; //update interval
     private final String storagePath = "chessUserData/currentGame.txt";
     private final ChatDialog chatDialog;
     private Chess chess;
@@ -42,6 +42,7 @@ public class Gui extends MainWindow {
 
             @Override
             public void run() {
+                setName("GUI UPDATER");
                 while (true) {
 
                     if (network.messageQueue.size() > 0) {
@@ -53,9 +54,11 @@ public class Gui extends MainWindow {
                             String[] args = message.split(" ");
                             if (args[0].equals("MOVE")) {
                                 Move nextMove = new Move(Short.parseShort(args[1]));
-                                switch(nextMove.getInformation()) {
+                                switch (nextMove.getInformation()) {
                                     case Move.START_GAME:
                                         chess.newGame();
+                                        labelCapturedBlackPieces.setText("");
+                                        labelCapturedWhitePieces.setText("");
                                         showPopup("Spiel beginnen");
                                         break;
                                     case Move.OPPONENT_BLACK:
@@ -70,17 +73,34 @@ public class Gui extends MainWindow {
                                         userPlaysBothColors = false;
                                         showPopup("Du spielst WEISS");
                                         break;
+
+                                    case Move.OFFER_DRAW:
+                                        chess.userMove(nextMove, userPlaysColor, true);
+                                        showDrawPopup();
+                                        break;
+                                    case Move.DECLINE_DRAW:
+                                        chess.userMove(nextMove, userPlaysColor, true);
+                                        showPopup("Angebot abgelehnt.");
+                                        break;
+                                    case Move.ACCEPT_DRAW:
+                                        chess.userMove(nextMove, userPlaysColor, true);
+                                        showPopup(chess.gameStatus.getStatusNotice());
+                                    case Move.RESIGN:
+                                        chess.userMove(nextMove, userPlaysColor, true);
+                                        showPopup(chess.gameStatus.getStatusNotice());
                                     default:
                                         System.out.println(nextMove.getInformation());
-                                        chess.userMove(nextMove, userPlaysColor, true); // todo should work with false
+                                        chess.userMove(nextMove, userPlaysColor, true);
+                                        refreshFrameContent(-1);
                                 }
+                            } else if (args[0].equals("%FEN")) {
+                                chess.startFromFEN(message.replaceAll("%FEN ", ""));
                                 refreshFrameContent(-1);
-                            }else if(args[0].equals("NOTE")) {
-                                showPopup(message.replace("NOTE ",""));
-                            }else if(args[0].equals("ERROR")){
-                                new DialogMessage(message.replace("ERROR ",""));
-                            }
-                            else chatOutput.append("\t: " + message + "\n");
+                            } else if (args[0].equals("NOTE")) {
+                                showPopup(message.replace("NOTE ", ""));
+                            } else if (args[0].equals("ERROR")) {
+                                new DialogMessage(message.replace("ERROR ", ""));
+                            } else chatOutput.append("\t: " + message + "\n");
                         } catch (NoSuchElementException ex) {
                             System.err.println("MESSAGE QUEUE IS EMPTY");
                         }
@@ -102,6 +122,8 @@ public class Gui extends MainWindow {
         itemNewGame.addActionListener(e -> {
             System.out.println("NEW GAME");
             chess.newGame(chess.INIT_STANDARD_BOARD);
+            labelCapturedBlackPieces.setText("");
+            labelCapturedWhitePieces.setText("");
             userPlaysBothColors = true;
             refreshFrameContent(-1);
             resetMoveString();
@@ -222,6 +244,10 @@ public class Gui extends MainWindow {
             refreshFrameContent(-1);
         });
 
+        itemFromFEN.addActionListener(e -> {
+            new DialogFEN();
+        });
+
         itemAssignOpponentBlack.addActionListener(e -> {
             network.sendToNet("MOVE " + Move.OPPONENT_BLACK);
             userPlaysColor = WHITE;
@@ -241,13 +267,35 @@ public class Gui extends MainWindow {
         });
 
         itemResign.addActionListener(e -> {
-            if(chess.getTurnColor() == userPlaysColor) {
+            if (chess.getTurnColor() == userPlaysColor) {
                 network.sendToNet("MOVE " + Move.RESIGN);
-                chess.userMove(new Move(Move.RESIGN), userPlaysColor, userPlaysBothColors);
+                chess.userMove(new Move(Move.RESIGN), userPlaysColor, true);
                 showPopup(chess.gameStatus.getStatusNotice());
-            }else{
+            } else {
                 showPopup("Gib auf, wenn du am Zug bist.");
             }
+        });
+
+        itemOfferDraw.addActionListener(e -> {
+            if (chess.getTurnColor() == userPlaysColor) {
+                network.sendToNet("MOVE " + Move.OFFER_DRAW);
+                chess.userMove(new Move(Move.OFFER_DRAW), userPlaysColor, true);
+                showPopup("Remis angeboten...");
+            } else {
+                showPopup("Mache ein Angebot, wenn du am Zug bist.");
+            }
+        });
+
+        itemAccept.addActionListener(e -> {
+            network.sendToNet("MOVE " + Move.ACCEPT_DRAW);
+            chess.userMove(new Move(Move.ACCEPT_DRAW), userPlaysColor, true);
+            showPopup(chess.gameStatus.getStatusNotice());
+        });
+
+        itemDecline.addActionListener(e -> {
+            network.sendToNet("MOVE " + Move.DECLINE_DRAW);
+            chess.userMove(new Move(Move.DECLINE_DRAW), userPlaysColor, true);
+            showPopup("Angebot abgelehnt.");
         });
 
         chatInput.addKeyListener(new KeyListener() {
@@ -275,7 +323,7 @@ public class Gui extends MainWindow {
             public void keyTyped(KeyEvent e) {
                 if (e.getKeyChar() == 'R')
                     new TestReachability();
-                if(hiddenFeature && e.getKeyChar()=='\\') {
+                if (hiddenFeature && e.getKeyChar() == '\\') {
                     System.out.println("TRAINER MODE");
                     board.toggleShowHints();
                     refreshFrameContent(-1);
@@ -285,7 +333,7 @@ public class Gui extends MainWindow {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.isControlDown() && e.isAltDown()) hiddenFeature = true;
+                if (e.isControlDown() && e.isAltDown()) hiddenFeature = true;
             }
 
             @Override
@@ -334,30 +382,40 @@ public class Gui extends MainWindow {
         if (moveString.equals("")) { // no square chosen yet
             if (chess.pieceAtSquare(pos, chess.getTurnColor())) {
 
-                moveString += Parser.parse(pos) + " ";
+                moveString += Util.parse(pos) + " ";
             }
         } //you already chose a square:
-        else if (!moveString.equals(Parser.parse(pos) + " ")) //avoids moves like A1->A1! :
-            moveString += Parser.parse(pos) + " ";
+        else if (!moveString.equals(Util.parse(pos) + " ")) //avoids moves like A1->A1! :
+            moveString += Util.parse(pos) + " ";
 
         if (moveString.length() > 5) { // "A1 A2 ": from A1 to A2
             Move nextMove = new Move(moveString);
 
             if (!movePiece(nextMove)) {
+
                 /* move illegal? try castling moves */
-                if (nextMove.isFrom(Parser.parse("E1")) && nextMove.getTo() == Parser.parse("G1")) {
+                if (nextMove.isFrom(Util.parse("E1")) && nextMove.getTo() == Util.parse("G1")) {
                     if (!movePiece(new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING)))
                         System.err.println("CASTLING o-o ILLEGAL");
-                } else if (nextMove.isFrom(Parser.parse("E1")) && nextMove.getTo() == Parser.parse("C1")) {
+                } else if (nextMove.isFrom(Util.parse("E1")) && nextMove.getTo() == Util.parse("C1")) {
                     if (!movePiece(new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING)))
                         System.err.println("CASTLING o-o-o ILLEGAL");
-                } else if (nextMove.isFrom(Parser.parse("E8")) && nextMove.getTo() == Parser.parse("G8")) {
+                } else if (nextMove.isFrom(Util.parse("E8")) && nextMove.getTo() == Util.parse("G8")) {
                     if (!movePiece(new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING)))
                         System.err.println("CASTLING o-o ILLEGAL");
-                } else if (nextMove.isFrom(Parser.parse("E8")) && nextMove.getTo() == Parser.parse("C8")) {
+                } else if (nextMove.isFrom(Util.parse("E8")) && nextMove.getTo() == Util.parse("C8")) {
                     if (!movePiece(new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING)))
                         System.err.println("CASTLING o-o-o ILLEGAL");
-                } else {
+                }
+
+                /* move illegal? try en passant moves */
+                else if (nextMove.isFromRank('4') || nextMove.isFromRank('5')) {
+                    Move enPmove = new Move((short) (nextMove.getInformation() | Move.EN_PASSANT));
+                    if (!movePiece(enPmove)) System.err.println("EN PASSANT CAPTURE ILLEGAL");
+                }
+
+                /* move illegal? try promotion moves */
+                else {
                     byte from = nextMove.getFrom();
                     byte to = nextMove.getTo();
                     Move promotionMove = new Move(from, to, Move.PROMOTION_QUEEN);
@@ -450,6 +508,25 @@ public class Gui extends MainWindow {
 
             pack();
             setVisible(!isVisible());
+        }
+    }
+
+    class DialogFEN extends DialogInput {
+        public DialogFEN() {
+            super(
+                    "Spiel aus FEN beginnen",
+                    "FEN eingeben:",
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                    "OK",
+                    board.getLocation());
+        }
+
+        @Override
+        public void buttonKlicked() {
+            chess.startFromFEN(input.getText());
+            network.sendToNet("%FEN " + input.getText());
+            refreshFrameContent(-1);
+            dispose();
         }
     }
 }
