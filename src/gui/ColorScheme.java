@@ -7,7 +7,6 @@ public class ColorScheme {
     public final static int STANDARD = 1;
     public final static int DARK = 2;
     public final static int PLAIN = 3;
-
     public Color WHITE_SQUARES_COLOR;
     public Color BLACK_SQUARES_COLOR;
     public Color MARGIN_COLOR;
@@ -17,11 +16,18 @@ public class ColorScheme {
     public Color HIGHLIGHT_2_COLOR;
     public Color LIGHT_COLOR;
 
+    public int getCurrentScheme() {
+        return currentScheme;
+    }
+
+    private int currentScheme;
+
     public ColorScheme() {
         setColors(STANDARD);
     }
 
     protected void setColors(int scheme) {
+        currentScheme = scheme;
         switch (scheme) {
             case STANDARD: {
                 WHITE_SQUARES_COLOR = new Color(0xE2E3C8); /* WHITE SQUARES */

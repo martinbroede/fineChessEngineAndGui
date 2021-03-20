@@ -1,7 +1,7 @@
 package fineChessUpdater;
 
-import gui.DialogMessage;
-import gui.DialogText;
+import gui.dialogs.DialogMessage;
+import gui.dialogs.DialogText;
 
 import java.awt.*;
 import java.io.BufferedInputStream;

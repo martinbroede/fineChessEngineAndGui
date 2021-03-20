@@ -27,6 +27,9 @@ public class IpAndPortDialog {
         dialog.add(portField);
         dialog.add(okButton);
         dialog.setVisible(true);
+        okButton.addActionListener(e -> {
+            okAction();
+        });
 
         ipField.addKeyListener(new KeyListener() {
             @Override

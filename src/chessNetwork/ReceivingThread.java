@@ -25,7 +25,7 @@ class ReceivingThread extends Thread {
 
         String message = "";
 
-        while (!message.equals("ciao")) {
+        while (!message.equals("%CIAO")) {
             try {
 
                 message = bReader.readLine();

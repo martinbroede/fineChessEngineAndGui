@@ -1,4 +1,4 @@
-#V0.48 (beta)
+#V0.49 (beta)
 (most recent version)
 
 V0.01   initial commit
@@ -18,3 +18,5 @@ V0.46   represent en passant captures correctly - not playable yet though!
 V0.47   add en passant capture - FINALLY!
         add draw offer + accept draw for online games
 V0.48   add FEN initialization
+        add 50-moves rule
+V0.49   add user names

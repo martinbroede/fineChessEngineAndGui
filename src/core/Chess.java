@@ -1,6 +1,6 @@
 package core;
 
-import gui.DialogMessage;
+import gui.dialogs.DialogMessage;
 
 import java.io.Serializable;
 import java.util.Stack;
@@ -239,7 +239,7 @@ public class Chess extends MoveGenerator implements Serializable {
         gameStatus.setDrawOffered(false);
         undoneMovesHistory.clear();
         movePiece(move);
-        System.out.println("LAST CAPTURE OR PAWN MOVE:" + (moveCounter - moveCounterLastCaptureOrPawnMove)); //todo remove
+        //System.out.println("LAST CAPTURE OR PAWN MOVE:" + (moveCounter - moveCounterLastCaptureOrPawnMove)); //todo remove
         return true;
     }
 

@@ -1,6 +1,6 @@
 package chessNetwork;
 
-import gui.DialogMessage;
+import gui.dialogs.DialogMessage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

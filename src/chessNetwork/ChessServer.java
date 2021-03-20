@@ -1,6 +1,6 @@
 package chessNetwork;
 
-import gui.DialogMessage;
+import gui.dialogs.DialogMessage;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -19,7 +19,7 @@ public class ChessServer extends Thread {
     private ReceivingThread receivingThread;
     private SendingThread sendingThread;
     private LinkedList<String> messageQueue;
-
+    private boolean connectionSuccessful;
 
     public ChessServer(String configIpAndPort, int delayMilliSec, LinkedList<String> messageQueue) {
 
@@ -59,6 +59,10 @@ public class ChessServer extends Thread {
         server.send("SERVER SAYS HELLO TO THE WORLD!");
     }
 
+    public boolean isConnectionSuccessful() {
+        return connectionSuccessful;
+    }
+
     public void send(String message) {
         sendingThread.prepareToSend(message);
     }
@@ -77,6 +81,7 @@ public class ChessServer extends Thread {
             socket = serverSocket.accept();
             System.out.println("CONNECTED WITH " + socket.getRemoteSocketAddress());
             new DialogMessage("Server - Verbinden mit " + socket.getRemoteSocketAddress() + " erfolgreich");
+
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             sendingThread.setWriter(bufferedWriter);
@@ -84,8 +89,8 @@ public class ChessServer extends Thread {
             System.out.println("SERVER READY");
 
             send(""); //to send messages in queue
-
             serverSocket.close();
+            connectionSuccessful = true;
             return true;
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -107,6 +112,8 @@ public class ChessServer extends Thread {
         } catch (NullPointerException ex) {
             System.err.println("SERVER SOCKET = NULL");
         }
+
+        connectionSuccessful = false;
         serverSocket = null;
     }
 
@@ -131,6 +138,8 @@ public class ChessServer extends Thread {
                 System.err.println("SENDER/REVEIVER DEAD");
             }
         }
+
+        connectionSuccessful = false;
 
         if (socket != null) {
             try {

@@ -1,9 +1,10 @@
-package gui;
+package gui.dialogs;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 public class DialogInput extends JDialog {
 
@@ -14,7 +15,7 @@ public class DialogInput extends JDialog {
         setTitle(title);
         JLabel label = new JLabel(" " + message + " ");
         input = new JTextField(defaultInput);
-        JButton button = new JButton(" "+ buttonText + " ");
+        JButton button = new JButton(" " + buttonText + " ");
         setLayout(new FlowLayout());
         add(label);
         add(input);
@@ -22,6 +23,24 @@ public class DialogInput extends JDialog {
         pack();
         setVisible(true);
         button.addActionListener(this::actionPerformed);
+        input.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    buttonKlicked();
+                }
+            }
+        });
     }
 
     public void buttonKlicked() {

@@ -4,6 +4,8 @@ import chessNetwork.Network;
 import chessNetwork.TestReachability;
 import core.*;
 import fileHandling.ReadWrite;
+import gui.dialogs.DialogInput;
+import gui.dialogs.DialogMessage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,7 +29,7 @@ public class Gui extends MainWindow {
     private boolean allowUndoMoves = true;
     private boolean userPlaysColor = WHITE;
     private boolean userPlaysBothColors = true;
-    private boolean hiddenFeature = false;
+    private boolean feature = false;
 
     public Gui(Chess chessGame) {
 
@@ -36,87 +38,9 @@ public class Gui extends MainWindow {
         this.chess = chessGame;
         moveString = "";
         moveStringSpecialMoves = "";
-        network = new Network(VERSION);
-
-        class NetworkUpdater extends Thread {
-
-            @Override
-            public void run() {
-                setName("GUI UPDATER");
-                while (true) {
-
-                    if (network.messageQueue.size() > 0) {
-                        String message;
-                        try {
-                            message = network.messageQueue.getFirst();
-                            network.messageQueue.removeFirst();
-
-                            String[] args = message.split(" ");
-                            if (args[0].equals("MOVE")) {
-                                Move nextMove = new Move(Short.parseShort(args[1]));
-                                switch (nextMove.getInformation()) {
-                                    case Move.START_GAME:
-                                        chess.newGame();
-                                        labelCapturedBlackPieces.setText("");
-                                        labelCapturedWhitePieces.setText("");
-                                        showPopup("Spiel beginnen");
-                                        break;
-                                    case Move.OPPONENT_BLACK:
-                                        userPlaysColor = BLACK;
-                                        board.setWhitePlayerNorth();
-                                        userPlaysBothColors = false;
-                                        showPopup("Du spielst SCHWARZ");
-                                        break;
-                                    case Move.OPPONENT_WHITE:
-                                        userPlaysColor = WHITE;
-                                        board.setWhitePlayerSouth();
-                                        userPlaysBothColors = false;
-                                        showPopup("Du spielst WEISS");
-                                        break;
-
-                                    case Move.OFFER_DRAW:
-                                        chess.userMove(nextMove, userPlaysColor, true);
-                                        showDrawPopup();
-                                        break;
-                                    case Move.DECLINE_DRAW:
-                                        chess.userMove(nextMove, userPlaysColor, true);
-                                        showPopup("Angebot abgelehnt.");
-                                        break;
-                                    case Move.ACCEPT_DRAW:
-                                        chess.userMove(nextMove, userPlaysColor, true);
-                                        showPopup(chess.gameStatus.getStatusNotice());
-                                    case Move.RESIGN:
-                                        chess.userMove(nextMove, userPlaysColor, true);
-                                        showPopup(chess.gameStatus.getStatusNotice());
-                                    default:
-                                        System.out.println(nextMove.getInformation());
-                                        chess.userMove(nextMove, userPlaysColor, true);
-                                        refreshFrameContent(-1);
-                                }
-                            } else if (args[0].equals("%FEN")) {
-                                chess.startFromFEN(message.replaceAll("%FEN ", ""));
-                                refreshFrameContent(-1);
-                            } else if (args[0].equals("NOTE")) {
-                                showPopup(message.replace("NOTE ", ""));
-                            } else if (args[0].equals("ERROR")) {
-                                new DialogMessage(message.replace("ERROR ", ""));
-                            } else chatOutput.append("\t: " + message + "\n");
-                        } catch (NoSuchElementException ex) {
-                            System.err.println("MESSAGE QUEUE IS EMPTY");
-                        }
-                    }
-
-                    try {
-                        sleep(DELAY_MILLISEC);
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        }
-        NetworkUpdater networkUpdater = new NetworkUpdater();
-        networkUpdater.start();
-
+        network = new Network();
+        NetworkRefresher networkRefresher = new NetworkRefresher();
+        networkRefresher.start();
 
         /* add action listeners */
         itemNewGame.addActionListener(e -> {
@@ -232,9 +156,10 @@ public class Gui extends MainWindow {
 
         itemStartClient.addActionListener(e -> network.showClientIpDialog(frame.getLocation()));
         itemStartServer.addActionListener(e -> network.showServerIpDialog(frame.getLocation()));
+
         itemNewNetworkGame.addActionListener(e -> {
             chess.newGame();
-            network.startGame();
+            network.sendToNet("%MOVE " + Move.START_GAME);
             showPopup("Spiel beginnen");
         });
         itemNetworkDestroy.addActionListener(e -> network.safeDeleteServerOrClient());
@@ -249,7 +174,7 @@ public class Gui extends MainWindow {
         });
 
         itemAssignOpponentBlack.addActionListener(e -> {
-            network.sendToNet("MOVE " + Move.OPPONENT_BLACK);
+            network.sendToNet("%MOVE " + Move.OPPONENT_BLACK);
             userPlaysColor = WHITE;
             userPlaysBothColors = false;
             board.setWhitePlayerSouth();
@@ -258,7 +183,7 @@ public class Gui extends MainWindow {
         });
 
         itemAssignOpponentWhite.addActionListener(e -> {
-            network.sendToNet("MOVE " + Move.OPPONENT_WHITE);
+            network.sendToNet("%MOVE " + Move.OPPONENT_WHITE);
             userPlaysColor = BLACK;
             userPlaysBothColors = false;
             board.setWhitePlayerNorth();
@@ -268,7 +193,7 @@ public class Gui extends MainWindow {
 
         itemResign.addActionListener(e -> {
             if (chess.getTurnColor() == userPlaysColor) {
-                network.sendToNet("MOVE " + Move.RESIGN);
+                network.sendToNet("%MOVE " + Move.RESIGN);
                 chess.userMove(new Move(Move.RESIGN), userPlaysColor, true);
                 showPopup(chess.gameStatus.getStatusNotice());
             } else {
@@ -278,7 +203,7 @@ public class Gui extends MainWindow {
 
         itemOfferDraw.addActionListener(e -> {
             if (chess.getTurnColor() == userPlaysColor) {
-                network.sendToNet("MOVE " + Move.OFFER_DRAW);
+                network.sendToNet("%MOVE " + Move.OFFER_DRAW);
                 chess.userMove(new Move(Move.OFFER_DRAW), userPlaysColor, true);
                 showPopup("Remis angeboten...");
             } else {
@@ -287,35 +212,15 @@ public class Gui extends MainWindow {
         });
 
         itemAccept.addActionListener(e -> {
-            network.sendToNet("MOVE " + Move.ACCEPT_DRAW);
+            network.sendToNet("%MOVE " + Move.ACCEPT_DRAW);
             chess.userMove(new Move(Move.ACCEPT_DRAW), userPlaysColor, true);
             showPopup(chess.gameStatus.getStatusNotice());
         });
 
         itemDecline.addActionListener(e -> {
-            network.sendToNet("MOVE " + Move.DECLINE_DRAW);
+            network.sendToNet("%MOVE " + Move.DECLINE_DRAW);
             chess.userMove(new Move(Move.DECLINE_DRAW), userPlaysColor, true);
             showPopup("Angebot abgelehnt.");
-        });
-
-        chatInput.addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    network.sendToNet(chatInput.getText());
-                    chatOutput.append(chatInput.getText() + "\n");
-                    chatInput.setText("");
-                }
-            }
         });
 
         frame.addKeyListener(new KeyListener() {
@@ -323,7 +228,7 @@ public class Gui extends MainWindow {
             public void keyTyped(KeyEvent e) {
                 if (e.getKeyChar() == 'R')
                     new TestReachability();
-                if (hiddenFeature && e.getKeyChar() == '\\') {
+                if (feature && e.getKeyChar() == '\\') {
                     System.out.println("TRAINER MODE");
                     board.toggleShowHints();
                     refreshFrameContent(-1);
@@ -333,12 +238,12 @@ public class Gui extends MainWindow {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.isControlDown() && e.isAltDown()) hiddenFeature = true;
+                if (e.isControlDown() && e.isAltDown()) feature = true;
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                hiddenFeature = false;
+                feature = false;
             }
         });
 
@@ -370,7 +275,7 @@ public class Gui extends MainWindow {
 
     private boolean movePiece(Move move) {
         if (chess.userMove(move, userPlaysColor, userPlaysBothColors)) {
-            if (network.isActive()) network.sendToNet("MOVE " + move.getInformation());
+            if (network.isActive()) network.sendToNet("%MOVE " + move.getInformation());
             return true;
         } else return false;
     }
@@ -489,6 +394,30 @@ public class Gui extends MainWindow {
             setLayout(new BorderLayout());
             add(chatOutput, BorderLayout.NORTH);
             add(chatInput, BorderLayout.SOUTH);
+            pack();
+            setResizable(false);
+
+            chatInput.addKeyListener(new KeyListener() {
+
+                @Override
+                public void keyTyped(KeyEvent e) {
+                }
+
+                @Override
+                public void keyPressed(KeyEvent e) {
+                }
+
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        if (chatInput.getText().startsWith("%")) network.sendToNet(chatInput.getText());
+                        else network.sendToNet("%CHAT " + chatInput.getText());
+
+                        chatOutput.append(myName + ": " + chatInput.getText() + "\n");
+                        chatInput.setText("");
+                    }
+                }
+            });
         }
 
         public void toggleVisibility() {
@@ -527,6 +456,129 @@ public class Gui extends MainWindow {
             network.sendToNet("%FEN " + input.getText());
             refreshFrameContent(-1);
             dispose();
+        }
+    }
+
+    class NetworkRefresher extends Thread {
+
+        @Override
+        public void run() {
+            setName("GUI REFRESHER");
+
+            while (true) {
+
+                while (!network.isConnected()) {
+                    try {
+                        sleep(DELAY_MILLISEC);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+                network.sendToNet("%VERSION?");
+                network.sendToNet("%NAME?");
+
+                while (network.isConnected()) {
+
+                    if (network.messageQueue.size() > 0) {
+                        String message;
+                        try {
+                            message = network.messageQueue.getFirst();
+                            network.messageQueue.removeFirst();
+
+                            String[] args = message.split(" ");
+                            switch (args[0]) {
+                                case "%MOVE":
+                                    Move nextMove = new Move(Short.parseShort(args[1]));
+                                    switch (nextMove.getInformation()) {
+                                        case Move.START_GAME:
+                                            chess.newGame();
+                                            labelCapturedBlackPieces.setText("");
+                                            labelCapturedWhitePieces.setText("");
+                                            network.sendToNet("% Spiel gegen " + myName + " begonnen - " + VERSION);
+                                            showPopup("Spiel beginnen");
+                                            break;
+                                        case Move.OPPONENT_BLACK:
+                                            userPlaysColor = BLACK;
+                                            board.setWhitePlayerNorth();
+                                            userPlaysBothColors = false;
+                                            showPopup("Du spielst SCHWARZ");
+                                            break;
+                                        case Move.OPPONENT_WHITE:
+                                            userPlaysColor = WHITE;
+                                            board.setWhitePlayerSouth();
+                                            userPlaysBothColors = false;
+                                            showPopup("Du spielst WEISS");
+                                            break;
+                                        case Move.OFFER_DRAW:
+                                            chess.userMove(nextMove, userPlaysColor, true);
+                                            showDrawPopup();
+                                            break;
+                                        case Move.DECLINE_DRAW:
+                                            chess.userMove(nextMove, userPlaysColor, true);
+                                            showPopup("Angebot abgelehnt.");
+                                            break;
+                                        case Move.ACCEPT_DRAW:
+                                            chess.userMove(nextMove, userPlaysColor, true);
+                                            showPopup(chess.gameStatus.getStatusNotice());
+                                            break;
+                                        case Move.RESIGN:
+                                            chess.userMove(nextMove, userPlaysColor, true);
+                                            showPopup(chess.gameStatus.getStatusNotice());
+                                            break;
+                                        default:
+                                            System.out.println(nextMove.getInformation());
+                                            chess.userMove(nextMove, userPlaysColor, true);
+                                            refreshFrameContent(-1);
+                                    }
+                                    break;
+                                case "%FEN":
+                                    chess.startFromFEN(message.replaceAll("%FEN ", ""));
+                                    labelCapturedBlackPieces.setText("");
+                                    labelCapturedWhitePieces.setText("");
+                                    refreshFrameContent(-1);
+                                    break;
+                                case "%NOTE":
+                                    showPopup(message.replace("%NOTE ", ""));
+                                    break;
+                                case "%ERROR":
+                                    new DialogMessage(message.replace("%ERROR ", ""));
+                                    break;
+                                case "%VERSION?": // received version request
+                                    network.sendToNet("%VERSION " + myName + " / " + VERSION);
+                                    break;
+                                case "%VERSION": // received friend's version
+                                    chatOutput.append(message.replaceAll("%VERSION ", "") + "\n");
+                                    break;
+                                case "%NAME?": // received name request
+                                    network.sendToNet("%NAME " + myName);
+                                    break;
+                                case "%NAME": // received friend's name
+                                    myFriendsName = message.replace("%NAME ", "");
+                                    System.out.println("YOU PLAY AGAINST " + myFriendsName);
+                                    break;
+                                case "%CHAT": // display chat in chatwindow
+                                    chatOutput.append(myFriendsName + ": " + message.replaceAll("%CHAT ", "") + "\n");
+                                    break;
+                                case "%": // show information in chatwindow
+                                    chatOutput.append(message.replaceAll("% ", "") + "\n");
+                                    break;
+                                default:
+                                    System.out.println("WHAT SHOULD I DO WITH THIS CRAP: " + message + "?");
+
+                            }
+                        } catch (NoSuchElementException ex) {
+                            System.err.println("MESSAGE QUEUE IS EMPTY");
+                        }
+                    }
+
+                    try {
+                        sleep(DELAY_MILLISEC);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
         }
     }
 }

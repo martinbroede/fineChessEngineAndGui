@@ -1,7 +1,5 @@
 package chessNetwork;
 
-import core.Move;
-
 import java.awt.*;
 import java.util.LinkedList;
 
@@ -9,17 +7,12 @@ public class Network {
 
     public final LinkedList<String> messageQueue = new LinkedList<>();
     private final int DELAY_MILLISEC = 10;
-    private final String CHESS_VERSION;
     private ChessServer server;
     private ChessClient client;
-    private boolean active = false;
-
-    public Network(String version) {
-        CHESS_VERSION = version;
-    }
+    private boolean active;
 
     public static void main(String[] args) {
-        Network net = new Network("V1.0");
+        Network net = new Network();
         net.showClientIpDialog(new Point(100, 100));
     }
 
@@ -29,7 +22,12 @@ public class Network {
         server = new ChessServer(configIpAndPort, DELAY_MILLISEC, messageQueue);
         server.start();
         active = true;
-        sendToNet(CHESS_VERSION);
+    }
+
+    public boolean isConnected() {
+        if (server != null) return server.isConnectionSuccessful();
+        if (client != null) return client.isConnectionSuccessful();
+        return false;
     }
 
     public void createClient(String configIpAndPort) {
@@ -38,7 +36,6 @@ public class Network {
         client = new ChessClient(configIpAndPort, DELAY_MILLISEC, messageQueue);
         client.start();
         active = true;
-        sendToNet(CHESS_VERSION);
     }
 
     public boolean isActive() {
@@ -51,7 +48,7 @@ public class Network {
             client.send(message);
         } else if (server != null) {
             server.send(message);
-        } else System.err.println("NETWORK IS NOT ACTIVE");
+        } else System.out.println("NETWORK IS NOT ACTIVE - DID NOT SEND " + message);
     }
 
     public void safeDeleteServerOrClient() {
@@ -70,10 +67,6 @@ public class Network {
         active = false;
     }
 
-    public void startGame() {
-        sendToNet("MOVE " + Move.START_GAME);
-    }
-
     public void showServerIpDialog(Point location) {
         new ServerIpDialog(location);
     }
@@ -86,10 +79,6 @@ public class Network {
         public ServerIpDialog(Point location) {
             super(location);
             dialog.setTitle("IP Konfiguration Server");
-            okButton.addActionListener(e -> {
-                okAction();
-
-            });
         }
 
         @Override
@@ -104,9 +93,6 @@ public class Network {
         public ClientIpDialog(Point location) {
             super(location);
             dialog.setTitle("IP Konfiguration Client");
-            okButton.addActionListener(e -> {
-                okAction();
-            });
         }
 
         @Override

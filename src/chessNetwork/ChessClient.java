@@ -1,14 +1,12 @@
 package chessNetwork;
 
-import core.Move;
-import gui.DialogMessage;
+import gui.dialogs.DialogMessage;
 
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
-import java.util.Queue;
 
 public class ChessClient extends Thread {
 
@@ -19,6 +17,7 @@ public class ChessClient extends Thread {
     private Socket socket;
     private ReceivingThread receivingThread;
     private SendingThread sendingThread;
+    private boolean connectionSuccessful;
 
     public ChessClient(String configIpAndPort, int delayMilliSec, LinkedList<String> messageQueue) {
 
@@ -34,7 +33,7 @@ public class ChessClient extends Thread {
         }
         this.delayMilliSec = delayMilliSec;
         this.messageQueue = messageQueue;
-        sendingThread = new SendingThread(delayMilliSec,"CLIENT SENDER");
+        sendingThread = new SendingThread(delayMilliSec, "CLIENT SENDER");
     }
 
     public static void main(String[] ar) {
@@ -44,6 +43,10 @@ public class ChessClient extends Thread {
         client.send("Tom");
         client.send("Hello World!");
         client.send("What's up!?");
+    }
+
+    public boolean isConnectionSuccessful() {
+        return connectionSuccessful;
     }
 
     @Override
@@ -63,10 +66,11 @@ public class ChessClient extends Thread {
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             sendingThread.setWriter(bufferedWriter);
-            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, messageQueue,"CLIENT RECEIVER");
+            receivingThread = new ReceivingThread(bufferedReader, delayMilliSec, messageQueue, "CLIENT RECEIVER");
             System.out.println("CONNECTED TO SERVER " + socket.getRemoteSocketAddress());
             new DialogMessage("Erfolgreich mit Server " + socket.getRemoteSocketAddress() + " verbunden.");
             send(""); //to send messages in queue
+            connectionSuccessful = true;
             return true;
         } catch (UnknownHostException ex) {
             System.err.println("DON'T KNOW HO(R)ST: TRY AGAIN.");
@@ -99,16 +103,18 @@ public class ChessClient extends Thread {
                 while (sendingThread.isAlive() && receivingThread.isAlive()) {
                     sleep(1000);
                 }
-            } catch (InterruptedException ex){
+            } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
             try {
                 sendingThread.interrupt();
                 receivingThread.interrupt();
-            } catch(NullPointerException ex){
+            } catch (NullPointerException ex) {
                 System.err.println("SENDER/RECEIVER DEAD");
             }
         }
+
+        connectionSuccessful = false;
 
         if (socket != null) {
             try {

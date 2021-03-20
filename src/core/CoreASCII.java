@@ -23,7 +23,7 @@ public class CoreASCII {
             {
                 Move nextMove = new Move(nextMoveInput);
                 if(!chess.userMove(nextMove,Constants.WHITE,true))
-                    System.err.println("CORE ASCII: MOVE ILLEGAL");
+                    System.err.println("ASCII MOVE ILLEGAL");
             }
             catch(InputMismatchException exception)
             {

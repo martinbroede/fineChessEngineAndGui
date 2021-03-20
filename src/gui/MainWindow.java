@@ -3,13 +3,17 @@ package gui;
 import core.Chess;
 import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
+import gui.dialogs.DialogInput;
+import gui.dialogs.DialogText;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.lang.reflect.AccessibleObject;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.*;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class MainWindow {
@@ -23,9 +27,6 @@ public class MainWindow {
     final JLabel labelCapturedBlackPieces;
     final JLabel labelPlaceHolderWest;
     final JLabel labelPlaceHolderEast;
-
-    final JTextField chatInput;
-    final JTextArea chatOutput;
 
     final JMenuItem itemStartServer;
     final JMenuItem itemStartClient;
@@ -64,24 +65,70 @@ public class MainWindow {
 
     final JMenuItem itemRotateBoard;
     final JMenuItem itemFromFEN;
+    final JMenuItem itemRename;
 
     final JMenuItem itemAssignOpponentBlack;
     final JMenuItem itemAssignOpponentWhite;
     final JMenuItem itemResign;
     final JMenuItem itemOfferDraw;
 
-
+    final JTextField chatInput;
+    final JTextArea chatOutput;
 
     final ColorScheme colorScheme;
     final int SIZE_L = 70;
     final int SIZE_M = 45;
     final int SIZE_S = 30;
+    String STORED_SETTINGS;
     String VERSION = "VERSION UNKNOWN";
+    String myName = "";
+    String myFriendsName = "";
 
     public MainWindow(Chess chess) {
 
         frame = new JFrame();
         frame.setResizable(false);
+        frame.addWindowListener(new WindowListener());
+        frame.setTitle("Schach");
+
+        try {
+            File settingsFile = new File("settings.txt");
+
+            if (settingsFile.createNewFile()) {
+                System.out.println(settingsFile.getName() + " CREATED");
+            } else {
+                System.out.println("FOUND SETTINGS");
+            }
+
+            Scanner settingsIn = new Scanner(settingsFile);
+            String settings = "";
+            while (settingsIn.hasNext())
+                settings += settingsIn.nextLine() + "\n";
+
+            settingsIn.close();
+
+            STORED_SETTINGS = settings;
+            myName = getSetting("%NAME", settings);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchElementException ex) {
+            System.out.println("NO SETTINGS STORED YET");
+        }
+
+        try {
+            String title = "Schach ";
+            FileInputStream stream = new FileInputStream("version.txt");
+            Scanner scanner = new Scanner(stream);
+            VERSION = scanner.nextLine();
+            title += VERSION;
+            if (!myName.equals("")) title += " -" + myName + "-";
+            frame.setTitle(title);
+        } catch (FileNotFoundException ex) {
+            System.err.println("VERSION FILE NOT FOUND");
+        }
+
+
         labelCapturedWhitePieces = new JLabel(" ", JLabel.CENTER);
         labelCapturedBlackPieces = new JLabel(" ", JLabel.CENTER);
         labelPlaceHolderWest = new JLabel(" ", JLabel.CENTER);
@@ -89,19 +136,6 @@ public class MainWindow {
         colorScheme = new ColorScheme();
         appearanceSettings = new AppearanceSettings(colorScheme);
         board = new Board(SIZE_S, chess, appearanceSettings);
-
-        frame.setTitle("Schach");
-        try {
-            String title = "Schach ";
-            FileInputStream stream = new FileInputStream("version.txt");
-            Scanner scanner = new Scanner(stream);
-            VERSION = scanner.nextLine();
-            title += VERSION;
-            frame.setTitle(title);
-        }catch(FileNotFoundException ex){
-            System.err.println("VERSION FILE NOT FOUND");
-        }
-        frame.addWindowListener(new WindowListener());
 
         content = new JPanel();
         content.setLayout(new BorderLayout());
@@ -139,7 +173,7 @@ public class MainWindow {
         itemSize2 = new JMenuItem("mittel");
         itemSize3 = new JMenuItem("klein");
         itemEnlarge = new JMenuItem("+ + +");
-        itemDiminish = new JMenuItem( "- - -");
+        itemDiminish = new JMenuItem("- - -");
         itemChangePieceStyle = new JMenuItem("Schachfiguren");
 
         itemCastlingKingside = new JMenuItem("kurz");
@@ -152,7 +186,7 @@ public class MainWindow {
         itemPromotionRook = new JMenuItem("\u2656 \u265C");
 
         itemAccept = new JMenuItem(" ja ");
-        itemDecline = new JMenuItem( "nein");
+        itemDecline = new JMenuItem("nein");
 
         KeyStroke ctrlZ = KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         KeyStroke ctrlR = KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
@@ -168,6 +202,7 @@ public class MainWindow {
 
         itemRotateBoard = new JMenuItem("Brett drehen");
         itemFromFEN = new JMenuItem("Spiel beginnen aus FEN");
+        itemRename = new JMenuItem("Namen ändern");
 
         JMenuItem itemColorStandard = new JMenuItem("standard");
         JMenuItem itemColorPlain = new JMenuItem("schlicht");
@@ -178,7 +213,7 @@ public class MainWindow {
         JMenu styleMenu = new JMenu("Stil...");
         JMenu moveMenu = new JMenu("Zug...");
         JMenu castlingMenu = new JMenu("Rochade...");
-        JMenu networkMenu =new JMenu("Netzwerk...");
+        JMenu networkMenu = new JMenu("Netzwerk...");
         JMenu extrasMenu = new JMenu("Extras...");
 
         menuPromotion = new JPopupMenu();
@@ -232,6 +267,7 @@ public class MainWindow {
 
         extrasMenu.add(itemRotateBoard);
         extrasMenu.add(itemFromFEN);
+        extrasMenu.add(itemRename);
 
         chatInput = new JTextField();
         chatOutput = new JTextArea();
@@ -254,7 +290,6 @@ public class MainWindow {
         frame.add(menuPromotion);
         frame.setJMenuBar(menuBar);
         frame.setLocation(0, 0);
-        frame.setVisible(true);
         setStyleSettings();
 
         content.add(labelCapturedWhitePieces, BorderLayout.NORTH);
@@ -262,7 +297,33 @@ public class MainWindow {
         content.add(board, BorderLayout.CENTER);
         content.add(labelPlaceHolderEast, BorderLayout.EAST);
         content.add(labelCapturedBlackPieces, BorderLayout.SOUTH);
-        adjustBoardAndFrameSize(SIZE_S);
+
+        {
+            String dressCode = getSetting("%STYLE",STORED_SETTINGS);
+            if(!dressCode.equals("")) colorScheme.setColors(Integer.parseInt(dressCode));
+
+            String size = getSetting("%SIZE", STORED_SETTINGS);
+            if(!size.equals("")) adjustBoardAndFrameSize(Integer.parseInt(size));
+            else adjustBoardAndFrameSize(SIZE_S);
+        }
+
+        itemRestore.setEnabled(false);
+        itemStore.setEnabled(false);
+        itemBegin.setEnabled(false);
+
+
+        frame.setVisible(true);
+
+        if (myName.equals("")) {
+
+            new DialogInput("Namen wählen", "Mein Name:",
+                    "ohneNamen", "OK", frame.getLocation()) {
+                public void buttonKlicked() {
+                    myName = input.getText();
+                    dispose();
+                }
+            };
+        }
 
         /*  ###################################### add action listeners ############################################# */
 
@@ -279,11 +340,11 @@ public class MainWindow {
             board.repaint();
         });
         itemEnlarge.addActionListener(e -> {
-            adjustBoardAndFrameSize(appearanceSettings.getSizeFactor()*6/5);
+            adjustBoardAndFrameSize(appearanceSettings.getSizeFactor() * 6 / 5);
             board.repaint();
         });
         itemDiminish.addActionListener(e -> {
-            adjustBoardAndFrameSize(appearanceSettings.getSizeFactor()*5/6);
+            adjustBoardAndFrameSize(appearanceSettings.getSizeFactor() * 5 / 6);
             board.repaint();
         });
 
@@ -308,20 +369,26 @@ public class MainWindow {
                 FileInputStream stream = new FileInputStream("LICENSE");
                 Scanner scanner = new Scanner(stream);
                 String text = "";
-                while(scanner.hasNext()){
+                while (scanner.hasNext()) {
                     text += scanner.nextLine() + '\n';
                 }
                 text = "Schach " + VERSION + "\n\n" + text;
                 DialogText license = new DialogText(text, frame.getLocation());
                 license.setVisible(true);
-            }catch(FileNotFoundException ex){
+            } catch (FileNotFoundException ex) {
                 System.err.println("FILE NOT FOUND");
             }
         });
 
-        itemRestore.setEnabled(false);
-        itemStore.setEnabled(false);
-        itemBegin.setEnabled(false);
+        itemRename.addActionListener(e ->
+                new DialogInput("Namen wählen", "Mein Name:",
+                        "ohneNamen", "OK", frame.getLocation()) {
+                    public void buttonKlicked() {
+                        myName = input.getText();
+                        dispose();
+                    }
+                });
+        /*  #################################### \add action listeners\ ############################################# */
     }
 
     private void adjustBoardAndFrameSize(int size_factor) {
@@ -337,7 +404,7 @@ public class MainWindow {
         labelCapturedWhitePieces.setPreferredSize(newDim);
         labelCapturedBlackPieces.setPreferredSize(newDim);
 
-        newDim = new Dimension(appearanceSettings.getSizeFactor()*4, appearanceSettings.getMargin()*2);
+        newDim = new Dimension(appearanceSettings.getSizeFactor() * 4, appearanceSettings.getMargin() * 2);
         chatOutput.setPreferredSize(newDim);
 
         board.adjustSize();
@@ -353,7 +420,7 @@ public class MainWindow {
 
         JPopupMenu menu = new JPopupMenu();
         menu.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        menu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor()*2);
+        menu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor() * 2);
 
         JMenuItem item = new JMenuItem(message);
         item.setFont(new Font("Times", Font.PLAIN, appearanceSettings.getSizeFactor() / 3));
@@ -387,7 +454,7 @@ public class MainWindow {
         menu.show(board, board.getWidth(), 0);
     }
 
-    public void showDrawPopup(){
+    public void showDrawPopup() {
 
         labelCapturedWhitePieces.setText(" Remis akzeptieren? ");
         board.setActive(false); //makes board diffuse
@@ -417,11 +484,34 @@ public class MainWindow {
         labelPlaceHolderEast.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
     }
 
-    static class WindowListener extends WindowAdapter {
+    public String getSetting(String attributeName, String settings) {
+        String[] args = settings.split("\n");
+        for (String arg : args) {
+            if (arg.startsWith(attributeName)) {
+                return arg.replaceAll(attributeName + " ", "");
+            }
+        }
+        return "";
+    }
+
+    class WindowListener extends WindowAdapter {
         @Override
         public void windowClosing(WindowEvent e) {
-            System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY");
+
+            try {
+                FileWriter writer = new FileWriter("settings.txt");
+                String settings = "%NAME " + myName + "\n";
+                settings += "%SIZE " + appearanceSettings.getSizeFactor() + "\n";
+                settings += "%STYLE " + appearanceSettings.getColorScheme().getCurrentScheme();
+                writer.write(settings);
+                writer.close();
+                System.out.println("STORED SETTINGS: \n" + settings);
+            } catch (IOException ex) {
+                System.err.println("STORE SETTINGS FAILED");
+            }
+
             e.getWindow().dispose();
+            System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY");
             System.exit(0);
         }
     }
