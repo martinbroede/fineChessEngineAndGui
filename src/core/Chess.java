@@ -706,15 +706,15 @@ public class Chess extends MoveGenerator implements Serializable {
             //todo keep in mind even "Long" provides only "int", i.e. 32bit hashcode...
 
             if (repetitionCount == null) {
-                System.out.println("HASH 0 => 1"); // todo remove
+                //System.out.println("HASH 0 => 1"); // todo remove
                 repetitionCountMap.put(state.hashCodeLong, FIRST);
 
             } else if (repetitionCount == FIRST) {
-                System.out.println("HASH 1 => 2"); //todo remove
+                //System.out.println("HASH 1 => 2"); //todo remove
                 repetitionCountMap.put(state.hashCodeLong, SECOND);
 
             } else if (repetitionCount == SECOND) {
-                System.out.println("HASH 2 => 3"); //todo remove
+                //System.out.println("HASH 2 => 3"); //todo remove
                 repetitionCountMap.put(state.hashCodeLong, THIRD);
 
             } else {
@@ -731,11 +731,11 @@ public class Chess extends MoveGenerator implements Serializable {
             repetitionCount = repetitionCountMap.get(state.hashCodeLong);
 
             if (repetitionCount == THIRD) {
-                System.out.println("HASH 3 => 2"); // todo remove
+                //System.out.println("HASH 3 => 2"); // todo remove
                 repetitionCountMap.put(state.hashCodeLong, SECOND);
 
             } else if (repetitionCount == SECOND) {
-                System.out.println("HASH 2 => 1"); //todo remove
+                //System.out.println("HASH 2 => 1"); //todo remove
                 repetitionCountMap.put(state.hashCodeLong, FIRST);
 
             } else if (repetitionCount == FIRST) {
