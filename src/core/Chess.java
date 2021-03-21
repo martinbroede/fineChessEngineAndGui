@@ -147,11 +147,9 @@ public class Chess extends MoveGenerator implements Serializable {
 
     public Moves getUserLegalMoves(boolean userColor, boolean userPlaysBothColors) {
 
-        return getPseudoLegalMoves(); //todo delete line and uncomment below
-
-        /*if (userPlaysBothColors) return getUserLegalMoves();
+        if (userPlaysBothColors) return getUserLegalMoves();
         else if (whiteToMove == userColor) return getUserLegalMoves();
-        else return new Moves();*/
+        else return new Moves();
     }
 
     /** return fully legal moves. Also detect Checkmate, Stalemate */
