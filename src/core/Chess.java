@@ -3,6 +3,7 @@ package core;
 import gui.dialogs.DialogMessage;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Stack;
 
 public class Chess extends MoveGenerator implements Serializable {
@@ -14,6 +15,7 @@ public class Chess extends MoveGenerator implements Serializable {
     public Stack<Move> undoneMovesHistory;
     public GameStatus gameStatus;
     HashGenerator hashGenerator;
+
     {
         whitePieces = new PieceCollectionWhite();
         blackPieces = new PieceCollectionBlack();
@@ -42,7 +44,7 @@ public class Chess extends MoveGenerator implements Serializable {
     public void newGame(String init) {
 
         moveCounter = 0;
-        moveCounterLastCaptureOrPawnMove = 0;
+        lastCaptureOrPawnMove = 0;
         enPassantPawn = -1;
         whiteToMove = true;
         castling.reset();
@@ -73,6 +75,7 @@ public class Chess extends MoveGenerator implements Serializable {
         System.out.println("BOARD HASHED " + hashGenerator.getHashCode());
         whitePieces.updateThreats();
         blackPieces.updateThreats();
+
     }
 
     public void startFromFEN(String FEN) {
@@ -96,8 +99,8 @@ public class Chess extends MoveGenerator implements Serializable {
             enPassantPawn = -1;
             //todo get en Passant from FEN
 
-            moveCounterLastCaptureOrPawnMove = Short.parseShort(args[4]);
-            moveCounter = (short)(Short.parseShort(args[5]) - 1);
+            lastCaptureOrPawnMove = Short.parseShort(args[4]);
+            moveCounter = (short) (Short.parseShort(args[5]) - 1);
 
             String init = args[0]
                     .replaceAll("8", "        ")
@@ -138,15 +141,17 @@ public class Chess extends MoveGenerator implements Serializable {
         whitePieces.updateThreats();
         blackPieces.updateThreats();
 
-        castling.print();
-        System.out.println("MOVE COUNTER:" + moveCounter + "/LAST CAPTURE: " + moveCounterLastCaptureOrPawnMove);
+        /*castling.print();
+        System.out.println("MOVE COUNTER:" + moveCounter + "/LAST CAPTURE: " + lastCaptureOrPawnMove);*/
     }
 
     public Moves getUserLegalMoves(boolean userColor, boolean userPlaysBothColors) {
 
-        if (userPlaysBothColors) return getUserLegalMoves();
+        return getPseudoLegalMoves(); //todo delete line and uncomment below
+
+        /*if (userPlaysBothColors) return getUserLegalMoves();
         else if (whiteToMove == userColor) return getUserLegalMoves();
-        else return new Moves();
+        else return new Moves();*/
     }
 
     /** return fully legal moves. Also detect Checkmate, Stalemate */
@@ -234,12 +239,11 @@ public class Chess extends MoveGenerator implements Serializable {
         } else if (!getUserLegalMoves(userColor, userPlaysBoth).contains(move)) {
             System.out.print("USER MOVE" + move + " IS ILLEGAL (CHESS) / ");
             return false;
-
         }
         gameStatus.setDrawOffered(false);
         undoneMovesHistory.clear();
         movePiece(move);
-        //System.out.println("LAST CAPTURE OR PAWN MOVE:" + (moveCounter - moveCounterLastCaptureOrPawnMove)); //todo remove
+        //System.out.println("LAST CAPTURE OR PAWN MOVE:" + (moveCounter - lastCaptureOrPawnMove)); //todo remove
         return true;
     }
 
@@ -253,13 +257,13 @@ public class Chess extends MoveGenerator implements Serializable {
         char capture = board[to]; //doesn't need to be a capture => can also be ' '
 
         history.push(new State(hashGenerator.getHashCode(), move.getInformation(), board[to], capture,
-                moveCounterLastCaptureOrPawnMove, enPassantPawn, castling.getRights()));
+                lastCaptureOrPawnMove, enPassantPawn, castling.getRights()));
 
         if (whiteToMove) {
             if (capture != ' ') {
                 hashGenerator.hashPosition(capture, to);
                 blackPieces.removePiece(to);
-                moveCounterLastCaptureOrPawnMove = moveCounter;
+                lastCaptureOrPawnMove = moveCounter;
             }
 
             Piece movingPiece = whitePieces.changePosition(from, to);
@@ -313,7 +317,7 @@ public class Chess extends MoveGenerator implements Serializable {
 
             if (typeMovingPiece == 'P') {
 
-                moveCounterLastCaptureOrPawnMove = moveCounter;
+                lastCaptureOrPawnMove = moveCounter;
 
                 if (to - from == 16) {
                     enPassantPawn = (byte) (to % 8);
@@ -344,7 +348,7 @@ public class Chess extends MoveGenerator implements Serializable {
             if (capture != ' ') {
                 hashGenerator.hashPosition(capture, to);
                 whitePieces.removePiece(to);
-                moveCounterLastCaptureOrPawnMove = moveCounter;
+                lastCaptureOrPawnMove = moveCounter;
             }
 
             Piece movingPiece = blackPieces.changePosition(from, to);
@@ -398,7 +402,7 @@ public class Chess extends MoveGenerator implements Serializable {
 
             if (typeMovingPiece == 'p') {
 
-                moveCounterLastCaptureOrPawnMove = moveCounter;
+                lastCaptureOrPawnMove = moveCounter;
 
                 if (from - to == 16) {
                     enPassantPawn = (byte) (to % 8);
@@ -440,7 +444,10 @@ public class Chess extends MoveGenerator implements Serializable {
 
         hashGenerator.hashTurn(); // 2nd
 
-        if (moveCounter - moveCounterLastCaptureOrPawnMove >= Constants.MAX_MOVES)
+        if (history.drawDueToRepetition(new Long(hashGenerator.getHashCode()))) //todo redundant hashCode storage. (long and Long) only need Long.
+            gameStatus.setStatusCode(GameStatus.DRAW_REPETITION);
+
+        if (moveCounter - lastCaptureOrPawnMove >= Constants.MAX_MOVES)
             gameStatus.setStatusCode(GameStatus.DRAW_MOVES);
 
         assert testHashGenerator();
@@ -461,7 +468,7 @@ public class Chess extends MoveGenerator implements Serializable {
 
     public void userUndo() {
 
-        if (history.size() == 0) return;
+        if (history.size() <= 0) return;
         short information = undo();
         Move undone = new Move(information);
         undoneMovesHistory.push(undone);
@@ -477,12 +484,12 @@ public class Chess extends MoveGenerator implements Serializable {
     /**
      * Revoke last move.
      *
-     * @return information: Information about the revoked move (see in Move.java)
+     * @return information: Information about the revoked move (see Move.java)
      */
     private short undo() {
 
-        gameStatus.setStatusCode(GameStatus.UNDECIDED);
         State state = history.pop();
+        gameStatus.setStatusCode(GameStatus.UNDECIDED);
         enPassantPawn = state.enPassant;
         byte from = Move.getFrom(state.moveInformation);
         byte to = Move.getTo(state.moveInformation);
@@ -553,7 +560,7 @@ public class Chess extends MoveGenerator implements Serializable {
 
         whiteToMove = !whiteToMove;
         moveCounter--;
-        moveCounterLastCaptureOrPawnMove = state.moveCounterLastCaptureOrPawnMove;
+        lastCaptureOrPawnMove = state.moveCounterLastCaptureOrPawnMove;
         castling.setRights(state.castling);
         hashGenerator.setHashCode(state.hashCode);
 
@@ -615,10 +622,6 @@ public class Chess extends MoveGenerator implements Serializable {
         return whiteToMove;
     }
 
-    public void printASCII() {
-        System.out.println(toString());
-    }
-
     @Override
     public String toString() {
         StringBuilder outp = new StringBuilder();
@@ -634,15 +637,20 @@ public class Chess extends MoveGenerator implements Serializable {
         return outp.toString();
     }
 
+    public void print() {
+        System.out.println(this.toString());
+    }
+
     static class State {
 
-        long hashCode;
-        short moveInformation;
-        char pieceType;
+        final long hashCode;
+        final Long hashCodeLong;
+        final short moveInformation;
+        final short moveCounterLastCaptureOrPawnMove;
+        final byte enPassant;
+        final byte castling;
+        final char pieceType;
         char capture;
-        short moveCounterLastCaptureOrPawnMove;
-        byte enPassant;
-        byte castling;
 
         public State(long hashCode, short moveInformation, char pieceType, char capture,
                      short lastCapt, byte enPassant, byte castling) {
@@ -653,17 +661,96 @@ public class Chess extends MoveGenerator implements Serializable {
             this.moveCounterLastCaptureOrPawnMove = lastCapt;
             this.enPassant = enPassant;
             this.castling = castling;
-        }
-
-        public void print() {
-            System.out.print(Util.parse(moveInformation) +
-                    "CAPTURED: " + capture);
+            this.hashCodeLong = hashCode;
         }
     }
 
     public class History extends Stack<State> {
 
+        private final Byte FIRST = 1;
+        private final Byte SECOND = 2;
+        private final Byte THIRD = 3;
+        HashMap<Long, Byte> repetitionCountMap = new HashMap<>();
+        Byte repetitionCount;
+
+        public short getLastMoveCoordinates() {
+
+            if (this.size() > 0) return this.lastElement().moveInformation;
+            return -1;
+        }
+
+        public boolean drawDueToRepetition(Long hash) {
+            if (repetitionCountMap.get(hash) == SECOND)
+                return true;
+            return false;
+        }
+
+        @Override
+        public boolean add(State state) {
+
+            System.err.println("PLEASE DON'T USE ADD WITH A STACK");
+            return super.add(state);
+        }
+
+        @Override
+        public void clear() {
+
+            repetitionCountMap.clear();
+            super.clear();
+        }
+
+        @Override
+        public State push(State state) {
+
+            repetitionCount = repetitionCountMap.get(state.hashCodeLong);
+            //todo keep in mind even "Long" provides only "int", i.e. 32bit hashcode...
+
+            if (repetitionCount == null) {
+                System.out.println("HASH 0 => 1"); // todo remove
+                repetitionCountMap.put(state.hashCodeLong, FIRST);
+
+            } else if (repetitionCount == FIRST) {
+                System.out.println("HASH 1 => 2"); //todo remove
+                repetitionCountMap.put(state.hashCodeLong, SECOND);
+
+            } else if (repetitionCount == SECOND) {
+                System.out.println("HASH 2 => 3"); //todo remove
+                repetitionCountMap.put(state.hashCodeLong, THIRD);
+
+            } else {
+                System.err.println("SOMETHING EVIL HAPPENED HERE");
+            }
+
+            return super.push(state);
+        }
+
+        @Override
+        public State pop() {
+
+            State state = super.pop();
+            repetitionCount = repetitionCountMap.get(state.hashCodeLong);
+
+            if (repetitionCount == THIRD) {
+                System.out.println("HASH 3 => 2"); // todo remove
+                repetitionCountMap.put(state.hashCodeLong, SECOND);
+
+            } else if (repetitionCount == SECOND) {
+                System.out.println("HASH 2 => 1"); //todo remove
+                repetitionCountMap.put(state.hashCodeLong, FIRST);
+
+            } else if (repetitionCount == FIRST) {
+                repetitionCountMap.remove(state.hashCodeLong);
+
+            } else {
+                System.err.println("THAT'S EVIL - HASH NOT IN HISTORY");
+            }
+            return state;
+        }
+
+
+        @Override
         public String toString() {
+
             StringBuilder outp = new StringBuilder();
             int count = 2;
             for (State state : this) {
@@ -678,16 +765,6 @@ public class Chess extends MoveGenerator implements Serializable {
                 if (count % 2 == 0) outp.append("\n");
             }
             return outp.toString();
-        }
-
-        public short getLastMoveCoordinate() {
-
-            if (this.size() > 0) return this.lastElement().moveInformation;
-            return -1;
-        }
-
-        public void print() {
-            System.out.println(this.toString());
         }
     }
 }

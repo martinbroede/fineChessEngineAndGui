@@ -12,11 +12,11 @@ public class Move {
     public static final short PROMOTION_ROOK =/*        */0b0110000000000000;
     public static final short PROMOTION_QUEEN =/*       */0b0111000000000000;
 
-    /* negative code values reserved for for online games: */
+    /* negative code values reserved */
+    public static final short NULL_MOVE = -1;
     public static final short START_GAME = -1000;
     public static final short OPPONENT_BLACK = -1001;
     public static final short OPPONENT_WHITE = -1002;
-
     public static final short RESIGN = -1010;
     public static final short OFFER_DRAW = -1100;
     public static final short ACCEPT_DRAW = -1200;

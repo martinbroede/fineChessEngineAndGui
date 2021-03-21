@@ -42,7 +42,7 @@ public class Gui extends MainWindow {
         NetworkRefresher networkRefresher = new NetworkRefresher();
         networkRefresher.start();
 
-        /* add action listeners */
+        /* #################################### add action listeners ################################################ */
         itemNewGame.addActionListener(e -> {
             System.out.println("NEW GAME");
             chess.newGame(chess.INIT_STANDARD_BOARD);
@@ -355,7 +355,7 @@ public class Gui extends MainWindow {
         if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED) {
             showPopup(chess.gameStatus.getStatusNotice());
         } else {
-            short lastMove = chess.history.getLastMoveCoordinate();
+            short lastMove = chess.history.getLastMoveCoordinates();
             board.refreshChessBoard(true, true,
                     chess.getUserLegalMoves(userPlaysColor, userPlaysBothColors).getMovesFrom((byte) pos), lastMove);
 
@@ -394,6 +394,8 @@ public class Gui extends MainWindow {
             setLayout(new BorderLayout());
             add(chatOutput, BorderLayout.NORTH);
             add(chatInput, BorderLayout.SOUTH);
+            chatOutput.setEnabled(false);
+            chatOutput.setDisabledTextColor(Color.DARK_GRAY);
             pack();
             setResizable(false);
 
@@ -412,12 +414,20 @@ public class Gui extends MainWindow {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                         if (chatInput.getText().startsWith("%")) network.sendToNet(chatInput.getText());
                         else network.sendToNet("%CHAT " + chatInput.getText());
-
-                        chatOutput.append(myName + ": " + chatInput.getText() + "\n");
+                        addChatMessage(myName + ": " + chatInput.getText() + "\n");
                         chatInput.setText("");
                     }
                 }
             });
+        }
+
+        public void addChatMessage(String message) {
+            chatOutput.append(message);
+            while (chatOutput.getLineCount() >= appearanceSettings.getSizeFactor() / 2) {
+                String text = chatOutput.getText();
+                text = text.substring(text.indexOf('\n') + 1);
+                chatOutput.setText(text);
+            }
         }
 
         public void toggleVisibility() {
@@ -558,10 +568,10 @@ public class Gui extends MainWindow {
                                     System.out.println("YOU PLAY AGAINST " + myFriendsName);
                                     break;
                                 case "%CHAT": // display chat in chatwindow
-                                    chatOutput.append(myFriendsName + ": " + message.replaceAll("%CHAT ", "") + "\n");
+                                    chatDialog.addChatMessage(myFriendsName + ": " + message.replaceAll("%CHAT ", "") + "\n");
                                     break;
                                 case "%": // show information in chatwindow
-                                    chatOutput.append(message.replaceAll("% ", "") + "\n");
+                                    chatDialog.addChatMessage(message.replaceAll("% ", "") + "\n");
                                     break;
                                 default:
                                     System.out.println("WHAT SHOULD I DO WITH THIS CRAP: " + message + "?");

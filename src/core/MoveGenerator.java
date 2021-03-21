@@ -12,7 +12,7 @@ public class MoveGenerator extends PiecePatterns {
     public Castling castling;
     protected boolean whiteToMove;
     protected short moveCounter;
-    protected short moveCounterLastCaptureOrPawnMove;
+    protected short lastCaptureOrPawnMove;
     /** the file number ('A' = 0) in which the pawn to be captured is located */
     protected byte enPassantPawn;
 
