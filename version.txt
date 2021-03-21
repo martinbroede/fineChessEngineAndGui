@@ -1,12 +1,11 @@
-#V0.50 (beta)
-(most recent version)
+#V0.50b (beta)
 
 V0.01   initial commit
 V0.1    add castling
 V0.2    add promotion
 V0.3    add simple network connection
 V0.35   add network for both IPv4 and IPv6 addresses
-V0.36   bugfix promotion and castling in online games
+V0.36b  bugfix promotion and castling in online games
 V0.4    add user chat
 V0.41   add board rotation. add color choice -> you can define who plays white in online games
 V0.42   implement sendingQueue
@@ -23,3 +22,5 @@ V0.49   add user names
 V0.50   add threefold repetition rule
                 [ (see FIDE repetition: 5.3.1. 1.) in "fineChess" game is automatically a draw
                 [ after threefold repetition.
+V0.50b  bugfix FEN parsing
+        add version request

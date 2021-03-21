@@ -15,7 +15,6 @@ public class Chess extends MoveGenerator implements Serializable {
     public Stack<Move> undoneMovesHistory;
     public GameStatus gameStatus;
     HashGenerator hashGenerator;
-
     {
         whitePieces = new PieceCollectionWhite();
         blackPieces = new PieceCollectionBlack();
@@ -113,7 +112,26 @@ public class Chess extends MoveGenerator implements Serializable {
                     .replaceAll("1", " ")
                     .replaceAll("/", "");
 
-            for (byte pos = 0; pos <= 63; pos++) {
+            for(byte x = 0; x <= 7; x++){
+                for(byte y = 0; y <=7; y++){
+                    byte posFEN = (byte) ((7-x) + y*8);
+                    byte posBOARD = (byte) (63-(x+y*8));
+                    char c = init.toCharArray()[posFEN];
+                    board[posBOARD] = c;
+                    if (is_white_piece(c)) {
+                        Piece piece = new Piece(posBOARD, c);
+                        whitePieces.add(piece);
+                        if (c == 'K') whitePieces.setKing(piece);
+                    }
+                    if (is_black_piece(c)) {
+                        Piece piece = new Piece(posBOARD, c);
+                        blackPieces.add(piece);
+                        if (c == 'k') blackPieces.setKing(piece);
+                    }
+                }
+            }
+
+            /*for (byte pos = 0; pos <= 63; pos++) {
                 char c = init.toCharArray()[63 - pos];
                 board[pos] = c;
                 if (is_white_piece(c)) {
@@ -126,7 +144,7 @@ public class Chess extends MoveGenerator implements Serializable {
                     blackPieces.add(piece);
                     if (c == 'k') blackPieces.setKing(piece);
                 }
-            }
+            }*/
 
         } catch (Exception ex) {
             ex.printStackTrace();

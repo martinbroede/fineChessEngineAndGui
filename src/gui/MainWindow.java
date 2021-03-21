@@ -1,9 +1,11 @@
 package gui;
 
 import core.Chess;
+import fineChessUpdater.Downloader;
 import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
 import gui.dialogs.DialogInput;
+import gui.dialogs.DialogMessage;
 import gui.dialogs.DialogText;
 
 import javax.swing.*;
@@ -127,7 +129,6 @@ public class MainWindow {
         } catch (FileNotFoundException ex) {
             System.err.println("VERSION FILE NOT FOUND");
         }
-
 
         labelCapturedWhitePieces = new JLabel(" ", JLabel.CENTER);
         labelCapturedBlackPieces = new JLabel(" ", JLabel.CENTER);
@@ -313,6 +314,15 @@ public class MainWindow {
 
 
         frame.setVisible(true);
+
+        if(!VERSION.equals("VERSION UNKNOWN")){
+            String URL = "https://raw.githubusercontent.com/martinbro2021/fineChessEngineAndGui/main/version.txt";
+            String latestVersion = Downloader.getHeadLineFromURL(URL);
+            if(!latestVersion.equals("")&&!latestVersion.equals(VERSION)){
+                new DialogMessage("Ein neueres Programm [Version "+ latestVersion + "] steht bei github.com zur Verfügung!",
+                        frame.getLocation());
+            }
+        }
 
         if (myName.equals("")) {
 

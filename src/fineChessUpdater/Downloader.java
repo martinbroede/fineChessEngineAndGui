@@ -23,13 +23,8 @@ public class Downloader {
         download(downloadUrl, outputFile);
     }
 
-    public static void main(String[] args) {
-        //new Downloader(DOWNLOAD_RESOURCE, OUTPUT_FILE);
-        String output = getStringFromURL("https://raw.githubusercontent.com/martinbro2021/fineChessEngineAndGui/main/version.txt");
-        System.out.println(output);
-    }
+    public static void download(String downloadUrl, String outputFile) {
 
-    private void download(String downloadUrl, String outputFile) {
         DialogMessage dialog = null;
         DialogText text = null;
         try (BufferedInputStream in = new BufferedInputStream(new URL(downloadUrl).openStream());
@@ -55,8 +50,24 @@ public class Downloader {
         }
     }
 
-    private static String getStringFromURL(String ressourceURL)
-    {
+    public static String getHeadLineFromURL(String ressourceURL){
+        String line = "";
+        try
+        {
+            URL url = new URL(ressourceURL);
+            URLConnection urlConnection = url.openConnection();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            line = bufferedReader.readLine();
+        }
+        catch(Exception e)
+        {
+            new DialogMessage("Internetverbindung nicht verfügbar");
+            e.printStackTrace();
+        }
+        return line;
+    }
+
+    public static String getStringFromURL(String ressourceURL) {
         StringBuilder textFromURL = new StringBuilder();
         try
         {
