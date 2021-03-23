@@ -1,6 +1,7 @@
 package core;
 
 public class Square { // todo ... this is never used...
+
     private byte position;
 
     private Square(byte pos){

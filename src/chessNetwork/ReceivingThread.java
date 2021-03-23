@@ -1,12 +1,9 @@
 package chessNetwork;
 
-import core.Move;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.LinkedList;
-import java.util.Queue;
 
 class ReceivingThread extends Thread {
 
@@ -14,7 +11,8 @@ class ReceivingThread extends Thread {
     LinkedList<String> messageQueue;
     private int delayMilliSec = 150;
 
-    public ReceivingThread(BufferedReader bReader, int delayMilliSec,LinkedList<String> messageQueue, String threadName) {
+    public ReceivingThread(BufferedReader bReader, int delayMilliSec, LinkedList<String> messageQueue, String threadName) {
+
         setName(threadName);
         this.bReader = bReader;
         this.delayMilliSec = delayMilliSec;
@@ -29,8 +27,8 @@ class ReceivingThread extends Thread {
             try {
 
                 message = bReader.readLine();
-                if(message == null) break;
-                else if(!message.equals("")) messageQueue.add(message);
+                if (message == null) break;
+                else if (!message.equals("")) messageQueue.add(message);
 
                 try {
                     sleep(delayMilliSec);

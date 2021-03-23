@@ -36,6 +36,7 @@ public class ChessServer extends Thread {
         try {
             inetAddress = InetAddress.getByName(ipString);
         } catch (UnknownHostException ex) {
+            new DialogMessage("\"Spiel erstellen\" fehlgeschlagen. Host unbekannt ");
             ex.printStackTrace();
         }
 
@@ -94,6 +95,7 @@ public class ChessServer extends Thread {
             return true;
         } catch (IOException ex) {
             ex.printStackTrace();
+            new DialogMessage("Verbindung fehlgeschlagen ");
             return false;
         }
     }

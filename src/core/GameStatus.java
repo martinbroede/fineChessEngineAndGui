@@ -1,6 +1,7 @@
 package core;
 
 public class GameStatus {
+
     public static final int WHITE_RESIGNED = -2;
     public static final int BLACK_CHECKMATED = -1;
     public static final int UNDECIDED = 0;
@@ -12,37 +13,18 @@ public class GameStatus {
     public static final int DRAW_MATERIAL = 13; //    draw due to lack of material on both sides
     public static final int DRAW_REPETITION = 14; //  draw due to repetion of current position
 
-    private int whiteScore;
-    private int blackScore;
     private int statusCode;
     private boolean drawOffered;
-
     public GameStatus() {
         reset();
     }
 
-    public int getWhiteScore() {
-        return whiteScore;
-    }
-
-    public void setWhiteScore(int whiteScore) {
-        this.whiteScore = whiteScore;
-    }
-
-    public int getBlackScore() {
-        return blackScore;
-    }
-
-    public void setBlackScore(int blackScore) {
-        this.blackScore = blackScore;
-    }
-
-    public void setDrawOffered(boolean drawOffered){
-       this.drawOffered = drawOffered;
-    }
-
-    public boolean getDrawOffered(){
+    public boolean getDrawOffered() {
         return drawOffered;
+    }
+
+    public void setDrawOffered(boolean drawOffered) {
+        this.drawOffered = drawOffered;
     }
 
     public int getStatusCode() {
@@ -58,6 +40,7 @@ public class GameStatus {
     }
 
     public String getStatusNotice() {
+
         switch (statusCode) {
             case BLACK_CHECKMATED:
                 return "Weiß gewinnt durch Schachmatt.";

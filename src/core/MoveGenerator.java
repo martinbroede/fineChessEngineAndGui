@@ -98,24 +98,20 @@ public class MoveGenerator extends PiecePatterns {
             this.pattern = getPiecePattern(type);
         }
 
+        public PiecePattern getPattern() {
+            return pattern;
+        }
+
+        public void setPattern(PiecePattern pattern) {
+            this.pattern = pattern;
+        }
+
         public byte getPosition() {
             return position;
         }
 
         public void setPosition(byte position) {
             this.position = position;
-        }
-
-        public char getType() {
-            return type;
-        }
-
-        public void setType(char type) {
-            this.type = type;
-        }
-
-        public void setPattern(PiecePattern pattern) {
-            this.pattern = pattern;
         }
 
         public void updateThreats(byte[] threats) {
@@ -187,7 +183,7 @@ public class MoveGenerator extends PiecePatterns {
             throw new InputMismatchException("NO PIECE AT " + Util.parse(from));
         }
 
-        public void removePiece(byte position) {
+        public short removePiece(byte position) {
 
             Piece removePiece = null;
             for (Piece p : this) {
@@ -198,6 +194,7 @@ public class MoveGenerator extends PiecePatterns {
             }
             this.remove(removePiece);
             capturedPieces.add(removePiece);
+            return PIECE_VALUES.get(removePiece.getPattern());
         }
 
         public void activateLastCapturedPiece() {

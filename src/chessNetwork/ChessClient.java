@@ -4,6 +4,7 @@ import gui.dialogs.DialogMessage;
 
 import java.io.*;
 import java.net.ConnectException;
+import java.net.NoRouteToHostException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
@@ -22,7 +23,6 @@ public class ChessClient extends Thread {
     public ChessClient(String configIpAndPort, int delayMilliSec, LinkedList<String> messageQueue) {
 
         setName("CLIENT FOR " + configIpAndPort);
-
         System.out.println("NEW CLIENT FOR " + configIpAndPort + " CLIENT NOT STARTED.");
         String[] args = configIpAndPort.split("/");
         if (args.length != 2) {
@@ -74,9 +74,16 @@ public class ChessClient extends Thread {
             return true;
         } catch (UnknownHostException ex) {
             System.err.println("DON'T KNOW HO(R)ST: TRY AGAIN.");
+            new DialogMessage("Verbindung fehlgeschlagen. Host unbekannt ");
+            return false;
+        }catch (NoRouteToHostException ex){
+            ex.printStackTrace();
+            System.err.println("CONNECTION FAILED. TRY AGAIN");
+            new DialogMessage("Verbindung fehlgeschlagen. Vermutlich besteht keine Internetverbindung.");
             return false;
         } catch (ConnectException ex) {
             System.err.println("CONNECTION FAILED. TRY AGAIN");
+            new DialogMessage("Verbindung fehlgeschlagen ");
             return false;
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -85,6 +92,7 @@ public class ChessClient extends Thread {
     }
 
     public void killThreads() {
+
         if (receivingThread != null) receivingThread.interrupt();
         if (sendingThread != null) sendingThread.interrupt();
         receivingThread = null;

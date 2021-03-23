@@ -12,6 +12,7 @@ class SendingThread extends Thread {
     private boolean haveNews = false;
 
     public SendingThread(int delayMilliSec, String threadName) {
+
         setName(threadName);
         this.bWriter = bWriter;
         sendingQueue = new LinkedList<>();

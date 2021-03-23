@@ -12,9 +12,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -29,6 +30,9 @@ public class MainWindow {
     final JLabel labelCapturedBlackPieces;
     final JLabel labelPlaceHolderWest;
     final JLabel labelPlaceHolderEast;
+
+    JPopupMenu messageMenu;
+    JMenuItem messageItem;
 
     final JMenuItem itemStartServer;
     final JMenuItem itemStartClient;
@@ -90,7 +94,6 @@ public class MainWindow {
 
         frame = new JFrame();
         frame.setResizable(false);
-        frame.addWindowListener(new WindowListener());
         frame.setTitle("Schach");
 
         try {
@@ -130,10 +133,10 @@ public class MainWindow {
             System.err.println("VERSION FILE NOT FOUND");
         }
 
-        labelCapturedWhitePieces = new JLabel(" ", JLabel.CENTER);
-        labelCapturedBlackPieces = new JLabel(" ", JLabel.CENTER);
-        labelPlaceHolderWest = new JLabel(" ", JLabel.CENTER);
-        labelPlaceHolderEast = new JLabel(" ", JLabel.CENTER);
+        labelCapturedWhitePieces = new JLabel("", JLabel.CENTER);
+        labelCapturedBlackPieces = new JLabel("", JLabel.CENTER);
+        labelPlaceHolderWest = new JLabel("",JLabel.LEFT);
+        labelPlaceHolderEast = new JLabel("",JLabel.RIGHT);
         colorScheme = new ColorScheme();
         appearanceSettings = new AppearanceSettings(colorScheme);
         board = new Board(SIZE_S, chess, appearanceSettings);
@@ -149,14 +152,18 @@ public class MainWindow {
         labelCapturedBlackPieces.setOpaque(true);
         labelPlaceHolderWest.setOpaque(true);
         labelPlaceHolderEast.setOpaque(true);
-        labelPlaceHolderWest.setVerticalAlignment(JLabel.TOP);
-        labelPlaceHolderEast.setVerticalAlignment(JLabel.BOTTOM);
+        labelPlaceHolderWest.setVerticalAlignment(JLabel.CENTER);
+        labelPlaceHolderEast.setVerticalAlignment(JLabel.CENTER);
         labelCapturedWhitePieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelCapturedBlackPieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelPlaceHolderWest.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelPlaceHolderEast.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
 
         frame.setContentPane(content);
+
+        messageMenu = new JPopupMenu();
+        messageItem = new JMenuItem();
+        messageMenu.add(messageItem);
 
         itemStartServer = new JMenuItem("Spiel erstellen");
         itemStartClient = new JMenuItem("Spiel beitreten");
@@ -300,11 +307,11 @@ public class MainWindow {
         content.add(labelCapturedBlackPieces, BorderLayout.SOUTH);
 
         {
-            String dressCode = getSetting("%STYLE",STORED_SETTINGS);
-            if(!dressCode.equals("")) colorScheme.setColors(Integer.parseInt(dressCode));
+            String dressCode = getSetting("%STYLE", STORED_SETTINGS);
+            if (!dressCode.equals("")) colorScheme.setColors(Integer.parseInt(dressCode));
 
             String size = getSetting("%SIZE", STORED_SETTINGS);
-            if(!size.equals("")) adjustBoardAndFrameSize(Integer.parseInt(size));
+            if (!size.equals("")) adjustBoardAndFrameSize(Integer.parseInt(size));
             else adjustBoardAndFrameSize(SIZE_S);
         }
 
@@ -312,20 +319,20 @@ public class MainWindow {
         itemStore.setEnabled(false);
         itemBegin.setEnabled(false);
 
-
         frame.setVisible(true);
 
-        if(!VERSION.equals("VERSION UNKNOWN")){
+        if (!VERSION.equals("VERSION UNKNOWN")) {
             String URL = "https://raw.githubusercontent.com/martinbro2021/fineChessEngineAndGui/main/version.txt";
             String latestVersion = Downloader.getHeadLineFromURL(URL);
-            if(!latestVersion.equals("")&&!latestVersion.equals(VERSION)){
-                new DialogMessage("Ein neueres Programm [Version "+ latestVersion + "] steht bei github.com zur Verfügung!",
+            if (!latestVersion.equals("") && !latestVersion.equals(VERSION)) {
+                new DialogMessage("Ein neueres Programm [Version " + latestVersion + "] steht bei github.com zur Verfügung!",
                         frame.getLocation());
+            } else if (!latestVersion.equals("")) {
+                showPopup("Deine Version ist aktuell - cool!");
             }
         }
 
         if (myName.equals("")) {
-
             new DialogInput("Namen wählen", "Mein Name:",
                     "ohneNamen", "OK", frame.getLocation()) {
                 public void buttonKlicked() {
@@ -427,21 +434,12 @@ public class MainWindow {
     public void showPopup(String message) {
 
         board.setActive(false); //makes board diffuse
-
-        JPopupMenu menu = new JPopupMenu();
-        menu.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        menu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor() * 2);
-
-        JMenuItem item = new JMenuItem(message);
-        item.setFont(new Font("Times", Font.PLAIN, appearanceSettings.getSizeFactor() / 3));
-        item.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        menu.add(item);
-
-        ActionListener actionListener = e -> board.setActive((true));
-
-        item.addActionListener(actionListener);
-
-        menu.show(board, 0, appearanceSettings.getMargin());
+        messageMenu.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        messageMenu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor() * 2);
+        messageItem.setText(message);
+        messageItem.setFont(new Font("Times", Font.PLAIN, appearanceSettings.getSizeFactor() / 3));
+        messageItem.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        messageMenu.show(board, 0, appearanceSettings.getMargin());
     }
 
     public void showPromotionPopup() {
@@ -486,8 +484,9 @@ public class MainWindow {
         menuBar.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelCapturedWhitePieces.setFont(appearanceSettings.getFont());
         labelCapturedBlackPieces.setFont(appearanceSettings.getFont());
-        labelPlaceHolderWest.setFont(appearanceSettings.getFont());
-        labelPlaceHolderEast.setFont(appearanceSettings.getFont());
+        Font westEastFont = new Font("Courier New",Font.PLAIN, appearanceSettings.getSizeFactor()*2/5);
+        labelPlaceHolderWest.setFont(westEastFont);
+        labelPlaceHolderEast.setFont(westEastFont);
         labelCapturedWhitePieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelCapturedBlackPieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelPlaceHolderWest.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
@@ -495,6 +494,7 @@ public class MainWindow {
     }
 
     public String getSetting(String attributeName, String settings) {
+
         String[] args = settings.split("\n");
         for (String arg : args) {
             if (arg.startsWith(attributeName)) {
@@ -502,27 +502,5 @@ public class MainWindow {
             }
         }
         return "";
-    }
-
-    class WindowListener extends WindowAdapter {
-        @Override
-        public void windowClosing(WindowEvent e) {
-
-            try {
-                FileWriter writer = new FileWriter("settings.txt");
-                String settings = "%NAME " + myName + "\n";
-                settings += "%SIZE " + appearanceSettings.getSizeFactor() + "\n";
-                settings += "%STYLE " + appearanceSettings.getColorScheme().getCurrentScheme();
-                writer.write(settings);
-                writer.close();
-                System.out.println("STORED SETTINGS: \n" + settings);
-            } catch (IOException ex) {
-                System.err.println("STORE SETTINGS FAILED");
-            }
-
-            e.getWindow().dispose();
-            System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY");
-            System.exit(0);
-        }
     }
 }

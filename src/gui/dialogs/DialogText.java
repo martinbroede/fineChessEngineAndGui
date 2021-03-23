@@ -52,17 +52,20 @@ public class DialogText extends JDialog {
     }
 
     public DialogText(String text, Point location) {
+
         setLocation(location);
         textArea.setText(text);
         pack();
     }
 
     public DialogText(String text) {
+
         textArea.setText(text);
         pack();
     }
 
     public static void main(String[] args) {
+
         new DialogText("Default\nPosition");
         new DialogText("other\nPosition", new Point(100,100));
     }

@@ -15,21 +15,22 @@ public class ColorScheme {
     public Color HIGHLIGHT_1_COLOR;
     public Color HIGHLIGHT_2_COLOR;
     public Color LIGHT_COLOR;
-
-    public int getCurrentScheme() {
-        return currentScheme;
-    }
-
     private int currentScheme;
 
     public ColorScheme() {
         setColors(STANDARD);
     }
 
+    public int getCurrentScheme() {
+        return currentScheme;
+    }
+
     protected void setColors(int scheme) {
+
         currentScheme = scheme;
         switch (scheme) {
-            case STANDARD: {
+
+            case STANDARD:
                 WHITE_SQUARES_COLOR = new Color(0xE2E3C8); /* WHITE SQUARES */
                 BLACK_SQUARES_COLOR = new Color(0x709556);/* BLACK SQUARES */
                 MARGIN_COLOR = new Color(0x4C4949); /* MARGIN */
@@ -39,8 +40,8 @@ public class ColorScheme {
                 HIGHLIGHT_2_COLOR = new Color(0xdc9696); /*HIGHLIGHT "NOT OK" */
                 LIGHT_COLOR = new Color(0x8B779556, true);
                 break;
-            }
-            case DARK: {
+
+            case DARK:
                 WHITE_SQUARES_COLOR = new Color(0xdfe3f3); /* WHITE SQUARES */
                 BLACK_SQUARES_COLOR = new Color(0x88A0B4); /* BLACK SQUARES */
                 MARGIN_COLOR = new Color(0x4394e); /* MARGIN */
@@ -50,18 +51,18 @@ public class ColorScheme {
                 HIGHLIGHT_2_COLOR = new Color(0xdc9696); /*HIGHLIGHT "NOT OK" */
                 LIGHT_COLOR = new Color(0x5C88A0B4, true);
                 break;
-            }
-            case PLAIN: {
-                WHITE_SQUARES_COLOR = new Color(0xEEEEEE); /* WHITE SQUARES */
-                BLACK_SQUARES_COLOR = new Color(0xD4D3D3); /* BLACK SQUARES */
-                MARGIN_COLOR = new Color(0x010F2F); /* MARGIN */
-                PIECE_COLOR = new Color(0x010918); /* PIECES */
+
+            case PLAIN:
+                WHITE_SQUARES_COLOR = new Color(0xF0F1F3); /* WHITE SQUARES */
+                BLACK_SQUARES_COLOR = new Color(0xA9ADB3); /* BLACK SQUARES */
+                MARGIN_COLOR = new Color(0x383849); /* MARGIN */
+                PIECE_COLOR = new Color(0x020E0E); /* PIECES */
                 FILL_COLOR = new Color(0xFFFFFF); /* SPACE BETWEEN SQUARES */
                 HIGHLIGHT_1_COLOR = new Color(0xCBDAEC); /*HIGHLIGHT "OK" */
                 HIGHLIGHT_2_COLOR = new Color(0xdbbcbc); /*HIGHLIGHT "NOT OK" */
                 LIGHT_COLOR = new Color(0x193B3B3B, true);
                 break;
-            }
+
         }
     }
 }

@@ -9,10 +9,11 @@ import gui.dialogs.DialogMessage;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.NoSuchElementException;
 
 public class Gui extends MainWindow {
@@ -23,17 +24,23 @@ public class Gui extends MainWindow {
     private final int DELAY_MILLISEC = 100; //update interval
     private final String storagePath = "chessUserData/currentGame.txt";
     private final ChatDialog chatDialog;
-    private Chess chess;
+    private final Chess chess;
     private String moveString;
     private String moveStringSpecialMoves; //for promotion, castling, enPassant
+    private String preferredClientIp;
+    private String preferredServerIp;
+    private String preferredClientPort;
+    private String preferredServerPort;
     private boolean allowUndoMoves = true;
     private boolean userPlaysColor = WHITE;
     private boolean userPlaysBothColors = true;
     private boolean feature = false;
+    private SimpleDateFormat timeParser = new SimpleDateFormat("mm:ss");
 
     public Gui(Chess chessGame) {
 
         super(chessGame);
+        frame.addWindowListener(new WindowListener());
         chatDialog = new ChatDialog();
         this.chess = chessGame;
         moveString = "";
@@ -43,9 +50,10 @@ public class Gui extends MainWindow {
         networkRefresher.start();
 
         /* #################################### add action listeners ################################################ */
+
         itemNewGame.addActionListener(e -> {
             System.out.println("NEW GAME");
-            chess.newGame(chess.INIT_STANDARD_BOARD);
+            chess.newGame();
             labelCapturedBlackPieces.setText("");
             labelCapturedWhitePieces.setText("");
             userPlaysBothColors = true;
@@ -60,7 +68,7 @@ public class Gui extends MainWindow {
         });
 
         itemRestore.addActionListener(e -> {
-            Object obj = null;
+/*            Object obj = null;
             try {
                 obj = ReadWrite.readFromFile(storagePath);
             } catch (Exception ex) {
@@ -71,7 +79,7 @@ public class Gui extends MainWindow {
                 board.setBoardArray(chess.getBoard());
                 System.out.println("SUCCESSFULLY LOADED");
                 board.repaint();
-            }
+            }*/
         });
 
         itemBegin.addActionListener(e -> System.err.println("NOT YET IMPLEMENTED"));
@@ -80,15 +88,13 @@ public class Gui extends MainWindow {
             if (chess.getTurnColor() == WHITE) {
                 Move nextMove = new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING);
                 if (!movePiece(nextMove))
-                    System.err.println("CASTLING o-o ILLEGAL");
+                    System.out.println("CASTLING o-o ILLEGAL");
 
             } else { //BLACK
                 Move nextMove = new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING);
                 if (!movePiece(nextMove))
-                    System.err.println("CASTLING o-o ILLEGAL");
-
+                    System.out.println("CASTLING o-o ILLEGAL");
             }
-
             refreshFrameContent(-1); // -1 : don't want to paint legal moves.
         });
 
@@ -96,15 +102,13 @@ public class Gui extends MainWindow {
             if (chess.getTurnColor() == WHITE) {
                 Move nextMove = new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING);
                 if (!movePiece(nextMove))
-                    System.err.println("CASTLING o-o-o ILLEGAL");
+                    System.out.println("CASTLING o-o-o ILLEGAL");
 
             } else { //BLACK
                 Move nextMove = new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING);
                 if (!movePiece(nextMove))
-                    System.err.println("CASTLING o-o-o ILLEGAL");
-
+                    System.out.println("CASTLING o-o-o ILLEGAL");
             }
-
             refreshFrameContent(-1); // -1 : don't want to paint legal moves.
         });
 
@@ -226,14 +230,16 @@ public class Gui extends MainWindow {
         frame.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == 'R')
+                if (e.getKeyChar() == 'R') {
                     new TestReachability();
+                }
                 if (feature && e.getKeyChar() == '\\') {
-                    System.out.println("TRAINER MODE");
                     board.toggleShowHints();
                     refreshFrameContent(-1);
                 }
-
+                if (e.getKeyChar() == 'P') {
+                    showPopup("Test PopUpMenu");
+                }
             }
 
             @Override
@@ -251,10 +257,11 @@ public class Gui extends MainWindow {
         board.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
+
                 int btn = mouseEvent.getButton();
                 switch (btn) {
                     case 1: {
-                        movePieceFromEvent(mouseEvent);
+                        processMouseEvent(mouseEvent);
                         break;
                     }
                     case 2: {
@@ -264,8 +271,7 @@ public class Gui extends MainWindow {
                         break;
                     }
                     case 3: {
-                        chess.whitePieces.printThreats();
-                        chess.blackPieces.printThreats();
+                        System.out.println(chess.getScore());
                         break;
                     }
                 }
@@ -274,115 +280,128 @@ public class Gui extends MainWindow {
     }
 
     private boolean movePiece(Move move) {
+
         if (chess.userMove(move, userPlaysColor, userPlaysBothColors)) {
+
             if (network.isActive()) network.sendToNet("%MOVE " + move.getInformation());
+
+            if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED)
+                showPopup(chess.gameStatus.getStatusNotice());
+
             return true;
-        } else return false;
+
+        } else {
+            return false;
+        }
     }
 
-    private void movePieceFromEvent(MouseEvent mouseEvent) {
+    private void processMouseEvent(MouseEvent mouseEvent) {
+        System.out.println("MOUSE EVENT 0"); //todo remove
+        if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED) {
+            showPopup(chess.gameStatus.getStatusNotice());
+            System.out.println("MOUSE EVENT END"); //todo remove
+        } else {
+            byte pos = board.coordFromEvent(mouseEvent);
 
-        byte pos = board.coordFromEvent(mouseEvent);
+            if (moveString.equals("")) { // no square chosen yet
+                if (chess.pieceAtSquare(pos, chess.getTurnColor())) {
 
-        if (moveString.equals("")) { // no square chosen yet
-            if (chess.pieceAtSquare(pos, chess.getTurnColor())) {
-
+                    moveString += Util.parse(pos) + " ";
+                }
+            } //you already chose a square:
+            else if (!moveString.equals(Util.parse(pos) + " ")) //avoids moves like A1->A1! :
                 moveString += Util.parse(pos) + " ";
-            }
-        } //you already chose a square:
-        else if (!moveString.equals(Util.parse(pos) + " ")) //avoids moves like A1->A1! :
-            moveString += Util.parse(pos) + " ";
 
-        if (moveString.length() > 5) { // "A1 A2 ": from A1 to A2
-            Move nextMove = new Move(moveString);
+            if (moveString.length() > 5) { // "A1 A2 ": from A1 to A2
+                Move nextMove = new Move(moveString);
 
-            if (!movePiece(nextMove)) {
+                if (!movePiece(nextMove)) {
 
-                /* move illegal? try castling moves */
-                if (nextMove.isFrom(Util.parse("E1")) && nextMove.getTo() == Util.parse("G1")) {
-                    if (!movePiece(new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING)))
-                        System.err.println("CASTLING o-o ILLEGAL");
-                } else if (nextMove.isFrom(Util.parse("E1")) && nextMove.getTo() == Util.parse("C1")) {
-                    if (!movePiece(new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING)))
-                        System.err.println("CASTLING o-o-o ILLEGAL");
-                } else if (nextMove.isFrom(Util.parse("E8")) && nextMove.getTo() == Util.parse("G8")) {
-                    if (!movePiece(new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING)))
-                        System.err.println("CASTLING o-o ILLEGAL");
-                } else if (nextMove.isFrom(Util.parse("E8")) && nextMove.getTo() == Util.parse("C8")) {
-                    if (!movePiece(new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING)))
-                        System.err.println("CASTLING o-o-o ILLEGAL");
-                }
-
-                /* move illegal? try en passant moves */
-                else if (nextMove.isFromRank('4') || nextMove.isFromRank('5')) {
-                    Move enPmove = new Move((short) (nextMove.getInformation() | Move.EN_PASSANT));
-                    if (!movePiece(enPmove)) System.err.println("EN PASSANT CAPTURE ILLEGAL");
-                }
-
-                /* move illegal? try promotion moves */
-                else {
-                    byte from = nextMove.getFrom();
-                    byte to = nextMove.getTo();
-                    Move promotionMove = new Move(from, to, Move.PROMOTION_QUEEN);
-
-                    if (chess.getTurnColor() == WHITE) {
-                        Moves legalMoves = chess.whitePieces.getPseudoLegalMoves();
-                        if (legalMoves.contains(promotionMove)) {
-                            moveStringSpecialMoves = moveString;
-                            moveString = "";
-                            showPromotionPopup();
-                            return;
-                        }
-                    } else {
-                        Moves legalMoves = chess.blackPieces.getPseudoLegalMoves();
-                        if (legalMoves.contains(promotionMove)) {
-                            moveStringSpecialMoves = moveString;
-                            moveString = "";
-                            showPromotionPopup();
-                            return;
-                        }
+                    /* move illegal? try castling moves */
+                    if (nextMove.isFrom(Util.parse("E1")) && nextMove.getTo() == Util.parse("G1")) {
+                        if (!movePiece(new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING)))
+                            System.out.println("CASTLING o-o ILLEGAL");
+                    } else if (nextMove.isFrom(Util.parse("E1")) && nextMove.getTo() == Util.parse("C1")) {
+                        if (!movePiece(new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING)))
+                            System.out.println("CASTLING o-o-o ILLEGAL");
+                    } else if (nextMove.isFrom(Util.parse("E8")) && nextMove.getTo() == Util.parse("G8")) {
+                        if (!movePiece(new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING)))
+                            System.out.println("CASTLING o-o ILLEGAL");
+                    } else if (nextMove.isFrom(Util.parse("E8")) && nextMove.getTo() == Util.parse("C8")) {
+                        if (!movePiece(new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING)))
+                            System.out.println("CASTLING o-o-o ILLEGAL");
                     }
-                    System.err.println("MOVE ILLEGAL (GUI)");
+
+                    /* move illegal? try en passant moves */
+                    else if (nextMove.isFromRank('4') || nextMove.isFromRank('5')) {
+                        Move enPmove = new Move((short) (nextMove.getInformation() | Move.EN_PASSANT));
+                        if (!movePiece(enPmove)) System.out.println("EN PASSANT CAPTURE ILLEGAL");
+                    }
+
+                    /* move illegal? try promotion moves */
+                    else {
+                        byte from = nextMove.getFrom();
+                        byte to = nextMove.getTo();
+                        Move promotionMove = new Move(from, to, Move.PROMOTION_QUEEN);
+
+                        if (chess.getTurnColor() == WHITE) {
+                            Moves legalMoves = chess.whitePieces.getPseudoLegalMoves();
+                            if (legalMoves.contains(promotionMove)) {
+                                moveStringSpecialMoves = moveString;
+                                moveString = "";
+                                showPromotionPopup();
+                                return;
+                            }
+                        } else {
+                            Moves legalMoves = chess.blackPieces.getPseudoLegalMoves();
+                            if (legalMoves.contains(promotionMove)) {
+                                moveStringSpecialMoves = moveString;
+                                moveString = "";
+                                showPromotionPopup();
+                                return;
+                            }
+                        }
+                        System.out.println("MOVE ILLEGAL (GUI)");
+                    }
                 }
+                moveString = "";
             }
-            moveString = "";
+            refreshFrameContent(pos);
         }
-        refreshFrameContent(pos);
     }
 
     public void refreshFrameContent(int pos) {
 
-        if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED) {
-            showPopup(chess.gameStatus.getStatusNotice());
-        } else {
-            short lastMove = chess.history.getLastMoveCoordinates();
-            board.refreshChessBoard(true, true,
-                    chess.getUserLegalMoves(userPlaysColor, userPlaysBothColors).getMovesFrom((byte) pos), lastMove);
+        short lastMove = chess.history.getLastMoveCoordinates();
+        board.refreshChessBoard(true, true,
+                chess.getUserLegalMoves(userPlaysColor, userPlaysBothColors).getMovesFrom((byte) pos), lastMove);
 
-            labelCapturedWhitePieces.setText(" " + chess.whitePieces.getCapturedPiecesAsSymbols() + " ");
-            labelCapturedBlackPieces.setText(" " + chess.blackPieces.getCapturedPiecesAsSymbols() + " ");
+        labelCapturedWhitePieces.setText(" " + chess.whitePieces.getCapturedPiecesAsSymbols() + " ");
+        labelCapturedBlackPieces.setText(" " + chess.blackPieces.getCapturedPiecesAsSymbols() + " ");
 
-            {
-                String textWest = "";
-                String textEast = "";
+        {
+            String space = "<br><br><br><br><br><br><br><br>";
+            String textWest = "<html> &#160 &#x25a0" + space; //square and linefeed...
+            String textEast = "<html> &#160 &#160 &#x25a1" + space;
 
-                int white = chess.whitePieces.getCapturedPiecesAsSymbols().length();
-                int black = chess.blackPieces.getCapturedPiecesAsSymbols().length();
+            int score = Math.round((float) (chess.getScore() / 100));
 
-                int difference = white - black;
+            if (score < 0)
+                textWest += " &#160 &#160 +" + Math.abs(score);
+            else if (score > 0)
+                textEast += " &#160 +" + Math.abs(score);
 
-                if (difference > 0) textWest += "+" + Math.abs(difference) + " ";
-                else if (difference < 0) textEast += "+" + Math.abs(difference) + " ";
+            textWest += space + " &#160 " + timeParser.format(new Date(chess.blackTime));
+            textEast += space + timeParser.format(new Date(chess.whiteTime)) + " &#160 ";
 
-                labelPlaceHolderWest.setText(textWest);
-                labelPlaceHolderEast.setText(textEast);
-            }
-            frame.pack();
+            textWest += "</html>";
+            textEast += "</html>";
+
+            labelPlaceHolderWest.setText(textWest);
+            labelPlaceHolderEast.setText(textEast);
         }
-
-        if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED)
-            showPopup(chess.gameStatus.getStatusNotice());
     }
+
 
     public void resetMoveString() {
         moveString = "";
@@ -391,6 +410,7 @@ public class Gui extends MainWindow {
     class ChatDialog extends JDialog {
 
         public ChatDialog() {
+
             setLayout(new BorderLayout());
             add(chatOutput, BorderLayout.NORTH);
             add(chatInput, BorderLayout.SOUTH);
@@ -422,6 +442,7 @@ public class Gui extends MainWindow {
         }
 
         public void addChatMessage(String message) {
+
             chatOutput.append(message);
             while (chatOutput.getLineCount() >= appearanceSettings.getSizeFactor() / 2) {
                 String text = chatOutput.getText();
@@ -431,6 +452,7 @@ public class Gui extends MainWindow {
         }
 
         public void toggleVisibility() {
+
             Dimension newDim = new Dimension(appearanceSettings.getMargin(), appearanceSettings.getMargin());
             chatOutput.setPreferredSize(newDim);
 
@@ -451,7 +473,9 @@ public class Gui extends MainWindow {
     }
 
     class DialogFEN extends DialogInput {
+
         public DialogFEN() {
+
             super(
                     "Spiel aus FEN beginnen",
                     "FEN eingeben:",
@@ -462,6 +486,7 @@ public class Gui extends MainWindow {
 
         @Override
         public void buttonKlicked() {
+
             chess.startFromFEN(input.getText());
             network.sendToNet("%FEN " + input.getText());
             refreshFrameContent(-1);
@@ -473,6 +498,7 @@ public class Gui extends MainWindow {
 
         @Override
         public void run() {
+
             setName("GUI REFRESHER");
 
             while (true) {
@@ -537,9 +563,11 @@ public class Gui extends MainWindow {
                                             showPopup(chess.gameStatus.getStatusNotice());
                                             break;
                                         default:
-                                            System.out.println(nextMove.getInformation());
                                             chess.userMove(nextMove, userPlaysColor, true);
                                             refreshFrameContent(-1);
+                                            if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED) {
+                                                showPopup(chess.gameStatus.getStatusNotice());
+                                            }
                                     }
                                     break;
                                 case "%FEN":
@@ -589,6 +617,29 @@ public class Gui extends MainWindow {
                     }
                 }
             }
+        }
+    }
+
+    class WindowListener extends WindowAdapter {
+
+        @Override
+        public void windowClosing(WindowEvent e) {
+
+            try {
+                FileWriter writer = new FileWriter("settings.txt");
+                String settings = "%NAME " + myName + "\n";
+                settings += "%SIZE " + appearanceSettings.getSizeFactor() + "\n";
+                settings += "%STYLE " + appearanceSettings.getColorScheme().getCurrentScheme();
+                writer.write(settings);
+                writer.close();
+                System.out.println("STORED SETTINGS: \n" + settings);
+            } catch (IOException ex) {
+                System.err.println("STORE SETTINGS FAILED");
+            }
+
+            e.getWindow().dispose();
+            System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY");
+            System.exit(0);
         }
     }
 }

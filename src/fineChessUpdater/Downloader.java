@@ -11,6 +11,7 @@ import java.net.URLConnection;
 import static java.lang.Thread.sleep;
 
 public class Downloader {
+
     final static String OUTPUT_FILE = "latestRelease.zip";
     final static String DOWNLOAD_RESOURCE = "https://github.com/martinbro2021/fineChessEngineAndGui/archive/main.zip";
     final static int BUFFER_SIZE = 65536;
@@ -51,6 +52,7 @@ public class Downloader {
     }
 
     public static String getHeadLineFromURL(String ressourceURL){
+
         String line = "";
         try
         {
@@ -68,6 +70,7 @@ public class Downloader {
     }
 
     public static String getStringFromURL(String ressourceURL) {
+
         StringBuilder textFromURL = new StringBuilder();
         try
         {
@@ -83,6 +86,7 @@ public class Downloader {
         }
         catch(Exception e)
         {
+            new DialogMessage("Internetverbindung nicht verfügbar");
             e.printStackTrace();
         }
         return textFromURL.toString();

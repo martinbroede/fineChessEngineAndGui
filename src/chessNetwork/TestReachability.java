@@ -1,6 +1,7 @@
 package chessNetwork;
 
 import gui.dialogs.DialogMessage;
+import gui.dialogs.IpAndPortDialog;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -35,6 +36,7 @@ public class TestReachability {
     }
 
     class ReachableDialog extends IpAndPortDialog {
+
         public ReachableDialog() {
             okButton.addActionListener(e -> {
                 reachable(getIp(),Integer.parseInt(getPort()));

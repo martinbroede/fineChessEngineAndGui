@@ -112,8 +112,7 @@ public class Move {
     }
 
     public boolean isFromRank(char rank) {
-        if (Util.getRankName((information % 64) / 8) == rank) return true;
-        return false;
+        return Util.getRankName((information % 64) / 8) == rank;
     }
 
     @Override

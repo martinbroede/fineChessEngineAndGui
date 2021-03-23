@@ -1,24 +1,25 @@
 package core;
 
+import java.util.HashMap;
 import java.util.InputMismatchException;
 
 public class PiecePatterns {
 
     final char[] board;
+    final WhitePawnPattern whitePawnPattern;
+    final WhiteKnightPattern whiteKnightPattern;
+    final WhiteRookPattern whiteRookPattern;
+    final WhiteBishopPattern whiteBishopPattern;
+    final WhiteQueenPattern whiteQueenPattern;
+    final WhiteKingPattern whiteKingPattern;
+    final BlackPawnPattern blackPawnPattern;
+    final BlackKnightPattern blackKnightPattern;
+    final BlackRookPattern blackRookPattern;
+    final BlackBishopPattern blackBishopPattern;
+    final BlackQueenPattern blackQueenPattern;
+    final BlackKingPattern blackKingPattern;
+    final HashMap<PiecePattern, Short> PIECE_VALUES;
     Constants constants;
-
-    WhitePawnPattern whitePawnPattern;
-    WhiteKnightPattern whiteKnightPattern;
-    WhiteRookPattern whiteRookPattern;
-    WhiteBishopPattern whiteBishopPattern;
-    WhiteQueenPattern whiteQueenPattern;
-    WhiteKingPattern whiteKingPattern;
-    BlackPawnPattern blackPawnPattern;
-    BlackKnightPattern blackKnightPattern;
-    BlackRookPattern blackRookPattern;
-    BlackBishopPattern blackBishopPattern;
-    BlackQueenPattern blackQueenPattern;
-    BlackKingPattern blackKingPattern;
 
 
     public PiecePatterns() {
@@ -38,6 +39,27 @@ public class PiecePatterns {
         blackQueenPattern = new BlackQueenPattern();
         whiteKingPattern = new WhiteKingPattern();
         blackKingPattern = new BlackKingPattern();
+
+        PIECE_VALUES = new HashMap<PiecePattern, Short>() {{
+
+        /*
+        910*9 + 530*2 + 330*2 + 320*2 = 10550 = MAX from Pieces.
+        => MAX_TOTAL = PIECE_VALUES + KING VALUE = 21101 / Short.MAX_VALUE is 32767 > 21101
+        PIECE_VALUES seem to be reasonable...?
+         */
+            put(whiteKingPattern, (short) 10551);
+            put(whiteQueenPattern, (short) 910);
+            put(whiteRookPattern, (short) 530);
+            put(whiteBishopPattern, (short) 330);
+            put(whiteKnightPattern, (short) 320);
+            put(whitePawnPattern, (short) 100);
+            put(blackKingPattern, (short) (-10551));
+            put(blackQueenPattern, (short) (-910));
+            put(blackRookPattern, (short) (-530));
+            put(blackBishopPattern, (short) (-330));
+            put(blackKnightPattern, (short) (-320));
+            put(blackPawnPattern, (short) (-100));
+        }};
 
         System.out.println("CHESS PIECES INITIALIZED");
     }
@@ -167,7 +189,7 @@ public class PiecePatterns {
                 }
             }
 
-            if(enPassantRights >= 0){
+            if (enPassantRights >= 0) {
 
                 byte to = constants.WHITE_PAWN_EN_PASSANT_CAPTURE[enPassantRights][from];
                 if (to >= 0) {
@@ -213,11 +235,11 @@ public class PiecePatterns {
                 }
             }
 
-            if(enPassantRights >= 0){
+            if (enPassantRights >= 0) {
 
                 byte to = constants.BLACK_PAWN_EN_PASSANT_CAPTURE[enPassantRights][from];
                 if (to >= 0) {
-                    legalMoves.add(new Move(from,to, Move.EN_PASSANT));
+                    legalMoves.add(new Move(from, to, Move.EN_PASSANT));
                 }
             }
 
@@ -541,7 +563,7 @@ public class PiecePatterns {
     public class BlackKingPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
-            return new Moves();//todo optimize...
+            return new Moves(); //todo optimize...
         }
 
         public Moves getKingMoves(byte from, byte[] threats, boolean kingSideCastling, boolean queenSideCastling) {

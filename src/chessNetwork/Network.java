@@ -1,5 +1,7 @@
 package chessNetwork;
 
+import gui.dialogs.IpAndPortDialog;
+
 import java.awt.*;
 import java.util.LinkedList;
 
@@ -25,6 +27,7 @@ public class Network {
     }
 
     public boolean isConnected() {
+
         if (server != null) return server.isConnectionSuccessful();
         if (client != null) return client.isConnectionSuccessful();
         return false;
@@ -76,13 +79,16 @@ public class Network {
     }
 
     class ServerIpDialog extends IpAndPortDialog {
+
         public ServerIpDialog(Point location) {
+
             super(location);
             dialog.setTitle("IP Konfiguration Server");
         }
 
         @Override
         public void okAction() {
+
             String config = getIp() + "/" + getPort();
             createServer(config);
             dialog.dispose();
@@ -90,13 +96,16 @@ public class Network {
     }
 
     class ClientIpDialog extends IpAndPortDialog {
+
         public ClientIpDialog(Point location) {
+
             super(location);
             dialog.setTitle("IP Konfiguration Client");
         }
 
         @Override
         public void okAction() {
+
             String config = getIp() + "/" + getPort();
             createClient(config);
             dialog.dispose();

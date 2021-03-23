@@ -1,4 +1,4 @@
-#V0.50b (beta)
+#V0.51 (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -24,3 +24,6 @@ V0.50   add threefold repetition rule
                 [ after threefold repetition.
 V0.50b  bugfix FEN parsing
         add version request
+V0.50c  bugfix checkmate-popup
+V0.51   add simple timer
+        add proper score
