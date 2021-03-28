@@ -10,14 +10,14 @@ import gui.dialogs.DialogText;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
+
+import static fileHandling.ReadWrite.getStringFromFile;
+import static fileHandling.StaticSetting.getSetting;
+import static fileHandling.StaticSetting.getStoredSettings;
 
 public class MainWindow {
 
@@ -30,62 +30,52 @@ public class MainWindow {
     final JLabel labelCapturedBlackPieces;
     final JLabel labelPlaceHolderWest;
     final JLabel labelPlaceHolderEast;
-
-    JPopupMenu messageMenu;
-    JMenuItem messageItem;
-
     final JMenuItem itemStartServer;
     final JMenuItem itemStartClient;
     final JMenuItem itemNetworkDestroy;
     final JMenuItem itemNewNetworkGame;
     final JMenuItem itemShowChat;
-
     final JMenuItem itemNewGame;
     final JMenuItem itemStore;
     final JMenuItem itemRestore;
     final JMenuItem itemBegin;
     final JMenuItem itemLicense;
-
+    final JMenuItem itemCheckVersion;
+    final JMenuItem itemShowVersionLog;
     final JMenuItem itemSize1;
     final JMenuItem itemSize2;
     final JMenuItem itemSize3;
     final JMenuItem itemEnlarge;
     final JMenuItem itemDiminish;
     final JMenuItem itemChangePieceStyle;
-
     final JMenuItem itemCastlingQueenside;
     final JMenuItem itemCastlingKingside;
-
     final JMenuItem itemPromotionQueen;
     final JMenuItem itemPromotionKnight;
     final JMenuItem itemPromotionBishop;
     final JMenuItem itemPromotionRook;
     final JPopupMenu menuPromotion;
-
     final JMenuItem itemAccept;
     final JMenuItem itemDecline;
     final JPopupMenu menuDraw;
-
     final JMenuItem itemUndo;
     final JMenuItem itemRedo;
-
     final JMenuItem itemRotateBoard;
     final JMenuItem itemFromFEN;
     final JMenuItem itemRename;
-
     final JMenuItem itemAssignOpponentBlack;
     final JMenuItem itemAssignOpponentWhite;
     final JMenuItem itemResign;
     final JMenuItem itemOfferDraw;
-
     final JTextField chatInput;
     final JTextArea chatOutput;
-
     final ColorScheme colorScheme;
+    final JPopupMenu messageMenu;
+    final JMenuItem messageItem;
     final int SIZE_L = 70;
     final int SIZE_M = 45;
     final int SIZE_S = 30;
-    String STORED_SETTINGS;
+
     String VERSION = "VERSION UNKNOWN";
     String myName = "";
     String myFriendsName = "";
@@ -96,29 +86,15 @@ public class MainWindow {
         frame.setResizable(false);
         frame.setTitle("Schach");
 
-        try {
-            File settingsFile = new File("settings.txt");
-
-            if (settingsFile.createNewFile()) {
-                System.out.println(settingsFile.getName() + " CREATED");
-            } else {
-                System.out.println("FOUND SETTINGS");
+        getStoredSettings();
+        myName = getSetting("%NAME");
+        {
+            String xy = getSetting("%LOCATION");
+            if (!xy.equals("")) {
+                String[] args = xy.split("/");
+                Point location = new Point((int) (Float.parseFloat(args[0])) , (int) (Float.parseFloat(args[1])));
+                frame.setLocation(location);
             }
-
-            Scanner settingsIn = new Scanner(settingsFile);
-            String settings = "";
-            while (settingsIn.hasNext())
-                settings += settingsIn.nextLine() + "\n";
-
-            settingsIn.close();
-
-            STORED_SETTINGS = settings;
-            myName = getSetting("%NAME", settings);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NoSuchElementException ex) {
-            System.out.println("NO SETTINGS STORED YET");
         }
 
         try {
@@ -135,8 +111,8 @@ public class MainWindow {
 
         labelCapturedWhitePieces = new JLabel("", JLabel.CENTER);
         labelCapturedBlackPieces = new JLabel("", JLabel.CENTER);
-        labelPlaceHolderWest = new JLabel("",JLabel.LEFT);
-        labelPlaceHolderEast = new JLabel("",JLabel.RIGHT);
+        labelPlaceHolderWest = new JLabel("", JLabel.LEFT);
+        labelPlaceHolderEast = new JLabel("", JLabel.RIGHT);
         colorScheme = new ColorScheme();
         appearanceSettings = new AppearanceSettings(colorScheme);
         board = new Board(SIZE_S, chess, appearanceSettings);
@@ -176,6 +152,8 @@ public class MainWindow {
         itemRestore = new JMenuItem("Wiederherstellen");
         itemBegin = new JMenuItem("Siel starten");
         itemLicense = new JMenuItem("Info und Lizenz");
+        itemCheckVersion = new JMenuItem("Version überprüfen");
+        itemShowVersionLog = new JMenuItem("LOG anzeigen");
 
         itemSize1 = new JMenuItem("groß");
         itemSize2 = new JMenuItem("mittel");
@@ -223,6 +201,7 @@ public class MainWindow {
         JMenu castlingMenu = new JMenu("Rochade...");
         JMenu networkMenu = new JMenu("Netzwerk...");
         JMenu extrasMenu = new JMenu("Extras...");
+        JMenu versionMenu = new JMenu("Version...");
 
         menuPromotion = new JPopupMenu();
         menuPromotion.setFont(promotionItemFont);
@@ -234,6 +213,10 @@ public class MainWindow {
         mainMenu.add(itemBegin);
         mainMenu.addSeparator();
         mainMenu.add(itemLicense);
+        versionMenu.add(itemCheckVersion);
+        versionMenu.add(itemShowVersionLog);
+        mainMenu.add(versionMenu);
+
 
         sizeMenu.add(itemSize1);
         sizeMenu.add(itemSize2);
@@ -297,7 +280,6 @@ public class MainWindow {
         menuBar.add(networkMenu);
         frame.add(menuPromotion);
         frame.setJMenuBar(menuBar);
-        frame.setLocation(0, 0);
         setStyleSettings();
 
         content.add(labelCapturedWhitePieces, BorderLayout.NORTH);
@@ -307,10 +289,10 @@ public class MainWindow {
         content.add(labelCapturedBlackPieces, BorderLayout.SOUTH);
 
         {
-            String dressCode = getSetting("%STYLE", STORED_SETTINGS);
+            String dressCode = getSetting("%STYLE");
             if (!dressCode.equals("")) colorScheme.setColors(Integer.parseInt(dressCode));
 
-            String size = getSetting("%SIZE", STORED_SETTINGS);
+            String size = getSetting("%SIZE");
             if (!size.equals("")) adjustBoardAndFrameSize(Integer.parseInt(size));
             else adjustBoardAndFrameSize(SIZE_S);
         }
@@ -321,16 +303,7 @@ public class MainWindow {
 
         frame.setVisible(true);
 
-        if (!VERSION.equals("VERSION UNKNOWN")) {
-            String URL = "https://raw.githubusercontent.com/martinbro2021/fineChessEngineAndGui/main/version.txt";
-            String latestVersion = Downloader.getHeadLineFromURL(URL);
-            if (!latestVersion.equals("") && !latestVersion.equals(VERSION)) {
-                new DialogMessage("Ein neueres Programm [Version " + latestVersion + "] steht bei github.com zur Verfügung!",
-                        frame.getLocation());
-            } else if (!latestVersion.equals("")) {
-                showPopup("Deine Version ist aktuell - cool!");
-            }
-        }
+        checkVersion();
 
         if (myName.equals("")) {
             new DialogInput("Namen wählen", "Mein Name:",
@@ -382,20 +355,16 @@ public class MainWindow {
         });
 
         itemLicense.addActionListener(e -> {
-            try {
-                FileInputStream stream = new FileInputStream("LICENSE");
-                Scanner scanner = new Scanner(stream);
-                String text = "";
-                while (scanner.hasNext()) {
-                    text += scanner.nextLine() + '\n';
-                }
-                text = "Schach " + VERSION + "\n\n" + text;
-                DialogText license = new DialogText(text, frame.getLocation());
-                license.setVisible(true);
-            } catch (FileNotFoundException ex) {
-                System.err.println("FILE NOT FOUND");
-            }
+            String license;
+            license = getStringFromFile("LICENSE");
+            license = "Schach " + VERSION + "\n\n" + license;
+            new DialogText(license, frame.getLocation());
         });
+
+        itemCheckVersion.addActionListener(e -> checkVersion());
+
+        itemShowVersionLog.addActionListener(e ->
+                new DialogText(getStringFromFile("version.txt"), frame.getLocation()));
 
         itemRename.addActionListener(e ->
                 new DialogInput("Namen wählen", "Mein Name:",
@@ -406,6 +375,19 @@ public class MainWindow {
                     }
                 });
         /*  #################################### \add action listeners\ ############################################# */
+    }
+
+    void checkVersion() {
+        if (!VERSION.equals("VERSION UNKNOWN")) {
+            String URL = "https://raw.githubusercontent.com/martinbro2021/fineChessEngineAndGui/main/version.txt";
+            String latestVersion = Downloader.getHeadLineFromURL(URL);
+            if (!latestVersion.equals("") && !latestVersion.equals(VERSION)) {
+                new DialogMessage("Ein neueres Programm [Version " + latestVersion + "] steht bei github.com zur Verfügung!",
+                        frame.getLocation());
+            } else if (!latestVersion.equals("")) {
+                showPopup("Deine Version ist aktuell - cool!");
+            }
+        }
     }
 
     private void adjustBoardAndFrameSize(int size_factor) {
@@ -484,23 +466,12 @@ public class MainWindow {
         menuBar.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelCapturedWhitePieces.setFont(appearanceSettings.getFont());
         labelCapturedBlackPieces.setFont(appearanceSettings.getFont());
-        Font westEastFont = new Font("Courier New",Font.PLAIN, appearanceSettings.getSizeFactor()*2/5);
+        Font westEastFont = new Font("Courier New", Font.PLAIN, appearanceSettings.getSizeFactor() * 2 / 5);
         labelPlaceHolderWest.setFont(westEastFont);
         labelPlaceHolderEast.setFont(westEastFont);
         labelCapturedWhitePieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelCapturedBlackPieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelPlaceHolderWest.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelPlaceHolderEast.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-    }
-
-    public String getSetting(String attributeName, String settings) {
-
-        String[] args = settings.split("\n");
-        for (String arg : args) {
-            if (arg.startsWith(attributeName)) {
-                return arg.replaceAll(attributeName + " ", "");
-            }
-        }
-        return "";
     }
 }

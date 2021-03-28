@@ -1,4 +1,4 @@
-#V0.51 (beta)
+#V0.52 (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -27,3 +27,5 @@ V0.50b  bugfix FEN parsing
 V0.50c  bugfix checkmate-popup
 V0.51   add simple timer
         add proper score
+V0.52   store preferred ip
+        resolve inetAddress

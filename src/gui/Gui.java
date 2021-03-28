@@ -10,11 +10,12 @@ import gui.dialogs.DialogMessage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.NoSuchElementException;
+
+import static fileHandling.StaticSetting.rememberSetting;
+import static fileHandling.StaticSetting.storeSettingsInFile;
 
 public class Gui extends MainWindow {
 
@@ -296,10 +297,9 @@ public class Gui extends MainWindow {
     }
 
     private void processMouseEvent(MouseEvent mouseEvent) {
-        System.out.println("MOUSE EVENT 0"); //todo remove
+
         if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED) {
             showPopup(chess.gameStatus.getStatusNotice());
-            System.out.println("MOUSE EVENT END"); //todo remove
         } else {
             byte pos = board.coordFromEvent(mouseEvent);
 
@@ -412,7 +412,8 @@ public class Gui extends MainWindow {
         public ChatDialog() {
 
             setLayout(new BorderLayout());
-            add(chatOutput, BorderLayout.NORTH);
+            JScrollPane scrollPane = new JScrollPane(chatOutput);
+            add(scrollPane, BorderLayout.NORTH);
             add(chatInput, BorderLayout.SOUTH);
             chatOutput.setEnabled(false);
             chatOutput.setDisabledTextColor(Color.DARK_GRAY);
@@ -455,12 +456,10 @@ public class Gui extends MainWindow {
 
             Dimension newDim = new Dimension(appearanceSettings.getMargin(), appearanceSettings.getMargin());
             chatOutput.setPreferredSize(newDim);
-
             chatOutput.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
 
             newDim = new Dimension(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor());
             chatInput.setPreferredSize(newDim);
-
             chatInput.setBackground(appearanceSettings.getColorScheme().HIGHLIGHT_1_COLOR);
 
             Point location = frame.getLocation();
@@ -625,18 +624,11 @@ public class Gui extends MainWindow {
         @Override
         public void windowClosing(WindowEvent e) {
 
-            try {
-                FileWriter writer = new FileWriter("settings.txt");
-                String settings = "%NAME " + myName + "\n";
-                settings += "%SIZE " + appearanceSettings.getSizeFactor() + "\n";
-                settings += "%STYLE " + appearanceSettings.getColorScheme().getCurrentScheme();
-                writer.write(settings);
-                writer.close();
-                System.out.println("STORED SETTINGS: \n" + settings);
-            } catch (IOException ex) {
-                System.err.println("STORE SETTINGS FAILED");
-            }
-
+            rememberSetting("%NAME " + myName);
+            rememberSetting("%SIZE " + appearanceSettings.getSizeFactor());
+            rememberSetting("%STYLE " + appearanceSettings.getColorScheme().getCurrentScheme());
+            rememberSetting("%LOCATION " + frame.getLocation().getX() + "/" + frame.getLocation().getY());
+            storeSettingsInFile();
             e.getWindow().dispose();
             System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY");
             System.exit(0);

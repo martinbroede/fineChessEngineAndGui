@@ -3,7 +3,11 @@ package chessNetwork;
 import gui.dialogs.IpAndPortDialog;
 
 import java.awt.*;
+import java.net.InetAddress;
 import java.util.LinkedList;
+
+import static fileHandling.StaticSetting.getSetting;
+import static fileHandling.StaticSetting.rememberSetting;
 
 public class Network {
 
@@ -14,8 +18,23 @@ public class Network {
     private boolean active;
 
     public static void main(String[] args) {
+
         Network net = new Network();
         net.showClientIpDialog(new Point(100, 100));
+    }
+
+    public static String resolveIpFromIpDialog(String input) {
+
+        try {
+            String[] args = input.split("/");
+            InetAddress inetAddress = InetAddress.getByName(args[0]);
+            String ip = inetAddress.getHostAddress();
+            return ip + '/' + args[1];
+        } catch (Exception ex) {
+            //new DialogText(ex.getMessage());
+            ex.printStackTrace();
+            return "";
+        }
     }
 
     public void createServer(String configIpAndPort) {
@@ -78,18 +97,27 @@ public class Network {
         new ClientIpDialog(location);
     }
 
+
     class ServerIpDialog extends IpAndPortDialog {
 
         public ServerIpDialog(Point location) {
 
             super(location);
+            String preferredIP = getSetting("%SERVER_IP");
+            if(!preferredIP.equals("")){
+                ipField.setText(preferredIP);
+                portField.setText(getSetting("%SERVER_PORT"));
+            }
             dialog.setTitle("IP Konfiguration Server");
         }
 
         @Override
         public void okAction() {
 
+            rememberSetting("%SERVER_IP " + getIp());
+            rememberSetting("%SERVER_PORT " + getPort());
             String config = getIp() + "/" + getPort();
+            config = resolveIpFromIpDialog(config);
             createServer(config);
             dialog.dispose();
         }
@@ -100,13 +128,22 @@ public class Network {
         public ClientIpDialog(Point location) {
 
             super(location);
+            String preferredIP = getSetting("%CLIENT_IP");
+            if(!preferredIP.equals("")){
+                ipField.setText(preferredIP);
+                portField.setText(getSetting("%CLIENT_PORT"));
+            }
             dialog.setTitle("IP Konfiguration Client");
         }
 
         @Override
         public void okAction() {
 
+            rememberSetting("%CLIENT_IP " + getIp());
+            rememberSetting("%CLIENT_PORT " + getPort());
             String config = getIp() + "/" + getPort();
+            config = resolveIpFromIpDialog(config);
+            System.out.println(config); // todo remove
             createClient(config);
             dialog.dispose();
         }

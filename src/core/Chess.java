@@ -617,7 +617,6 @@ public class Chess extends MoveGenerator implements Serializable {
                     blackPieces.activateLastCapturedPiece();
                 }
             }
-
         }
 
         board[from] = board[to];
@@ -636,16 +635,19 @@ public class Chess extends MoveGenerator implements Serializable {
     }
 
     public byte[] getWhiteThreats() {
+
         whitePieces.updateThreats();
         return whitePieces.getThreats();
     }
 
     public byte[] getBlackThreats() {
+
         blackPieces.updateThreats();
         return blackPieces.getThreats();
     }
 
     public byte[] getCombinedThreats() {
+
         whitePieces.updateThreats();
         blackPieces.updateThreats();
         byte[] combinedThreats = new byte[64];
@@ -675,6 +677,7 @@ public class Chess extends MoveGenerator implements Serializable {
     }
 
     public boolean pieceAtSquare(int i, boolean color) {
+
         if (color == Constants.WHITE) return is_white_piece(board[i]);
         else return is_black_piece(board[i]);
     }

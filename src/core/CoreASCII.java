@@ -10,6 +10,7 @@ public class CoreASCII {
     }
 
     public static void run(){
+
         Chess chess = new Chess();
         chess.newGame();
         Scanner scanner = new Scanner(System.in);
