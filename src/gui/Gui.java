@@ -200,7 +200,7 @@ public class Gui extends MainWindow {
             if (chess.getTurnColor() == userPlaysColor) {
                 network.sendToNet("%MOVE " + Move.RESIGN);
                 chess.userMove(new Move(Move.RESIGN), userPlaysColor, true);
-                showPopup(chess.gameStatus.getStatusNotice());
+                showPopup(chess.currentStatus.getStatusNotice());
             } else {
                 showPopup("Gib auf, wenn du am Zug bist.");
             }
@@ -219,7 +219,7 @@ public class Gui extends MainWindow {
         itemAccept.addActionListener(e -> {
             network.sendToNet("%MOVE " + Move.ACCEPT_DRAW);
             chess.userMove(new Move(Move.ACCEPT_DRAW), userPlaysColor, true);
-            showPopup(chess.gameStatus.getStatusNotice());
+            showPopup(chess.currentStatus.getStatusNotice());
         });
 
         itemDecline.addActionListener(e -> {
@@ -286,8 +286,8 @@ public class Gui extends MainWindow {
 
             if (network.isActive()) network.sendToNet("%MOVE " + move.getInformation());
 
-            if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED)
-                showPopup(chess.gameStatus.getStatusNotice());
+            if (chess.currentStatus.getStatus() != Status.UNDECIDED)
+                showPopup(chess.currentStatus.getStatusNotice());
 
             return true;
 
@@ -298,8 +298,8 @@ public class Gui extends MainWindow {
 
     private void processMouseEvent(MouseEvent mouseEvent) {
 
-        if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED) {
-            showPopup(chess.gameStatus.getStatusNotice());
+        if (chess.currentStatus.getStatus() != Status.UNDECIDED) {
+            showPopup(chess.currentStatus.getStatusNotice());
         } else {
             byte pos = board.coordFromEvent(mouseEvent);
 
@@ -555,17 +555,17 @@ public class Gui extends MainWindow {
                                             break;
                                         case Move.ACCEPT_DRAW:
                                             chess.userMove(nextMove, userPlaysColor, true);
-                                            showPopup(chess.gameStatus.getStatusNotice());
+                                            showPopup(chess.currentStatus.getStatusNotice());
                                             break;
                                         case Move.RESIGN:
                                             chess.userMove(nextMove, userPlaysColor, true);
-                                            showPopup(chess.gameStatus.getStatusNotice());
+                                            showPopup(chess.currentStatus.getStatusNotice());
                                             break;
                                         default:
                                             chess.userMove(nextMove, userPlaysColor, true);
                                             refreshFrameContent(-1);
-                                            if (chess.gameStatus.getStatusCode() != GameStatus.UNDECIDED) {
-                                                showPopup(chess.gameStatus.getStatusNotice());
+                                            if (chess.currentStatus.getStatus() != Status.UNDECIDED) {
+                                                showPopup(chess.currentStatus.getStatusNotice());
                                             }
                                     }
                                     break;

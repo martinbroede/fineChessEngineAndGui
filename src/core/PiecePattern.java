@@ -23,6 +23,7 @@ abstract class PiecePattern {
 
     /**
      * Get legal moves of king
+     * To be overwritten by king's pattern
      *
      * @param from Position of piece
      * @param threats threats of other color

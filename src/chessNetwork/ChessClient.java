@@ -36,7 +36,7 @@ public class ChessClient extends Thread {
         sendingThread = new SendingThread(delayMilliSec, "CLIENT SENDER");
     }
 
-    public static void main(String[] ar) {
+    public static void main(String[] args) {
 
         ChessClient client = new ChessClient("0.0.0.0/50005", 150, new LinkedList<>());
         client.start();
@@ -76,7 +76,7 @@ public class ChessClient extends Thread {
             System.err.println("DON'T KNOW HO(R)ST: TRY AGAIN.");
             new DialogMessage("Verbindung fehlgeschlagen. Host unbekannt ");
             return false;
-        }catch (NoRouteToHostException ex){
+        } catch (NoRouteToHostException ex) {
             ex.printStackTrace();
             System.err.println("CONNECTION FAILED. TRY AGAIN");
             new DialogMessage("Verbindung fehlgeschlagen. Vermutlich besteht keine Internetverbindung.");

@@ -14,7 +14,7 @@ public class Chess extends MoveGenerator implements Serializable {
             + "                pppppppprnbqkbnr";
     public History history;
     public Stack<Move> undoneMovesHistory;
-    public GameStatus gameStatus;
+    public CurrentStatus currentStatus;
     public long whiteTime;
     public long blackTime;
     private long whiteTimeStamp;
@@ -28,7 +28,7 @@ public class Chess extends MoveGenerator implements Serializable {
         history = new History();
         undoneMovesHistory = new Stack<>();
         hashGenerator = new HashGenerator();
-        gameStatus = new GameStatus();
+        currentStatus = new CurrentStatus();
     }
 
     public Chess() {
@@ -65,7 +65,7 @@ public class Chess extends MoveGenerator implements Serializable {
         history.clear();
         undoneMovesHistory.clear();
         hashGenerator.reset();
-        gameStatus.reset();
+        currentStatus.reset();
 
         for (byte pos = 0; pos <= 63; pos++) {
             char c = (char) (init.getBytes()[pos]);
@@ -102,7 +102,7 @@ public class Chess extends MoveGenerator implements Serializable {
         history.clear();
         undoneMovesHistory.clear();
         hashGenerator.reset();
-        gameStatus.reset();
+        currentStatus.reset();
 
         try {
             String[] args = FEN.split(" ");
@@ -214,9 +214,9 @@ public class Chess extends MoveGenerator implements Serializable {
 
             if (pseudoMoves.size() == 0) {
                 if (blackPieces.getThreats()[whitePieces.king.getPosition()] > 0)
-                    gameStatus.setStatusCode(GameStatus.WHITE_CHECKMATED);
+                    currentStatus.setStatus(Status.WHITE_CHECKMATED);
                 else
-                    gameStatus.setStatusCode(GameStatus.DRAW_STALEMATE);
+                    currentStatus.setStatus(Status.DRAW_STALEMATE);
             }
 
         } else {
@@ -235,9 +235,9 @@ public class Chess extends MoveGenerator implements Serializable {
 
             if (pseudoMoves.size() == 0) {
                 if (whitePieces.getThreats()[blackPieces.king.getPosition()] > 0)
-                    gameStatus.setStatusCode(GameStatus.BLACK_CHECKMATED);
+                    currentStatus.setStatus(Status.BLACK_CHECKMATED);
                 else
-                    gameStatus.setStatusCode(GameStatus.DRAW_STALEMATE);
+                    currentStatus.setStatus(Status.DRAW_STALEMATE);
             }
 
         }
@@ -247,7 +247,7 @@ public class Chess extends MoveGenerator implements Serializable {
     /** check if legal, if so move piece */
     public boolean userMove(Move move, boolean userColor, boolean userPlaysBoth) {
 
-        if (gameStatus.getStatusCode() != GameStatus.UNDECIDED) return false;
+        if (currentStatus.getStatus() != Status.UNDECIDED) return false;
 
         if (move.getInformation() < 0) {
 
@@ -255,25 +255,25 @@ public class Chess extends MoveGenerator implements Serializable {
 
                 case Move.RESIGN:
                     if (whiteToMove) {
-                        gameStatus.setStatusCode(GameStatus.WHITE_RESIGNED);
+                        currentStatus.setStatus(Status.WHITE_RESIGNED);
                     } else {
-                        gameStatus.setStatusCode(GameStatus.BLACK_RESIGNED);
+                        currentStatus.setStatus(Status.BLACK_RESIGNED);
                     }
                     return true;
 
                 case Move.OFFER_DRAW:
-                    gameStatus.setDrawOffered(true);
+                    currentStatus.setDrawOffered(true);
                     return true;
 
                 case Move.ACCEPT_DRAW:
-                    if (gameStatus.getDrawOffered()) {
-                        gameStatus.setStatusCode(GameStatus.DRAW_ACCEPTED);
+                    if (currentStatus.isDrawOffered()) {
+                        currentStatus.setStatus(Status.DRAW_ACCEPTED);
                         return true;
                     }
                     return false; // nothing to accept if not offered
 
                 case Move.DECLINE_DRAW:
-                    gameStatus.setDrawOffered(false);
+                    currentStatus.setDrawOffered(false);
                     return true;
             }
 
@@ -290,7 +290,7 @@ public class Chess extends MoveGenerator implements Serializable {
             blackTime += blackTimeStamp - whiteTimeStamp;
         }
 
-        gameStatus.setDrawOffered(false);
+        currentStatus.setDrawOffered(false);
         undoneMovesHistory.clear();
         movePiece(move);
         getUserLegalMoves(); //to make sure a checkmate will be detected
@@ -509,10 +509,10 @@ public class Chess extends MoveGenerator implements Serializable {
         hashGenerator.hashTurn(); // 2nd
 
         if (history.drawDueToRepetition(hashGenerator.getHashCode()))
-            gameStatus.setStatusCode(GameStatus.DRAW_REPETITION);
+            currentStatus.setStatus(Status.DRAW_REPETITION);
 
         if (moveCounter - lastCaptureOrPawnMove >= Constants.MAX_MOVES)
-            gameStatus.setStatusCode(GameStatus.DRAW_MOVES);
+            currentStatus.setStatus(Status.DRAW_MOVES);
 
         assert testHashGenerator();
     }
@@ -553,7 +553,7 @@ public class Chess extends MoveGenerator implements Serializable {
     private short undo() {
 
         State state = history.pop();
-        gameStatus.setStatusCode(GameStatus.UNDECIDED);
+        currentStatus.setStatus(Status.UNDECIDED);
         enPassantPawn = state.enPassant;
         byte from = Move.getFrom(state.moveInformation);
         byte to = Move.getTo(state.moveInformation);

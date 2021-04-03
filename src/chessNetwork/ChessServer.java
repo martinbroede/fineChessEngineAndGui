@@ -48,7 +48,7 @@ public class ChessServer extends Thread {
 
     public static void main(String[] ar) {
 
-        ChessServer server = new ChessServer("2003:c8:9706:2700:d933:17e8:c402:0000/50005",
+        ChessServer server = new ChessServer("0.0.0.0/50005",
                 2000, new LinkedList<>());
 
         server.start();
@@ -143,14 +143,16 @@ public class ChessServer extends Thread {
 
         connectionSuccessful = false;
 
-        if (socket != null) {
-            try {
-                socket.close();
-                serverSocket.close();
-                System.out.println("SERVER CLOSED SOCKETS");
-            } catch (IOException ex) {
-            }
+        try {
+            socket.close();
+        } catch (IOException ignored) {
+        } catch (NullPointerException ignored) {
         }
-        System.out.println("SERVER SAYS GOODBYE");
+        try {
+            serverSocket.close();
+        } catch (IOException ignored) {
+        } catch (NullPointerException ignored) {
+        }
+        System.out.println("SERVER CLOSED SOCKETS. GOODBYE");
     }
 }
