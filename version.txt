@@ -1,4 +1,4 @@
-#V0.52 (beta)
+#V0.52b (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -32,3 +32,4 @@ V0.52   store preferred ip
 V0.52B  refactor chessNetwork classes
         unify threads
         improve exception handling
+V0.52b  bugfix move transmission

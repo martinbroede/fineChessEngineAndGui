@@ -491,9 +491,10 @@ public class Gui extends Window {
         @Override
         public void react() {
 
-            if (network != null && network.getMessageQueue().size() > 0) {
+            while(network != null && network.getMessageQueue().size() > 0) {
                 String message;
                 try {
+
                     message = network.getMessageQueue().getFirst();
                     network.getMessageQueue().removeFirst();
 

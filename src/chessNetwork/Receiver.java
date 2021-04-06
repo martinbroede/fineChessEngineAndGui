@@ -9,33 +9,32 @@ public class Receiver extends Thread {
 
     private final LinkedList<String> messageQueue;
     private final NetInstance initiator;
-    private final String serviceName;
     private Subscriber subscriber;
+    BufferedReader bufferedReader;
 
     public Receiver(String serviceName, NetInstance initiator) {
 
         setName(serviceName);
-        this.serviceName = serviceName;
         this.initiator = initiator;
         this.messageQueue = initiator.getMessageQueue();
+        bufferedReader = initiator.getBufferedReader();
     }
 
     public void register(Subscriber subscriber) {
 
         this.subscriber = subscriber;
-        System.out.println(serviceName + " GOT SUBSCRIBER");
+        System.out.println(getName() + " GOT SUBSCRIBER");
     }
 
     public void unregister() {
 
         if (subscriber != null) subscriber.unsubscribe();
-        System.out.println(serviceName + " UNREGISTERED SUBSCRIBER");
+        System.out.println(getName() + " UNREGISTERED SUBSCRIBER");
     }
 
     public void run() {
 
         String message = "";
-        BufferedReader bufferedReader = initiator.getBufferedReader();
 
         while (!message.equals("%CIAO")) {
 
@@ -46,19 +45,14 @@ public class Receiver extends Thread {
                     messageQueue.add(message);
                     if (subscriber != null) subscriber.react();
                 }
+
             } catch (SocketException ex) {
                 System.out.println("SOCKET EXCEPTION\nRECEIVER ABORTED");
+                ex.printStackTrace();
                 break;
             } catch (IOException ex) {
                 System.out.println("I/O EXCEPTION");
                 ex.printStackTrace();
-            }
-
-            try {
-                sleep(100);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-                break;
             }
         }
         initiator.abort();

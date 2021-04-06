@@ -4,12 +4,10 @@ import core.CoreASCII;
 import fineChessUpdater.Downloader;
 import gui.Gui;
 
-import static java.lang.System.exit;
-
 public class Main {
+
     public static void main(String[] args) {
 
-        Chess chess;
         Gui gui;
 
         if (args.length > 0) {
@@ -32,22 +30,18 @@ public class Main {
                     server.start();
                     break;
                 case "PROVIDE":
-                    chess = new Chess();
-                    gui = new Gui(chess);
+                    gui = new Gui(new Chess());
                     gui.network.createServer(args[1]);
                     break;
                 case "CONNECT":
-                    chess = new Chess();
-                    gui = new Gui(chess);
+                    gui = new Gui(new Chess());
                     gui.network.createClient(args[1]);
                     break;
                 default:
                     System.err.println("DO NOT KNOW ARGUMENT " + args[0]);
-                    exit(0);
             }
         } else {
-            chess = new Chess();
-            gui = new Gui(chess);
+            new Gui(new Chess());
         }
     }
 }

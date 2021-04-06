@@ -45,8 +45,8 @@ public abstract class NetInstance implements Runnable {
             receiver.interrupt();
         } catch (NullPointerException ignored) {
         }
-        receiver = null;
 
+        receiver = null;
         connectionSuccessful = false;
 
         try {

@@ -10,7 +10,7 @@ public enum Status {
     DRAW_STALEMATE,
     DRAW_ACCEPTED,//    draw due to an accepted offer
     DRAW_MOVES,//       draw due to fifty moves rule
-    DRAW_MATERIAL, //   draw due to lack of material on both sides
+    DRAW_MATERIAL, //   draw due to lack of material on both sides // todo implement
     DRAW_REPETITION;//  draw due to repetion of current position
 
     private final static String[] NOTICE = {

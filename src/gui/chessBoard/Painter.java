@@ -38,14 +38,13 @@ public class Painter {
 
                 int pos = boardOrientation ? x + (7 - y) * 8 : (7 - x) + y * 8;
 
+                byte val = combinedThreats[pos];
                 if (boardOrientation) { // white's point of view
-                    byte val = combinedThreats[pos];
                     if (val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
                     else if (val > 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
                     else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
                     if (blackThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
                 } else { //black's point of view
-                    byte val = combinedThreats[pos];
                     if (val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
                     else if (val < 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
                     else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
