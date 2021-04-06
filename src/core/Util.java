@@ -40,7 +40,7 @@ public final class Util {
     }};
 
     private Util() {
-    } // no need to instantiate parser
+    }
 
     public static char parseSymbol(char c) {
         return SYMBOLS.get(c);

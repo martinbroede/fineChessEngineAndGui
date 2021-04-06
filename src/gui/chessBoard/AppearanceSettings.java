@@ -34,10 +34,6 @@ public class AppearanceSettings {
         return margin;
     }
 
-    public int getFontNumber() {
-        return fontNumber%FONT_ROULETTE.length;
-    }
-
     public Font getFont() {
         return font;
     }

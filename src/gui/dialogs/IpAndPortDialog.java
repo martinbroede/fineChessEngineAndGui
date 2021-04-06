@@ -29,7 +29,7 @@ public class IpAndPortDialog {
         dialog.add(okButton);
         dialog.setVisible(true);
         okButton.addActionListener(e -> {
-            okAction();
+            action();
         });
 
         ipField.addKeyListener(new KeyListener() {
@@ -46,7 +46,7 @@ public class IpAndPortDialog {
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    okAction();
+                    action();
                 }
             }
         });
@@ -65,7 +65,7 @@ public class IpAndPortDialog {
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    okAction();
+                    action();
                 }
             }
         });
@@ -105,6 +105,6 @@ public class IpAndPortDialog {
     }
 
     /** will be performed after a you klick on OK button or you hit enter */
-    public void okAction() {
+    public void action() {
     }
 }

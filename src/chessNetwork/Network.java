@@ -11,19 +11,10 @@ import static fileHandling.StaticSetting.rememberSetting;
 
 public class Network {
 
-    public final LinkedList<String> messageQueue = new LinkedList<>();
-    private final int DELAY_MILLISEC = 10;
-    private ChessServer server;
-    private ChessClient client;
+    private NetInstance instance;
     private boolean active;
 
-    public static void main(String[] args) {
-
-        Network net = new Network();
-        net.showClientIpDialog(new Point(100, 100));
-    }
-
-    public static String resolveIpFromIpDialog(String input) {
+    public static String resolveIpFromString(String input) {
 
         try {
             String[] args = input.split("/");
@@ -31,62 +22,64 @@ public class Network {
             String ip = inetAddress.getHostAddress();
             return ip + '/' + args[1];
         } catch (Exception ex) {
-            //new DialogText(ex.getMessage());
             ex.printStackTrace();
             return "";
         }
     }
 
-    public void createServer(String configIpAndPort) {
-
-        if ((server != null) | (client != null)) safeDeleteServerOrClient();
-        server = new ChessServer(configIpAndPort, DELAY_MILLISEC, messageQueue);
-        server.start();
-        active = true;
+    public NetInstance getInstance() {
+        return instance;
     }
 
-    public boolean isConnected() {
+    public LinkedList<String> getMessageQueue() {
+        return instance.getMessageQueue();
+    }
 
-        if (server != null) return server.isConnectionSuccessful();
-        if (client != null) return client.isConnectionSuccessful();
-        return false;
+    public void createServer(String configIpAndPort) {
+
+        if (instance != null) disconnect();
+        instance = new ChessServer(configIpAndPort);
+        active = true;
+
+        Thread server = new Thread(instance);
+        server.start();
     }
 
     public void createClient(String configIpAndPort) {
 
-        if ((server != null) | (client != null)) safeDeleteServerOrClient();
-        client = new ChessClient(configIpAndPort, DELAY_MILLISEC, messageQueue);
-        client.start();
+        if (instance != null) disconnect();
+        instance = new ChessClient(configIpAndPort);
         active = true;
+
+        Thread client = new Thread(instance);
+        client.start();
+    }
+
+    public boolean isConnected() {
+
+        if (instance != null) return instance.isConnectionSuccessful();
+        return false;
     }
 
     public boolean isActive() {
         return active;
     }
 
-    public void sendToNet(String message) {
+    public void send(String message) {
 
-        if (client != null) {
-            client.send(message);
-        } else if (server != null) {
-            server.send(message);
+        if (instance != null) {
+            instance.send(message);
         } else System.out.println("NETWORK IS NOT ACTIVE - DID NOT SEND " + message);
     }
 
-    public void safeDeleteServerOrClient() {
+    public void disconnect() {
 
-        if (server != null) {
-            server.killThreads();
-            server.interrupt();
+        if (instance != null) {
+            instance.abort();
         }
-        if (client != null) {
-            client.killThreads();
-            client.interrupt();
-        }
-        server = null;
-        client = null;
-        System.out.println("SHUT DOWN SERVER/CLIENT. THREADS KILLED.");
+        instance = null;
         active = false;
+        System.out.println("DISCONNECTED SERVER/CLIENT\nTHREADS INTERRUPTED");
     }
 
     public void showServerIpDialog(Point location) {
@@ -104,7 +97,7 @@ public class Network {
 
             super(location);
             String preferredIP = getSetting("%SERVER_IP");
-            if(!preferredIP.equals("")){
+            if (!preferredIP.equals("")) {
                 ipField.setText(preferredIP);
                 portField.setText(getSetting("%SERVER_PORT"));
             }
@@ -112,14 +105,15 @@ public class Network {
         }
 
         @Override
-        public void okAction() {
+        public void action() {
 
             rememberSetting("%SERVER_IP " + getIp());
             rememberSetting("%SERVER_PORT " + getPort());
-            String config = getIp() + "/" + getPort();
-            config = resolveIpFromIpDialog(config);
-            createServer(config);
             dialog.dispose();
+
+            String config = getIp() + "/" + getPort();
+            config = resolveIpFromString(config);
+            createServer(config);
         }
     }
 
@@ -129,7 +123,7 @@ public class Network {
 
             super(location);
             String preferredIP = getSetting("%CLIENT_IP");
-            if(!preferredIP.equals("")){
+            if (!preferredIP.equals("")) {
                 ipField.setText(preferredIP);
                 portField.setText(getSetting("%CLIENT_PORT"));
             }
@@ -137,15 +131,15 @@ public class Network {
         }
 
         @Override
-        public void okAction() {
+        public void action() {
 
             rememberSetting("%CLIENT_IP " + getIp());
             rememberSetting("%CLIENT_PORT " + getPort());
-            String config = getIp() + "/" + getPort();
-            config = resolveIpFromIpDialog(config);
-            System.out.println(config); // todo remove
-            createClient(config);
             dialog.dispose();
+
+            String config = getIp() + "/" + getPort();
+            config = resolveIpFromString(config);
+            createClient(config);
         }
     }
 }

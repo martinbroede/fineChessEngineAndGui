@@ -29,3 +29,6 @@ V0.51   add simple timer
         add proper score
 V0.52   store preferred ip
         resolve inetAddress
+V0.52B  refactor chessNetwork classes
+        unify threads
+        improve exception handling

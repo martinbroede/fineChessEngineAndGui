@@ -31,7 +31,7 @@ public class Painter {
     }
 
     protected static void paintHints(Graphics g, AppearanceSettings settings, boolean boardOrientation,
-                                     byte[] combinedThreats, byte[] whiteThreats, byte[] blackThreats){
+                                     byte[] combinedThreats, byte[] whiteThreats, byte[] blackThreats) {
 
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
@@ -40,16 +40,16 @@ public class Painter {
 
                 if (boardOrientation) { // white's point of view
                     byte val = combinedThreats[pos];
-                    if(val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
-                    else if(val > 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
+                    if (val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
+                    else if (val > 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
                     else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
-                    if(blackThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
-                } else{ //black's point of view
+                    if (blackThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
+                } else { //black's point of view
                     byte val = combinedThreats[pos];
-                    if(val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
-                    else if(val < 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
+                    if (val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
+                    else if (val < 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
                     else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
-                    if(whiteThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
+                    if (whiteThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
                 }
 
                 g.fillRect(x * settings.getSizeFactor() + settings.getOffset(),
@@ -131,14 +131,10 @@ public class Painter {
         }
     }
 
-    protected static void paintHighlights(Graphics g, AppearanceSettings settings, Moves squares, boolean Ok, boolean boardOrientation) {
+    protected static void paintHighlights(Graphics g, AppearanceSettings settings, Moves squares, boolean boardOrientation) {
 
         if (squares == null) return;
-        Color highlight;
-        if (Ok)
-            highlight = settings.getColorScheme().HIGHLIGHT_1_COLOR;
-        else
-            highlight = settings.getColorScheme().HIGHLIGHT_2_COLOR;
+        Color highlight = settings.getColorScheme().HIGHLIGHT_1_COLOR;
         for (Move square : squares) {
             int x = boardOrientation ? square.getTo() % 8 : 7 - square.getTo() % 8;
             int y = boardOrientation ? 7 - square.getTo() / 8 : square.getTo() / 8;

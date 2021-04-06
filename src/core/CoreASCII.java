@@ -6,10 +6,10 @@ import java.util.Scanner;
 public class CoreASCII {
 
     public static void main(String[] args) {
-        run();
+        play();
     }
 
-    public static void run(){
+    public static void play(){
 
         Chess chess = new Chess();
         chess.newGame();

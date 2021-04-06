@@ -1,9 +1,10 @@
-package gui;
-
 import chessGameServer.MultiClientServer;
 import core.Chess;
 import core.CoreASCII;
 import fineChessUpdater.Downloader;
+import gui.Gui;
+
+import static java.lang.System.exit;
 
 public class Main {
     public static void main(String[] args) {
@@ -16,10 +17,10 @@ public class Main {
             switch (args[0]) {
                 case "UPDATE":
                     System.out.println("TRY DOWNLOADING LATEST RELEASE");
-                    new Downloader();
+                    Downloader.download();
                     break;
                 case "ASCII":
-                    new CoreASCII().run();
+                    CoreASCII.play();
                     break;
                 case "SERVER":
                     if (args.length > 1) {
@@ -41,7 +42,8 @@ public class Main {
                     gui.network.createClient(args[1]);
                     break;
                 default:
-                    System.err.println("DO NOT KNOW COMMAND " + args[0]);
+                    System.err.println("DO NOT KNOW ARGUMENT " + args[0]);
+                    exit(0);
             }
         } else {
             chess = new Chess();

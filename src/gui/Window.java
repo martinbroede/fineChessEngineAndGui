@@ -19,7 +19,7 @@ import static fileHandling.ReadWrite.getStringFromFile;
 import static fileHandling.StaticSetting.getSetting;
 import static fileHandling.StaticSetting.getStoredSettings;
 
-public class MainWindow {
+public class Window {
 
     final Board board;
     final AppearanceSettings appearanceSettings;
@@ -32,7 +32,7 @@ public class MainWindow {
     final JLabel labelPlaceHolderEast;
     final JMenuItem itemStartServer;
     final JMenuItem itemStartClient;
-    final JMenuItem itemNetworkDestroy;
+    final JMenuItem itemNetworkDisconnect;
     final JMenuItem itemNewNetworkGame;
     final JMenuItem itemShowChat;
     final JMenuItem itemNewGame;
@@ -77,10 +77,10 @@ public class MainWindow {
     final int SIZE_S = 30;
 
     String VERSION = "VERSION UNKNOWN";
-    String myName = "";
+    String myName;
     String myFriendsName = "";
 
-    public MainWindow(Chess chess) {
+    public Window(Chess chess) {
 
         frame = new JFrame();
         frame.setResizable(false);
@@ -144,7 +144,7 @@ public class MainWindow {
         itemStartServer = new JMenuItem("Spiel erstellen");
         itemStartClient = new JMenuItem("Spiel beitreten");
         itemNewNetworkGame = new JMenuItem("Neues Spiel");
-        itemNetworkDestroy = new JMenuItem("Verbindung trennen");
+        itemNetworkDisconnect = new JMenuItem("Verbindung trennen");
         itemShowChat = new JMenuItem("Chat anzeigen");
 
         itemNewGame = new JMenuItem("Neu");
@@ -247,7 +247,7 @@ public class MainWindow {
         networkMenu.add(itemOfferDraw);
         networkMenu.addSeparator();
         networkMenu.addSeparator();
-        networkMenu.add(itemNetworkDestroy);
+        networkMenu.add(itemNetworkDisconnect);
         networkMenu.addSeparator();
         networkMenu.addSeparator();
         networkMenu.add(itemShowChat);
@@ -308,7 +308,7 @@ public class MainWindow {
         if (myName.equals("")) {
             new DialogInput("Namen wählen", "Mein Name:",
                     "ohneNamen", "OK", frame.getLocation()) {
-                public void buttonKlicked() {
+                public void buttonClicked() {
                     myName = input.getText();
                     dispose();
                 }
@@ -369,7 +369,7 @@ public class MainWindow {
         itemRename.addActionListener(e ->
                 new DialogInput("Namen wählen", "Mein Name:",
                         "ohneNamen", "OK", frame.getLocation()) {
-                    public void buttonKlicked() {
+                    public void buttonClicked() {
                         myName = input.getText();
                         dispose();
                     }

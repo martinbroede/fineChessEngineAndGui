@@ -13,6 +13,7 @@ public class Board extends JPanel {
 
     final boolean WHITE_PLAYER_SOUTH = true;
     final boolean WHITE_PLAYER_NORTH = false;
+    private final Chess chess;
     public AppearanceSettings s;
     char[] boardArray;
     private boolean active;
@@ -20,7 +21,6 @@ public class Board extends JPanel {
     private Graphics bufferGraphics;
     private boolean boardOrientation = WHITE_PLAYER_SOUTH;
     private boolean showHints = false;
-    private Chess chess;
 
     public Board(int size_factor, Chess chess, AppearanceSettings appearanceSettings) {
 
@@ -50,10 +50,6 @@ public class Board extends JPanel {
         boardOrientation = WHITE_PLAYER_NORTH;
     }
 
-    public void setBoardArray(char[] boardArray) {
-        this.boardArray = boardArray;
-    }
-
     public void fontRoulette() {
 
         s.nextFont();
@@ -81,7 +77,7 @@ public class Board extends JPanel {
         Painter.paintBoard(bufferGraphics, s);
         if (showHints) Painter.paintHints(bufferGraphics, s, boardOrientation,
                 chess.getCombinedThreats(), chess.getWhiteThreats(), chess.getBlackThreats());
-        else if (showMoves) Painter.paintHighlights(bufferGraphics, s, moves, true, boardOrientation);
+        else if (showMoves) Painter.paintHighlights(bufferGraphics, s, moves, boardOrientation);
         if (showLastMove) Painter.paintLastMove(bufferGraphics, s, move, boardOrientation);
         Painter.paintPieces(bufferGraphics, s, boardArray, boardOrientation);
         Painter.paintFilesAndRanks(bufferGraphics, s, boardOrientation);
@@ -127,13 +123,13 @@ public class Board extends JPanel {
             Painter.paintFilesAndRanks(bufferGraphics, s, boardOrientation);
         }
 
-        if (img != null) {
-            if (!active) {
-                // paint board diffuse
+        if (!active) {
+            // paint board diffuse
+            if (bufferGraphics != null) {
                 bufferGraphics.setColor(s.getColorScheme().LIGHT_COLOR);
                 bufferGraphics.fillRect(0, 0, s.getMargin(), s.getMargin());
             }
-            g.drawImage(img, 0, 0, this);
+            if (img != null) g.drawImage(img, 0, 0, this);
         }
     }
 }

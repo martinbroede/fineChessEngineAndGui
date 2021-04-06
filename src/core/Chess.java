@@ -1,17 +1,11 @@
 package core;
 
 import gui.dialogs.DialogMessage;
-
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Stack;
 
-public class Chess extends MoveGenerator implements Serializable {
+public class Chess extends MoveGenerator{
 
     private final HashGenerator hashGenerator;
-    private final String INIT_STANDARD_BOARD = ""
-            + "RNBQKBNRPPPPPPPP                "
-            + "                pppppppprnbqkbnr";
     public History history;
     public Stack<Move> undoneMovesHistory;
     public CurrentStatus currentStatus;
@@ -20,7 +14,6 @@ public class Chess extends MoveGenerator implements Serializable {
     private long whiteTimeStamp;
     private long blackTimeStamp;
     private short score;
-
     {
         whitePieces = new PieceCollectionWhite();
         blackPieces = new PieceCollectionBlack();
@@ -36,6 +29,9 @@ public class Chess extends MoveGenerator implements Serializable {
     }
 
     public void newGame() {
+        String INIT_STANDARD_BOARD = ""
+                + "RNBQKBNRPPPPPPPP                "
+                + "                pppppppprnbqkbnr";
         newGame(INIT_STANDARD_BOARD);
     }
 
@@ -624,7 +620,7 @@ public class Chess extends MoveGenerator implements Serializable {
 
         whiteToMove = !whiteToMove;
         moveCounter--;
-        lastCaptureOrPawnMove = state.moveCounterLastCaptureOrPawnMove;
+        lastCaptureOrPawnMove = state.lastCaptureOrPawnMove;
         castling.setRights(state.castling);
         hashGenerator.setHashCode(state.hashCode);
 
@@ -709,125 +705,29 @@ public class Chess extends MoveGenerator implements Serializable {
     public void print() {
         System.out.println(this.toString());
     }
+}
 
-    class State {
+class State {
 
-        final Long hashCode;
-        final short moveInformation;
-        final short moveCounterLastCaptureOrPawnMove;
-        final byte enPassant;
-        final byte castling;
-        final char pieceType;
-        final short score;
-        char capture;
+    final Long hashCode;
+    final short moveInformation;
+    final short lastCaptureOrPawnMove;
+    final byte enPassant;
+    final byte castling;
+    final char pieceType;
+    final short score;
+    char capture;
 
-        public State(long hashCode, short moveInformation, char pieceType, char capture,
-                     short lastCapt, byte enPassant, byte castling, short score) {
+    public State(long hashCode, short moveInformation, char pieceType, char capture,
+                 short lastCapt, byte enPassant, byte castling, short score) {
 
-            this.hashCode = hashCode;
-            this.moveInformation = moveInformation;
-            this.pieceType = pieceType;
-            this.capture = capture;
-            this.moveCounterLastCaptureOrPawnMove = lastCapt;
-            this.enPassant = enPassant;
-            this.castling = castling;
-            this.score = score;
-        }
-    }
-
-    public class History extends Stack<State> {
-
-        private final Byte FIRST = 1;
-        private final Byte SECOND = 2;
-        private final Byte THIRD = 3;
-        HashMap<Long, Byte> repetitionCountMap = new HashMap<>();
-        Byte repetitionCount;
-
-        public short getLastMoveCoordinates() {
-
-            if (this.size() > 0) return this.lastElement().moveInformation;
-            return -1;
-        }
-
-        public boolean drawDueToRepetition(Long hash) {
-            return repetitionCountMap.get(hash) == SECOND;
-        }
-
-        @Override
-        public boolean add(State state) {
-
-            System.err.println("PLEASE DON'T USE ADD WITH A STACK");
-            return super.add(state);
-        }
-
-        @Override
-        public void clear() {
-
-            repetitionCountMap.clear();
-            super.clear();
-        }
-
-        @Override
-        public State push(State state) {
-
-            repetitionCount = repetitionCountMap.get(state.hashCode);
-            //todo keep in mind even "Long" provides only "int", i.e. 32bit hashcode...
-
-            if (repetitionCount == null) {
-                repetitionCountMap.put(state.hashCode, FIRST);
-
-            } else if (repetitionCount == FIRST) {
-                repetitionCountMap.put(state.hashCode, SECOND);
-
-            } else if (repetitionCount == SECOND) {
-                repetitionCountMap.put(state.hashCode, THIRD);
-
-            } else {
-                System.err.println("SOMETHING EVIL HAPPENED HERE");
-            }
-
-            return super.push(state);
-        }
-
-        @Override
-        public State pop() {
-
-            State state = super.pop();
-            repetitionCount = repetitionCountMap.get(state.hashCode);
-
-            if (repetitionCount == THIRD) {
-                repetitionCountMap.put(state.hashCode, SECOND);
-
-            } else if (repetitionCount == SECOND) {
-                repetitionCountMap.put(state.hashCode, FIRST);
-
-            } else if (repetitionCount == FIRST) {
-                repetitionCountMap.remove(state.hashCode);
-
-            } else {
-                System.err.println("THAT'S EVIL - HASH NOT IN HISTORY");
-            }
-            return state;
-        }
-
-
-        @Override
-        public String toString() {
-
-            StringBuilder outp = new StringBuilder();
-            int count = 2;
-            for (State state : this) {
-                count++;
-                if (count % 2 == 1) outp.append(count / 2).append(". ");
-                else outp.append(" - ");
-                outp.append(Util.parseSymbol(state.pieceType)).
-                        append(" ").
-                        append(Util.parseLowerCase(state.moveInformation % 64)).
-                        append(" ").
-                        append(Util.parseLowerCase(state.moveInformation >> 6));
-                if (count % 2 == 0) outp.append("\n");
-            }
-            return outp.toString();
-        }
+        this.hashCode = hashCode;
+        this.moveInformation = moveInformation;
+        this.pieceType = pieceType;
+        this.capture = capture;
+        this.lastCaptureOrPawnMove = lastCapt;
+        this.enPassant = enPassant;
+        this.castling = castling;
+        this.score = score;
     }
 }

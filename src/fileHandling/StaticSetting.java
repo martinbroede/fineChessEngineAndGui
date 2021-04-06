@@ -62,14 +62,13 @@ public class StaticSetting {
             }
 
             Scanner settingsIn = new Scanner(settingsFile);
-            String settings = "";
+            StringBuilder settings = new StringBuilder();
             while (settingsIn.hasNext())
-                settings += settingsIn.nextLine() + "\n";
+                settings.append(settingsIn.nextLine()).append("\n");
 
             settingsIn.close();
 
-            generalSettings = settings;
-
+            generalSettings = settings.toString();
 
         } catch (IOException e) {
             e.printStackTrace();

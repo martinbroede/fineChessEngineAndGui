@@ -37,16 +37,16 @@ public class DialogInput extends JDialog {
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    buttonKlicked();
+                    buttonClicked();
                 }
             }
         });
     }
 
-    public void buttonKlicked() {
+    public void buttonClicked() {
     }
 
     private void actionPerformed(ActionEvent e) {
-        buttonKlicked();
+        buttonClicked();
     }
 }

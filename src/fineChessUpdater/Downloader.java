@@ -1,9 +1,7 @@
 package fineChessUpdater;
 
 import gui.dialogs.DialogMessage;
-import gui.dialogs.DialogText;
 
-import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
@@ -14,55 +12,46 @@ public class Downloader {
 
     final static String OUTPUT_FILE = "latestRelease.zip";
     final static String DOWNLOAD_RESOURCE = "https://github.com/martinbro2021/fineChessEngineAndGui/archive/main.zip";
-    final static int BUFFER_SIZE = 65536;
+    final static int BUFFER_SIZE = 1024;
 
-    public Downloader() {
-        download(DOWNLOAD_RESOURCE, OUTPUT_FILE);
+    private Downloader() {
     }
 
-    public Downloader(String downloadUrl, String outputFile) {
-        download(downloadUrl, outputFile);
+    public static void download() {
+        download(DOWNLOAD_RESOURCE, OUTPUT_FILE);
     }
 
     public static void download(String downloadUrl, String outputFile) {
 
-        DialogMessage dialog = null;
-        DialogText text = null;
         try (BufferedInputStream in = new BufferedInputStream(new URL(downloadUrl).openStream());
              FileOutputStream fileOutputStream = new FileOutputStream(outputFile)) {
-            byte dataBuffer[] = new byte[BUFFER_SIZE];
+            byte[] dataBuffer = new byte[BUFFER_SIZE];
             int bytesRead;
             while ((bytesRead = in.read(dataBuffer, 0, BUFFER_SIZE)) != -1) {
                 fileOutputStream.write(dataBuffer, 0, bytesRead);
             }
-            dialog = new DialogMessage("Download " + outputFile + " erfolgreich");
+            System.out.println("DOWNLOAD SUCCESSFUL");
         } catch (IOException ex) {
-            text = new DialogText(ex.getMessage(), new Point(300, 300));
-            text.setVisible(true);
+            ex.printStackTrace();
         } finally {
             try {
                 sleep(1000);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-            if (dialog != null) dialog.dispose();
-            if (text != null) text.dispose();
             System.out.println("DOWNLOADER GOODBYE");
         }
     }
 
-    public static String getHeadLineFromURL(String ressourceURL){
+    public static String getHeadLineFromURL(String ressourceURL) {
 
         String line = "";
-        try
-        {
+        try {
             URL url = new URL(ressourceURL);
             URLConnection urlConnection = url.openConnection();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             line = bufferedReader.readLine();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             new DialogMessage("Internetverbindung nicht verfügbar");
             e.printStackTrace();
         }
@@ -72,20 +61,16 @@ public class Downloader {
     public static String getStringFromURL(String ressourceURL) {
 
         StringBuilder textFromURL = new StringBuilder();
-        try
-        {
+        try {
             URL url = new URL(ressourceURL);
             URLConnection urlConnection = url.openConnection();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             String line;
-            while ((line = bufferedReader.readLine()) != null)
-            {
-                textFromURL.append(line + "\n");
+            while ((line = bufferedReader.readLine()) != null) {
+                textFromURL.append(line).append("\n");
             }
             bufferedReader.close();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             new DialogMessage("Internetverbindung nicht verfügbar");
             e.printStackTrace();
         }

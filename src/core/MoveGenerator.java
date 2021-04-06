@@ -24,72 +24,10 @@ public class MoveGenerator extends PiecePatterns {
         } else return blackPieces.getPseudoLegalMoves();
     }
 
-    public class Castling {
-
-        public final static byte ALL_RIGHTS = 0b1111;
-        public final static byte NO_RIGHTS = 0;
-
-        private byte rights;
-
-        public byte getRights() {
-            return rights;
-        }
-
-        public void setRights(byte rights) {
-            this.rights = rights;
-        }
-
-        public void reset() {
-            /* MSB-wKS wQS bKS bQS-LSB */
-            rights = 0b1111;
-        }
-
-        public void disableWhiteKingSide() {
-            rights &= ~(1 << 3);
-        }
-
-        public void disableWhiteQueenSide() {
-            rights &= ~(1 << 2);
-        }
-
-        public void disableBlackKingSide() {
-            rights &= ~(1 << 1);
-        }
-
-        public void disableBlackQueenSide() {
-            rights &= ~(1);
-        }
-
-        public boolean whiteKingSide() {
-            return (rights & (1 << 3)) > 0;
-        }
-
-        public boolean whiteQueenSide() {
-            return (rights & (1 << 2)) > 0;
-        }
-
-        public boolean blackKingSide() {
-            return (rights & (1 << 1)) > 0;
-        }
-
-        public boolean blackQueenSide() {
-            return (rights & 1) > 0;
-        }
-
-        public void print() {
-
-            System.out.println("WHITE KINGSIDE:\t" + whiteKingSide() +
-                    "\nWHITE QUEENSIDE:" + whiteQueenSide() +
-                    "\nBLACK KINGSIDE:\t" + blackKingSide() +
-                    "\nBLACK QUEENSIDE:" + blackQueenSide() +
-                    "\nRIGHTS:\t\t\t" + Integer.toBinaryString(rights) + "\n");
-        }
-    }
-
     class Piece {
 
         private byte position;
-        private char type;
+        private final char type;
         private PiecePattern pattern;
 
         public Piece(byte pos, char type) {
@@ -183,17 +121,24 @@ public class MoveGenerator extends PiecePatterns {
             throw new InputMismatchException("NO PIECE AT " + Util.parse(from));
         }
 
-        public short removePiece(byte position) {
+        /**
+         * Remove piece located at given position
+         *
+         * @param pos Position of the piece to be removed
+         * @return value of the removed piece
+         */
+        public short removePiece(byte pos) {
 
             Piece removePiece = null;
             for (Piece p : this) {
-                if (p.getPosition() == position) {
+                if (p.getPosition() == pos) {
                     removePiece = p;
                     break;
                 }
             }
             this.remove(removePiece);
             capturedPieces.add(removePiece);
+            assert removePiece != null;
             return PIECE_VALUES.get(removePiece.getPattern());
         }
 
@@ -209,16 +154,16 @@ public class MoveGenerator extends PiecePatterns {
 
         public void printThreats() {
 
-            String outp = "";
-            String line = "|";
+            StringBuilder outp = new StringBuilder();
+            StringBuilder line = new StringBuilder("|");
             for (int i = 0; i <= 63; i++) {
-                line += threats[i] + "|";
+                line.append(threats[i]).append("|");
                 if (i % 8 == 7) {
-                    outp = line + (i / 8 + 1) + "\n" + outp;
-                    line = "|";
+                    outp.insert(0, line.toString() + (i / 8 + 1) + "\n");
+                    line = new StringBuilder("|");
                 }
             }
-            outp = outp + ".A.B.C.D.E.F.G.H." + "\n";
+            outp.append(".A.B.C.D.E.F.G.H.").append("\n");
 
             System.out.println(outp);
         }
@@ -241,13 +186,13 @@ public class MoveGenerator extends PiecePatterns {
 
             protected String getCapturedPiecesAsSymbols() {
 
-                String outp = "";
+                StringBuilder outp = new StringBuilder();
 
                 for (Piece p : this) {
-                    outp += Util.parseSymbol(p.type);
+                    outp.append(Util.parseSymbol(p.type));
                 }
 
-                return outp;
+                return outp.toString();
             }
         }
     }

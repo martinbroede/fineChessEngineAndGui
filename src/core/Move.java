@@ -2,6 +2,7 @@ package core;
 
 import java.util.InputMismatchException;
 
+@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 public class Move {
 
     public static final short KING_SIDE_CASTLING =/*    */0b0001000000000000; // readability
@@ -13,7 +14,6 @@ public class Move {
     public static final short PROMOTION_QUEEN =/*       */0b0111000000000000;
 
     /* negative code values reserved */
-    public static final short NULL_MOVE = -1;
     public static final short START_GAME = -1000;
     public static final short OPPONENT_BLACK = -1001;
     public static final short OPPONENT_WHITE = -1002;

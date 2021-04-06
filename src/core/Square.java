@@ -2,7 +2,7 @@ package core;
 
 public class Square { // todo ... this is never used...
 
-    private byte position;
+    private final byte position;
 
     private Square(byte pos){
         this.position = pos;
