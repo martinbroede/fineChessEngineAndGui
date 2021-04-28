@@ -5,21 +5,18 @@ import java.util.Random;
 
 public class HashGenerator {
 
-    final char[] pieceTypes = {'B', 'b', 'K', 'k', 'N', 'n', 'P', 'p', 'Q', 'q', 'R', 'r'};
-    final int castlingOptions = 16;
-    final int enPassantOptions = 8;
-    final long turnValue;
-    final long[] castlingValues;
-    final long[] enPassantValues;
-    final HashMap<Character, long[]> randomValues;
-    final HashMap<Long, Integer> counter; //to count positions
+    private final char[] pieceTypes = {'B', 'b', 'K', 'k', 'N', 'n', 'P', 'p', 'Q', 'q', 'R', 'r'};
+    private final int castlingOptions = 16;
+    private final int enPassantOptions = 8;
+    private final long turnValue;
+    private final long[] castlingValues;
+    private final long[] enPassantValues;
+    private final HashMap<Character, long[]> randomValues;
     private long hashCode;
 
     public HashGenerator() {
 
         randomValues = new HashMap<>();
-        counter = new HashMap<>();
-
         hashCode = 0;
         Random rnd = new Random(0);
 
@@ -54,7 +51,6 @@ public class HashGenerator {
     }
 
     public void reset() {
-        counter.clear();
         hashCode = 0;
         System.out.println("HASH CLEARED");
     }

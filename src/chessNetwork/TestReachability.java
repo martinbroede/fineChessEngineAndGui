@@ -17,12 +17,12 @@ public class TestReachability {
         new TestReachability();
     }
 
-    private void reachable(String ip, int openPort) {
+    private void reachable(String ip, int port) {
 
         boolean reached = false;
         try {
             try (Socket socket = new Socket()) {
-                socket.connect(new InetSocketAddress(ip, openPort), 6000);
+                socket.connect(new InetSocketAddress(ip, port), 2000);
             }
             reached = true;
         } catch (IOException ex) {
@@ -35,13 +35,12 @@ public class TestReachability {
 
     }
 
-    class ReachableDialog extends IpAndPortDialog {
+    class ReachableDialog extends IpAndPortDialog{
 
-        public ReachableDialog() {
-            okButton.addActionListener(e -> {
-                reachable(getIp(),Integer.parseInt(getPort()));
-                dialog.dispose();
-            });
+        public void action() {
+
+            reachable(getIp(), Integer.parseInt(getPort()));
+            dialog.dispose();
         }
     }
 }

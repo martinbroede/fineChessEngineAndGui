@@ -51,9 +51,9 @@ public class Downloader {
             URLConnection urlConnection = url.openConnection();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             line = bufferedReader.readLine();
-        } catch (Exception e) {
+        } catch (Exception ex) {
             new DialogMessage("Internetverbindung nicht verfügbar");
-            e.printStackTrace();
+            ex.printStackTrace();
         }
         return line;
     }
@@ -70,9 +70,9 @@ public class Downloader {
                 textFromURL.append(line).append("\n");
             }
             bufferedReader.close();
-        } catch (Exception e) {
+        } catch (Exception ex) {
             new DialogMessage("Internetverbindung nicht verfügbar");
-            e.printStackTrace();
+            ex.printStackTrace();
         }
         return textFromURL.toString();
     }

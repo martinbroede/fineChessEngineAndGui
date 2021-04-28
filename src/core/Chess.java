@@ -25,7 +25,7 @@ public class Chess extends MoveGenerator{
     }
 
     public Chess() {
-        newGame("K                                                              k", Castling.NO_RIGHTS);
+        newGame();
     }
 
     public void newGame() {

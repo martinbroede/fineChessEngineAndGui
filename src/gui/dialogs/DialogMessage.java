@@ -4,11 +4,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 
 public class DialogMessage extends JDialog {
+
     JLabel label = new JLabel();
+
     {
         setTitle("INFO");
         JButton ok = new JButton(" OK ");
@@ -31,7 +31,7 @@ public class DialogMessage extends JDialog {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_ENTER){
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     dispose();
                 }
             }
@@ -39,19 +39,22 @@ public class DialogMessage extends JDialog {
     }
 
     public DialogMessage(String message) {
+
         label.setText(" " + message + " ");
         pack();
 
     }
 
     public DialogMessage(String message, Point location) {
+
         this.setLocation(location);
         label.setText(" " + message + " ");
         pack();
     }
 
     public static void main(String[] args) {
+
         DialogMessage dialogMessage = new DialogMessage("Verbinden erfolgreich");
-        DialogMessage dialogMessage2 = new DialogMessage("verschieben möglich.", new Point(100,200));
+        DialogMessage dialogMessage2 = new DialogMessage("verschieben möglich.", new Point(100, 200));
     }
 }

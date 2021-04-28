@@ -25,8 +25,8 @@ public class ReadWrite {
             System.out.println("OBJECT HAS BEEN LOADED FROM FILE " + path);
             objectIn.close();
             return obj;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
             return null;
         }
     }

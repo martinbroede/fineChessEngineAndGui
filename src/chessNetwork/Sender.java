@@ -22,7 +22,7 @@ class Sender {
 
     public void bufferedSend(String message) {
 
-        sendingQueue.add(message);
+        if (!message.equals("")) sendingQueue.add(message);
         LinkedList<String> successfullySent = new LinkedList<>();
         if (bufferedWriter != null) {
             try {

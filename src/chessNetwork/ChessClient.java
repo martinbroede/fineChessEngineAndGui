@@ -3,13 +3,10 @@ package chessNetwork;
 import gui.dialogs.DialogMessage;
 
 import java.io.*;
-import java.net.ConnectException;
-import java.net.NoRouteToHostException;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.LinkedList;
 
-public class ChessClient extends NetInstance{
+public class ChessClient extends NetInstance {
 
     public ChessClient(String configIpAndPort) {
 
@@ -28,14 +25,15 @@ public class ChessClient extends NetInstance{
     public boolean provideSocket(String ip, int port) {
 
         try {
-            socket = new Socket(ip, port);
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(ip, port), 5000);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             sender.setWriter(bufferedWriter);
             bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             receiver = new Receiver("CLIENT RECEIVER", this);
             System.out.println("CONNECTED TO SERVER " + socket.getRemoteSocketAddress());
             new DialogMessage("Erfolgreich mit Server " + socket.getRemoteSocketAddress() + " verbunden.");
-            send(""); //to send messages in queue
+            send(""); // to send messages in queue
             connectionSuccessful = true;
             return true;
         } catch (UnknownHostException ex) {
@@ -45,6 +43,10 @@ public class ChessClient extends NetInstance{
         } catch (NoRouteToHostException ex) {
             System.out.println(ex.getMessage());
             new DialogMessage("Verbindung fehlgeschlagen. Vermutlich besteht keine Internetverbindung.");
+            return false;
+        } catch (SocketTimeoutException ex) {
+            System.out.println(ex.getMessage());
+            new DialogMessage("Verbindung fehlgeschlagen - Zeitüberschreitung");
             return false;
         } catch (ConnectException ex) {
             System.out.println(ex.getMessage());
@@ -64,7 +66,7 @@ public class ChessClient extends NetInstance{
     }
 
     @Override
-    public void run(){
+    public void run() {
         connect();
     }
 

@@ -26,9 +26,9 @@ public class CoreASCII {
                 if(!chess.userMove(nextMove,Constants.WHITE,true))
                     System.err.println("ASCII MOVE ILLEGAL");
             }
-            catch(InputMismatchException exception)
+            catch(InputMismatchException ex)
             {
-                exception.printStackTrace();
+                ex.printStackTrace();
             }
         }
         System.out.println(chess.currentStatus.getStatusNotice());

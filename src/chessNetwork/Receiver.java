@@ -26,10 +26,10 @@ public class Receiver extends Thread {
         System.out.println(getName() + " GOT SUBSCRIBER");
     }
 
-    public void unregister() {
+    public void unsubscribe() {
 
         if (subscriber != null) subscriber.unsubscribe();
-        System.out.println(getName() + " UNREGISTERED SUBSCRIBER");
+        System.out.println(getName() + " SIGNED OFF SUBSCRIBER");
     }
 
     public void run() {
@@ -42,10 +42,11 @@ public class Receiver extends Thread {
                 message = bufferedReader.readLine();
                 if (message == null) break;
                 else if (!message.equals("")) {
+                    message = message.replace("\n","").replace("\r","");
+                    //replace because newline characters may be distinct depending on OS
                     messageQueue.add(message);
                     if (subscriber != null) subscriber.react();
                 }
-
             } catch (SocketException ex) {
                 System.out.println("SOCKET EXCEPTION\nRECEIVER ABORTED");
                 ex.printStackTrace();

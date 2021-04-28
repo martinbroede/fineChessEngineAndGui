@@ -39,7 +39,7 @@ public class ChessServer extends NetInstance implements Runnable {
 
         try {
             serverSocket = new ServerSocket(port, 2, inetAddress);
-            System.out.println("SERVER SOCKET PROVIDED. ADRESS: " + serverSocket.getLocalSocketAddress());
+            System.out.println("SERVER SOCKET PROVIDED. ADDRESS: " + serverSocket.getLocalSocketAddress());
             socket = serverSocket.accept();
             System.out.println("CONNECTED WITH " + socket.getRemoteSocketAddress());
             new DialogMessage("Server - Verbinden mit " + socket.getRemoteSocketAddress() + " erfolgreich");

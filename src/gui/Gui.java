@@ -22,9 +22,9 @@ import static fileHandling.StaticSetting.storeSettingsInFile;
 
 public class Gui extends Window {
 
+    public final Network network;
     final boolean WHITE = Constants.WHITE; //for readability reasons
     final boolean BLACK = Constants.BLACK;
-    public final Network network;
     private final String storagePath = "chessUserData/currentGame.txt";
     private final ChatDialog chatDialog;
     private final Chess chess;
@@ -483,15 +483,18 @@ public class Gui extends Window {
             if (!subscribed && network.isConnected()) {
                 network.getInstance().getReceiver().register(this);
                 subscribed = true;
-                network.send("%VERSION?");
-                network.send("%NAME?");
+                network.send("chessIsFun");
+                network.send("%NAME " + myName);
+                network.send("%VERSION " + VERSION);
+            } else if (network.isConnected()) {
+                react();
             }
         }
 
         @Override
         public void react() {
 
-            while(network != null && network.getMessageQueue().size() > 0) {
+            while (network != null && network.getMessageQueue().size() > 0) {
                 String message;
                 try {
 
@@ -552,11 +555,11 @@ public class Gui extends Window {
                         case "%NOTE":
                             showPopup(message.replace("%NOTE ", ""));
                             break;
-                        case "%ERROR":
-                            new DialogMessage(message.replace("%ERROR ", ""));
+                        case "":
+                            new DialogMessage(message.replace("%INFO ", ""));
                             break;
                         case "%VERSION?": // received version request
-                            network.send("%VERSION " + myName + " / " + VERSION);
+                            network.send("%VERSION " + VERSION);
                             break;
                         case "%VERSION": // received friend's version
                             chatOutput.append(message.replaceAll("%VERSION ", "") + "\n");
@@ -573,9 +576,10 @@ public class Gui extends Window {
                             break;
                         case "%": // show information in chatwindow
                             chatDialog.addChatMessage(message.replaceAll("% ", "") + "\n");
+                            System.out.println(message);
                             break;
                         default:
-                            System.out.println("WHAT SHOULD I DO WITH THIS CRAP: " + message + "?");
+                            System.out.println("RECEIVED: " + message);
 
                     }
                 } catch (NoSuchElementException ex) {
