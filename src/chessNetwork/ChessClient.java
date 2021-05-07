@@ -5,6 +5,7 @@ import gui.dialogs.DialogMessage;
 import java.io.*;
 import java.net.*;
 import java.util.LinkedList;
+import java.util.Scanner;
 
 public class ChessClient extends NetInstance {
 
@@ -29,7 +30,7 @@ public class ChessClient extends NetInstance {
             socket.connect(new InetSocketAddress(ip, port), 5000);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             sender.setWriter(bufferedWriter);
-            bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            scanner = new Scanner(socket.getInputStream());
             receiver = new Receiver("CLIENT RECEIVER", this);
             System.out.println("CONNECTED TO SERVER " + socket.getRemoteSocketAddress());
             new DialogMessage("Erfolgreich mit Server " + socket.getRemoteSocketAddress() + " verbunden.");

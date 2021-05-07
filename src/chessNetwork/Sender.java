@@ -27,8 +27,7 @@ class Sender {
         if (bufferedWriter != null) {
             try {
                 for (String line : sendingQueue) {
-                    bufferedWriter.write(line);
-                    bufferedWriter.newLine();
+                    bufferedWriter.write(line + NetInstance.MESSAGE_DELIMITER);
                     bufferedWriter.flush();
                     successfullySent.add(line);
                 }

@@ -52,7 +52,7 @@ public class Gui extends Window {
             public void run() {
                 networkListener.networkQuery();
             }
-        }, 0, 1000);
+        }, 0, 100);
 
         /* #################################### add action listeners ################################################ */
 
@@ -212,6 +212,14 @@ public class Gui extends Window {
             network.send("%MOVE " + Move.DECLINE_DRAW);
             chess.userMove(new Move(Move.DECLINE_DRAW), userPlaysColor, true);
             showPopup("Angebot abgelehnt.");
+        });
+
+        itemConnectWithPlayer.addActionListener( e -> {
+            network.send("%SERVER LINK");
+        });
+
+        itemConnectToServer.addActionListener(e ->{
+            network.createClient("192.168.178.39/55555");
         });
 
         frame.addKeyListener(new KeyListener() {
@@ -481,6 +489,7 @@ public class Gui extends Window {
         public void networkQuery() {
 
             if (!subscribed && network.isConnected()) {
+                changeTitle("-OFFLINE-","-ONLINE-");
                 network.getInstance().getReceiver().register(this);
                 subscribed = true;
                 network.send("chessIsFun");
@@ -555,7 +564,7 @@ public class Gui extends Window {
                         case "%NOTE":
                             showPopup(message.replace("%NOTE ", ""));
                             break;
-                        case "":
+                        case "%INFO":
                             new DialogMessage(message.replace("%INFO ", ""));
                             break;
                         case "%VERSION?": // received version request
@@ -571,10 +580,10 @@ public class Gui extends Window {
                             myFriendsName = message.replace("%NAME ", "");
                             System.out.println("YOU PLAY AGAINST " + myFriendsName);
                             break;
-                        case "%CHAT": // display chat in chatwindow
+                        case "%CHAT": // display chat in chat window
                             chatDialog.addChatMessage(myFriendsName + ": " + message.replaceAll("%CHAT ", "") + "\n");
                             break;
-                        case "%": // show information in chatwindow
+                        case "%": // show information in chat window
                             chatDialog.addChatMessage(message.replaceAll("% ", "") + "\n");
                             System.out.println(message);
                             break;

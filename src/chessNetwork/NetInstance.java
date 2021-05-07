@@ -1,9 +1,11 @@
 package chessNetwork;
 
-import java.io.BufferedReader;
+import gui.Window;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.LinkedList;
+import java.util.Scanner;
 
 public abstract class NetInstance implements Runnable {
 
@@ -14,14 +16,15 @@ public abstract class NetInstance implements Runnable {
     protected Sender sender;
     protected boolean connectionSuccessful;
     protected LinkedList<String> messageQueue;
-    protected BufferedReader bufferedReader;
+    protected Scanner scanner;
+    public static final String MESSAGE_DELIMITER = "\u0003";
 
     public Receiver getReceiver() {
         return receiver;
     }
 
-    public BufferedReader getBufferedReader() {
-        return bufferedReader;
+    public Scanner getScanner() {
+        return scanner;
     }
 
     public LinkedList<String> getMessageQueue() {
@@ -54,5 +57,7 @@ public abstract class NetInstance implements Runnable {
             System.out.println("CLOSED SOCKET");
         } catch (IOException | NullPointerException ignored) {
         }
+
+        Window.changeTitle("-ONLINE-", "-OFFLINE-");
     }
 }

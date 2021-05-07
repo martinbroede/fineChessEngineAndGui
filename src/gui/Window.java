@@ -21,17 +21,20 @@ import static fileHandling.StaticSetting.getStoredSettings;
 
 public class Window {
 
+    final static JFrame frame = new JFrame();
     final Board board;
     final AppearanceSettings appearanceSettings;
-    final JFrame frame;
     final JPanel content;
     final JMenuBar menuBar;
     final JLabel labelCapturedWhitePieces;
     final JLabel labelCapturedBlackPieces;
     final JLabel labelPlaceHolderWest;
     final JLabel labelPlaceHolderEast;
+    final JMenu menuOnlineExtras;
     final JMenuItem itemStartServer;
     final JMenuItem itemStartClient;
+    final JMenuItem itemConnectToServer;
+    final JMenuItem itemConnectWithPlayer;
     final JMenuItem itemNetworkDisconnect;
     final JMenuItem itemNewNetworkGame;
     final JMenuItem itemShowChat;
@@ -75,16 +78,14 @@ public class Window {
     final int SIZE_L = 70;
     final int SIZE_M = 45;
     final int SIZE_S = 30;
-
     String VERSION = "VERSION UNKNOWN";
     String myName;
     String myFriendsName = "";
 
     public Window(Chess chess) {
 
-        frame = new JFrame();
         frame.setResizable(false);
-        frame.setTitle("Schach");
+        frame.setTitle("Schach -OFFLINE- ");
 
         getStoredSettings();
         myName = getSetting("%NAME");
@@ -92,13 +93,13 @@ public class Window {
             String xy = getSetting("%LOCATION");
             if (!xy.equals("")) {
                 String[] args = xy.split("/");
-                Point location = new Point((int) (Float.parseFloat(args[0])) , (int) (Float.parseFloat(args[1])));
+                Point location = new Point((int) (Float.parseFloat(args[0])), (int) (Float.parseFloat(args[1])));
                 frame.setLocation(location);
             }
         }
 
         try {
-            String title = "Schach ";
+            String title = "Schach -OFFLINE- ";
             FileInputStream stream = new FileInputStream("version.txt");
             Scanner scanner = new Scanner(stream);
             VERSION = scanner.nextLine();
@@ -141,11 +142,17 @@ public class Window {
         messageItem = new JMenuItem();
         messageMenu.add(messageItem);
 
-        itemStartServer = new JMenuItem("Spiel erstellen");
-        itemStartClient = new JMenuItem("Spiel beitreten");
-        itemNewNetworkGame = new JMenuItem("Neues Spiel");
+        menuOnlineExtras = new JMenu("Mehr...");
+        itemStartServer = new JMenuItem("1 to 1 Server");
+        itemStartClient = new JMenuItem("1 to 1 Client");
+        itemConnectToServer = new JMenuItem("Online spielen");
         itemNetworkDisconnect = new JMenuItem("Verbindung trennen");
+        itemNewNetworkGame = new JMenuItem("Neues Spiel");
         itemShowChat = new JMenuItem("Chat anzeigen");
+        itemConnectWithPlayer = new JMenuItem("Mit zufälligem Spieler verbinden");
+        menuOnlineExtras.add(itemStartClient);
+        menuOnlineExtras.add(itemStartServer);
+        menuOnlineExtras.add(itemNetworkDisconnect);
 
         itemNewGame = new JMenuItem("Neu");
         itemStore = new JMenuItem("Speichern");
@@ -199,7 +206,7 @@ public class Window {
         JMenu styleMenu = new JMenu("Stil...");
         JMenu moveMenu = new JMenu("Zug...");
         JMenu castlingMenu = new JMenu("Rochade...");
-        JMenu networkMenu = new JMenu("Netzwerk...");
+        JMenu networkMenu = new JMenu("Online...");
         JMenu extrasMenu = new JMenu("Extras...");
         JMenu versionMenu = new JMenu("Version...");
 
@@ -236,8 +243,8 @@ public class Window {
         moveMenu.addSeparator();
         moveMenu.add(castlingMenu);
 
-        networkMenu.add(itemStartServer);
-        networkMenu.add(itemStartClient);
+        networkMenu.add(itemConnectWithPlayer);
+        networkMenu.add(itemConnectToServer);
         networkMenu.addSeparator();
         networkMenu.add(itemNewNetworkGame);
         networkMenu.add(itemAssignOpponentBlack);
@@ -246,12 +253,9 @@ public class Window {
         networkMenu.add(itemResign);
         networkMenu.add(itemOfferDraw);
         networkMenu.addSeparator();
-        networkMenu.addSeparator();
-        networkMenu.add(itemNetworkDisconnect);
-        networkMenu.addSeparator();
-        networkMenu.addSeparator();
         networkMenu.add(itemShowChat);
         networkMenu.addSeparator();
+        networkMenu.add(menuOnlineExtras);
 
         castlingMenu.add(itemCastlingKingside);
         castlingMenu.add(itemCastlingQueenside);
@@ -388,6 +392,10 @@ public class Window {
                 showPopup("Deine Version ist aktuell - cool!");
             }
         }
+    }
+
+    public static void changeTitle(String toReplace, String replacement){
+        frame.setTitle(frame.getTitle().replace(toReplace,replacement));
     }
 
     private void adjustBoardAndFrameSize(int size_factor) {

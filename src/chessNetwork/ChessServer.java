@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
+import java.util.Scanner;
 
 public class ChessServer extends NetInstance implements Runnable {
 
@@ -43,8 +44,7 @@ public class ChessServer extends NetInstance implements Runnable {
             socket = serverSocket.accept();
             System.out.println("CONNECTED WITH " + socket.getRemoteSocketAddress());
             new DialogMessage("Server - Verbinden mit " + socket.getRemoteSocketAddress() + " erfolgreich");
-
-            bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            scanner = new Scanner(socket.getInputStream());
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             sender.setWriter(bufferedWriter);
             receiver = new Receiver("SERVER RECEIVER", this);
