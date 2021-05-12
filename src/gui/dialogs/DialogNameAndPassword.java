@@ -1,30 +1,35 @@
 package gui.dialogs;
 
+import chessNetwork.Password;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-public abstract class DialogInput extends JDialog {
+public abstract class DialogNameAndPassword extends JDialog {
 
-    public JTextField input;
+    public JTextField nameIn = new JTextField("ohneNamen");
+    public JTextField pwIn = new JTextField("tollesPW123");
 
-    public DialogInput(String title, String message, String defaultInput, String buttonText, Point location) {
+    public DialogNameAndPassword(Point location) {
         setLocation(location);
-        setTitle(title);
+        setTitle("Namen und Passwort wählen");
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        JLabel label = new JLabel(" " + message + " ");
-        input = new JTextField(defaultInput);
-        JButton button = new JButton(" " + buttonText + " ");
+        JLabel lName = new JLabel(" Name ");
+        JLabel lPassword = new JLabel(" Passwort ");
+        JButton button = new JButton(" OK ");
         setLayout(new FlowLayout());
-        add(label);
-        add(input);
+        add(lName);
+        add(nameIn);
+        add(lPassword);
+        add(pwIn);
         add(button);
         pack();
         setVisible(true);
         button.addActionListener(this::actionPerformed);
-        input.addKeyListener(new KeyListener() {
+        pwIn.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
 
@@ -42,6 +47,16 @@ public abstract class DialogInput extends JDialog {
                 }
             }
         });
+    }
+
+    public static void main(String[] args) {
+        new DialogNameAndPassword(new Point(0, 0)) {
+            @Override
+            public void buttonClicked() {
+                System.out.println(nameIn.getText() + "\n"
+                        + Password.toSHA256String(nameIn.getText() + pwIn.getText()));
+            }
+        };
     }
 
     public abstract void buttonClicked();

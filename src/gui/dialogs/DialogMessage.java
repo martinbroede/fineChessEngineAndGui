@@ -51,10 +51,4 @@ public class DialogMessage extends JDialog {
         label.setText(" " + message + " ");
         pack();
     }
-
-    public static void main(String[] args) {
-
-        DialogMessage dialogMessage = new DialogMessage("Verbinden erfolgreich");
-        DialogMessage dialogMessage2 = new DialogMessage("verschieben möglich.", new Point(100, 200));
-    }
 }

@@ -1,7 +1,7 @@
 package core;
 
 public enum Status {
-
+    // do not change the order...
     UNDECIDED,
     WHITE_RESIGNED,
     WHITE_CHECKMATED,
@@ -13,7 +13,7 @@ public enum Status {
     DRAW_MATERIAL, //   draw due to lack of material on both sides // todo implement
     DRAW_REPETITION;//  draw due to repetion of current position
 
-    private final static String[] NOTICE = {
+    private final  String[] NOTICE = {
             "Das Spiel ist noch offen",
             "Schwarz gewinnt durch Aufgabe",
             "Schwarz gewinnt durch Schachmatt.",
@@ -29,4 +29,20 @@ public enum Status {
     public String getNotice() {
         return NOTICE[this.ordinal()];
     }
+
+    public String getResult(){
+        switch(this.ordinal()){
+            case 0:
+                return "undecided";
+            case 1:
+            case 2:
+                return "black wins";
+            case 3:
+            case 4:
+                return "white wins";
+            default:
+                return "draw";
+        }
+    }
 }
+

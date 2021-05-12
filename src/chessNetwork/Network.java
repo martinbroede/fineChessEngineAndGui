@@ -8,6 +8,7 @@ import java.util.LinkedList;
 
 import static fileHandling.StaticSetting.getSetting;
 import static fileHandling.StaticSetting.rememberSetting;
+import static java.lang.Thread.sleep;
 
 public class Network {
 
@@ -47,7 +48,13 @@ public class Network {
 
     public void createClient(String configIpAndPort) {
 
-        if (instance != null) disconnect();
+        if (instance != null) {
+            disconnect();
+            try {
+                sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+        }
         instance = new ChessClient(configIpAndPort);
         active = true;
 

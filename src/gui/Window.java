@@ -1,11 +1,13 @@
 package gui;
 
+import chessNetwork.Password;
 import core.Chess;
 import fineChessUpdater.Downloader;
 import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
 import gui.dialogs.DialogInput;
 import gui.dialogs.DialogMessage;
+import gui.dialogs.DialogNameAndPassword;
 import gui.dialogs.DialogText;
 
 import javax.swing.*;
@@ -30,6 +32,7 @@ public class Window {
     final JLabel labelCapturedBlackPieces;
     final JLabel labelPlaceHolderWest;
     final JLabel labelPlaceHolderEast;
+
     final JMenu menuOnlineExtras;
     final JMenuItem itemStartServer;
     final JMenuItem itemStartClient;
@@ -37,7 +40,9 @@ public class Window {
     final JMenuItem itemConnectWithPlayer;
     final JMenuItem itemNetworkDisconnect;
     final JMenuItem itemNewNetworkGame;
+    final JMenuItem itemSendFeedback;
     final JMenuItem itemShowChat;
+
     final JMenuItem itemNewGame;
     final JMenuItem itemStore;
     final JMenuItem itemRestore;
@@ -45,12 +50,15 @@ public class Window {
     final JMenuItem itemLicense;
     final JMenuItem itemCheckVersion;
     final JMenuItem itemShowVersionLog;
+
     final JMenuItem itemSize1;
     final JMenuItem itemSize2;
     final JMenuItem itemSize3;
     final JMenuItem itemEnlarge;
     final JMenuItem itemDiminish;
+
     final JMenuItem itemChangePieceStyle;
+
     final JMenuItem itemCastlingQueenside;
     final JMenuItem itemCastlingKingside;
     final JMenuItem itemPromotionQueen;
@@ -80,6 +88,7 @@ public class Window {
     final int SIZE_S = 30;
     String VERSION = "VERSION UNKNOWN";
     String myName;
+    String myPassword;
     String myFriendsName = "";
 
     public Window(Chess chess) {
@@ -89,6 +98,7 @@ public class Window {
 
         getStoredSettings();
         myName = getSetting("%NAME");
+        myPassword = getSetting("%PW");
         {
             String xy = getSetting("%LOCATION");
             if (!xy.equals("")) {
@@ -145,14 +155,21 @@ public class Window {
         menuOnlineExtras = new JMenu("Mehr...");
         itemStartServer = new JMenuItem("1 to 1 Server");
         itemStartClient = new JMenuItem("1 to 1 Client");
-        itemConnectToServer = new JMenuItem("Online spielen");
+        itemConnectToServer = new JMenuItem("Mit Schachserver verbinden");
         itemNetworkDisconnect = new JMenuItem("Verbindung trennen");
         itemNewNetworkGame = new JMenuItem("Neues Spiel");
         itemShowChat = new JMenuItem("Chat anzeigen");
         itemConnectWithPlayer = new JMenuItem("Mit zufälligem Spieler verbinden");
+        itemSendFeedback = new JMenuItem("Feedback senden");
         menuOnlineExtras.add(itemStartClient);
         menuOnlineExtras.add(itemStartServer);
+        menuOnlineExtras.addSeparator();
         menuOnlineExtras.add(itemNetworkDisconnect);
+        menuOnlineExtras.addSeparator();
+        menuOnlineExtras.add(itemConnectToServer);
+        menuOnlineExtras.addSeparator();
+        menuOnlineExtras.addSeparator();
+        menuOnlineExtras.add(itemSendFeedback);
 
         itemNewGame = new JMenuItem("Neu");
         itemStore = new JMenuItem("Speichern");
@@ -244,7 +261,6 @@ public class Window {
         moveMenu.add(castlingMenu);
 
         networkMenu.add(itemConnectWithPlayer);
-        networkMenu.add(itemConnectToServer);
         networkMenu.addSeparator();
         networkMenu.add(itemNewNetworkGame);
         networkMenu.add(itemAssignOpponentBlack);
@@ -309,11 +325,11 @@ public class Window {
 
         checkVersion();
 
-        if (myName.equals("")) {
-            new DialogInput("Namen wählen", "Mein Name:",
-                    "ohneNamen", "OK", frame.getLocation()) {
+        if (myName.equals("")||myPassword.equals("")) {
+            new DialogNameAndPassword(frame.getLocation()){
                 public void buttonClicked() {
-                    myName = input.getText();
+                    myName = nameIn.getText();
+                    myPassword = Password.toSHA256String(nameIn.getText() + pwIn.getText());
                     dispose();
                 }
             };
@@ -378,6 +394,7 @@ public class Window {
                         dispose();
                     }
                 });
+
         /*  #################################### \add action listeners\ ############################################# */
     }
 

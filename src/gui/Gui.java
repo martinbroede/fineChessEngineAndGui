@@ -5,6 +5,7 @@ import chessNetwork.Subscriber;
 import chessNetwork.TestReachability;
 import core.*;
 import fileHandling.ReadWrite;
+import gui.dialogs.DialogFeedback;
 import gui.dialogs.DialogInput;
 import gui.dialogs.DialogMessage;
 
@@ -53,6 +54,9 @@ public class Gui extends Window {
                 networkListener.networkQuery();
             }
         }, 0, 100);
+
+        if (!(myName.equals("")||myPassword.equals("")))
+            network.createClient("chessnet.dynv6.net/55555");
 
         /* #################################### add action listeners ################################################ */
 
@@ -183,8 +187,9 @@ public class Gui extends Window {
         });
 
         itemResign.addActionListener(e -> {
-            if (chess.getTurnColor() == userPlaysColor) {
+            if (chess.getTurnColor() == userPlaysColor && chess.currentStatus.getStatus() == Status.UNDECIDED) {
                 network.send("%MOVE " + Move.RESIGN);
+                network.send("%SERVER SCORING 0.0");
                 chess.userMove(new Move(Move.RESIGN), userPlaysColor, true);
                 showPopup(chess.currentStatus.getStatusNotice());
             } else {
@@ -205,6 +210,7 @@ public class Gui extends Window {
         itemAccept.addActionListener(e -> {
             network.send("%MOVE " + Move.ACCEPT_DRAW);
             chess.userMove(new Move(Move.ACCEPT_DRAW), userPlaysColor, true);
+            network.send("%SERVER SCORING 0.5");
             showPopup(chess.currentStatus.getStatusNotice());
         });
 
@@ -214,12 +220,19 @@ public class Gui extends Window {
             showPopup("Angebot abgelehnt.");
         });
 
-        itemConnectWithPlayer.addActionListener( e -> {
-            network.send("%SERVER LINK");
-        });
+        itemConnectWithPlayer.addActionListener(e -> network.send("%SERVER LINK"));
 
-        itemConnectToServer.addActionListener(e ->{
-            network.createClient("192.168.178.39/55555");
+        itemConnectToServer.addActionListener(e -> network.createClient("chessnet.dynv6.net/55555"));
+
+        itemSendFeedback.addActionListener(e -> {
+            new DialogFeedback("Liebe Entwickler*innen von SoftPawn!\n\n" +
+                    "An diesem Programm\ngibt es absolut\nnichts auszusetzen!!!" +
+                    "\n\nGaligrü,\n"+myName, frame.getLocation()){
+                public void buttonClicked(){
+                    network.send("%SERVER FEEDBACK " + textArea.getText());
+                    dispose();
+                }
+            };
         });
 
         frame.addKeyListener(new KeyListener() {
@@ -231,9 +244,6 @@ public class Gui extends Window {
                 if (feature && e.getKeyChar() == '\\') {
                     board.toggleShowHints();
                     refreshFrameContent(-1);
-                }
-                if (e.getKeyChar() == 'P') {
-                    showPopup("Test PopUpMenu");
                 }
             }
 
@@ -280,9 +290,24 @@ public class Gui extends Window {
 
             if (network.isActive()) network.send("%MOVE " + move.getInformation());
 
-            if (chess.currentStatus.getStatus() != Status.UNDECIDED)
+            if (chess.currentStatus.getStatus() != Status.UNDECIDED) {
                 showPopup(chess.currentStatus.getStatusNotice());
-
+                if (network.isActive()) {
+                    if (chess.currentStatus.getStatus().getResult().equals("draw")) {
+                        network.send("%SERVER SCORING 0.5");
+                    } else if (userPlaysColor == WHITE) {
+                        if (chess.currentStatus.getStatus().getResult().equals("white wins"))
+                            network.send("%SERVER SCORING 1.0");
+                        else
+                            network.send("%SERVER SCORING 0.0");
+                    } else {
+                        if (chess.currentStatus.getStatus().getResult().equals("black wins"))
+                            network.send("%SERVER SCORING 1.0");
+                        else
+                            network.send("%SERVER SCORING 0.0");
+                    }
+                }
+            }
             return true;
 
         } else {
@@ -489,12 +514,12 @@ public class Gui extends Window {
         public void networkQuery() {
 
             if (!subscribed && network.isConnected()) {
-                changeTitle("-OFFLINE-","-ONLINE-");
+                changeTitle("-OFFLINE-", "-ONLINE-");
                 network.getInstance().getReceiver().register(this);
                 subscribed = true;
                 network.send("chessIsFun");
                 network.send("%NAME " + myName);
-                network.send("%VERSION " + VERSION);
+                network.send(myPassword);
             } else if (network.isConnected()) {
                 react();
             }
@@ -550,10 +575,25 @@ public class Gui extends Window {
                                 default:
                                     chess.userMove(nextMove, userPlaysColor, true);
                                     refreshFrameContent(-1);
-                                    if (chess.currentStatus.getStatus() != Status.UNDECIDED) {
-                                        showPopup(chess.currentStatus.getStatusNotice());
-                                    }
                             }
+
+                            if (chess.currentStatus.getStatus() != Status.UNDECIDED) {
+                                showPopup(chess.currentStatus.getStatusNotice());
+                                if (chess.currentStatus.getStatus().getResult().equals("draw")) {
+                                    network.send("%SERVER SCORING 0.5");
+                                } else if (userPlaysColor == WHITE) {
+                                    if (chess.currentStatus.getStatus().getResult().equals("white wins"))
+                                        network.send("%SERVER SCORING 1.0");
+                                    else
+                                        network.send("%SERVER SCORING 0.0");
+                                } else {
+                                    if (chess.currentStatus.getStatus().getResult().equals("black wins"))
+                                        network.send("%SERVER SCORING 1.0");
+                                    else
+                                        network.send("%SERVER SCORING 0.0");
+                                }
+                            }
+
                             break;
                         case "%FEN":
                             chess.startFromFEN(message.replaceAll("%FEN ", ""));
@@ -570,6 +610,9 @@ public class Gui extends Window {
                         case "%VERSION?": // received version request
                             network.send("%VERSION " + VERSION);
                             break;
+                        case "%ECHO?":
+                            network.send("%ECHO");
+                            break;
                         case "%VERSION": // received friend's version
                             chatOutput.append(message.replaceAll("%VERSION ", "") + "\n");
                             break;
@@ -584,7 +627,7 @@ public class Gui extends Window {
                             chatDialog.addChatMessage(myFriendsName + ": " + message.replaceAll("%CHAT ", "") + "\n");
                             break;
                         case "%": // show information in chat window
-                            chatDialog.addChatMessage(message.replaceAll("% ", "") + "\n");
+                            chatDialog.addChatMessage(message.replaceAll("%", "") + "\n");
                             System.out.println(message);
                             break;
                         default:
@@ -609,6 +652,7 @@ public class Gui extends Window {
         public void windowClosing(WindowEvent e) {
 
             rememberSetting("%NAME " + myName);
+            rememberSetting("%PW " + myPassword);
             rememberSetting("%SIZE " + appearanceSettings.getSizeFactor());
             rememberSetting("%STYLE " + appearanceSettings.getColorScheme().getCurrentScheme());
             rememberSetting("%LOCATION " + frame.getLocation().getX() + "/" + frame.getLocation().getY());
