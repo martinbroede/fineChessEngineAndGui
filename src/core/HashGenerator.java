@@ -65,7 +65,7 @@ public class HashGenerator {
             }
         }
 
-        if(whiteToMove) h ^= turnValue;
+        if (whiteToMove) h ^= turnValue;
 
         h ^= castlingValues[castling];
 
@@ -91,7 +91,7 @@ public class HashGenerator {
     }
 
     public void hashEnPassant(byte enP) {
-        if(enP >= 0) hashCode ^= enPassantValues[enP];
+        if (enP >= 0) hashCode ^= enPassantValues[enP];
     }
 
     public void hashCastling(byte cRights) {

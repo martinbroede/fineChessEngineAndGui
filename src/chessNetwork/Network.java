@@ -83,6 +83,7 @@ public class Network {
 
         if (instance != null) {
             instance.abort();
+            System.out.println("ABORT..."); // todo ...
         }
         instance = null;
         active = false;

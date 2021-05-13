@@ -5,7 +5,6 @@ import core.Chess;
 import fineChessUpdater.Downloader;
 import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
-import gui.dialogs.DialogInput;
 import gui.dialogs.DialogMessage;
 import gui.dialogs.DialogNameAndPassword;
 import gui.dialogs.DialogText;
@@ -33,13 +32,13 @@ public class Window {
     final JLabel labelPlaceHolderWest;
     final JLabel labelPlaceHolderEast;
 
-    final JMenu menuOnlineExtras;
     final JMenuItem itemStartServer;
     final JMenuItem itemStartClient;
     final JMenuItem itemConnectToServer;
     final JMenuItem itemConnectWithPlayer;
     final JMenuItem itemNetworkDisconnect;
     final JMenuItem itemNewNetworkGame;
+    final JMenuItem itemRatingQuery;
     final JMenuItem itemSendFeedback;
     final JMenuItem itemShowChat;
 
@@ -56,6 +55,9 @@ public class Window {
     final JMenuItem itemSize3;
     final JMenuItem itemEnlarge;
     final JMenuItem itemDiminish;
+
+    final JPopupMenu messageMenu;
+    final JMenuItem messageItem;
 
     final JMenuItem itemChangePieceStyle;
 
@@ -81,8 +83,6 @@ public class Window {
     final JTextField chatInput;
     final JTextArea chatOutput;
     final ColorScheme colorScheme;
-    final JPopupMenu messageMenu;
-    final JMenuItem messageItem;
     final int SIZE_L = 70;
     final int SIZE_M = 45;
     final int SIZE_S = 30;
@@ -116,9 +116,13 @@ public class Window {
             title += VERSION;
             if (!myName.equals("")) title += " -" + myName + "-";
             frame.setTitle(title);
+            scanner.close();
         } catch (FileNotFoundException ex) {
             System.err.println("VERSION FILE NOT FOUND");
         }
+
+        messageMenu = new JPopupMenu();
+        messageItem = new JMenuItem();
 
         labelCapturedWhitePieces = new JLabel("", JLabel.CENTER);
         labelCapturedBlackPieces = new JLabel("", JLabel.CENTER);
@@ -148,28 +152,19 @@ public class Window {
 
         frame.setContentPane(content);
 
-        messageMenu = new JPopupMenu();
-        messageItem = new JMenuItem();
-        messageMenu.add(messageItem);
-
-        menuOnlineExtras = new JMenu("Mehr...");
+        itemConnectWithPlayer = new JMenuItem("Mit zufälligem Spieler verbinden");
+        itemShowChat = new JMenuItem("Chat anzeigen");
+        itemRatingQuery = new JMenuItem("ELO-Rating");
+        itemResign = new JMenuItem("AUFGEBEN");
+        itemOfferDraw = new JMenuItem("REMIS ANBIETEN");
+        itemNewNetworkGame = new JMenuItem("Neues Spiel");
+        itemAssignOpponentBlack = new JMenuItem("Ich spiele WEISS");
+        itemAssignOpponentWhite = new JMenuItem("Ich spiele SCHWARZ");
         itemStartServer = new JMenuItem("1 to 1 Server");
         itemStartClient = new JMenuItem("1 to 1 Client");
         itemConnectToServer = new JMenuItem("Mit Schachserver verbinden");
         itemNetworkDisconnect = new JMenuItem("Verbindung trennen");
-        itemNewNetworkGame = new JMenuItem("Neues Spiel");
-        itemShowChat = new JMenuItem("Chat anzeigen");
-        itemConnectWithPlayer = new JMenuItem("Mit zufälligem Spieler verbinden");
         itemSendFeedback = new JMenuItem("Feedback senden");
-        menuOnlineExtras.add(itemStartClient);
-        menuOnlineExtras.add(itemStartServer);
-        menuOnlineExtras.addSeparator();
-        menuOnlineExtras.add(itemNetworkDisconnect);
-        menuOnlineExtras.addSeparator();
-        menuOnlineExtras.add(itemConnectToServer);
-        menuOnlineExtras.addSeparator();
-        menuOnlineExtras.addSeparator();
-        menuOnlineExtras.add(itemSendFeedback);
 
         itemNewGame = new JMenuItem("Neu");
         itemStore = new JMenuItem("Speichern");
@@ -205,10 +200,6 @@ public class Window {
         itemUndo.setAccelerator(ctrlZ);
         itemRedo.setAccelerator(ctrlR);
 
-        itemAssignOpponentBlack = new JMenuItem("Ich spiele WEISS");
-        itemAssignOpponentWhite = new JMenuItem("Ich spiele SCHWARZ");
-        itemResign = new JMenuItem("AUFGEBEN");
-        itemOfferDraw = new JMenuItem("REMIS ANBIETEN");
 
         itemRotateBoard = new JMenuItem("Brett drehen");
         itemFromFEN = new JMenuItem("Spiel beginnen aus FEN");
@@ -225,6 +216,7 @@ public class Window {
         JMenu castlingMenu = new JMenu("Rochade...");
         JMenu networkMenu = new JMenu("Online...");
         JMenu extrasMenu = new JMenu("Extras...");
+        JMenu onlineExtraMenu = new JMenu("Mehr...");
         JMenu versionMenu = new JMenu("Version...");
 
         menuPromotion = new JPopupMenu();
@@ -240,7 +232,6 @@ public class Window {
         versionMenu.add(itemCheckVersion);
         versionMenu.add(itemShowVersionLog);
         mainMenu.add(versionMenu);
-
 
         sizeMenu.add(itemSize1);
         sizeMenu.add(itemSize2);
@@ -262,16 +253,28 @@ public class Window {
 
         networkMenu.add(itemConnectWithPlayer);
         networkMenu.addSeparator();
-        networkMenu.add(itemNewNetworkGame);
-        networkMenu.add(itemAssignOpponentBlack);
-        networkMenu.add(itemAssignOpponentWhite);
+
         networkMenu.addSeparator();
         networkMenu.add(itemResign);
         networkMenu.add(itemOfferDraw);
         networkMenu.addSeparator();
         networkMenu.add(itemShowChat);
+        networkMenu.add(itemRatingQuery);
         networkMenu.addSeparator();
-        networkMenu.add(menuOnlineExtras);
+        networkMenu.add(onlineExtraMenu);
+        onlineExtraMenu.add(itemStartClient);
+        onlineExtraMenu.add(itemStartServer);
+        onlineExtraMenu.addSeparator();
+        onlineExtraMenu.add(itemNetworkDisconnect);
+        onlineExtraMenu.addSeparator();
+        onlineExtraMenu.add(itemConnectToServer);
+        onlineExtraMenu.addSeparator();
+        onlineExtraMenu.addSeparator();
+        onlineExtraMenu.add(itemSendFeedback);
+        onlineExtraMenu.addSeparator();
+        onlineExtraMenu.add(itemNewNetworkGame);
+        onlineExtraMenu.add(itemAssignOpponentBlack);
+        onlineExtraMenu.add(itemAssignOpponentWhite);
 
         castlingMenu.add(itemCastlingKingside);
         castlingMenu.add(itemCastlingQueenside);
@@ -325,14 +328,8 @@ public class Window {
 
         checkVersion();
 
-        if (myName.equals("")||myPassword.equals("")) {
-            new DialogNameAndPassword(frame.getLocation()){
-                public void buttonClicked() {
-                    myName = nameIn.getText();
-                    myPassword = Password.toSHA256String(nameIn.getText() + pwIn.getText());
-                    dispose();
-                }
-            };
+        if (myName.equals("") || myPassword.equals("")) {
+            new DialogRename();
         }
 
         /*  ###################################### add action listeners ############################################# */
@@ -386,16 +383,13 @@ public class Window {
         itemShowVersionLog.addActionListener(e ->
                 new DialogText(getStringFromFile("version.txt"), frame.getLocation()));
 
-        itemRename.addActionListener(e ->
-                new DialogInput("Namen wählen", "Mein Name:",
-                        "ohneNamen", "OK", frame.getLocation()) {
-                    public void buttonClicked() {
-                        myName = input.getText();
-                        dispose();
-                    }
-                });
+        itemRename.addActionListener(e -> new DialogRename());
 
         /*  #################################### \add action listeners\ ############################################# */
+    }
+
+    public static void changeTitle(String toReplace, String replacement) {
+        frame.setTitle(frame.getTitle().replace(toReplace, replacement));
     }
 
     void checkVersion() {
@@ -403,7 +397,7 @@ public class Window {
             String URL = "https://raw.githubusercontent.com/martinbro2021/fineChessEngineAndGui/main/version.txt";
             String latestVersion = Downloader.getHeadLineFromURL(URL);
             if (!latestVersion.equals("") && !latestVersion.equals(VERSION)) {
-                new DialogMessage("Ein neueres Programm [Version " + latestVersion + "] steht bei github.com zur Verfügung!",
+                new DialogMessage("Ein neueres Programm [Version " + latestVersion + "] steht auf github.com zur Verfügung!",
                         frame.getLocation());
             } else if (!latestVersion.equals("")) {
                 showPopup("Deine Version ist aktuell - cool!");
@@ -411,15 +405,13 @@ public class Window {
         }
     }
 
-    public static void changeTitle(String toReplace, String replacement){
-        frame.setTitle(frame.getTitle().replace(toReplace,replacement));
-    }
-
     private void adjustBoardAndFrameSize(int size_factor) {
 
         appearanceSettings.adjustSize(size_factor);
 
-        Dimension newDim = new Dimension(appearanceSettings.getSizeFactor() * 2, appearanceSettings.getMargin());
+        Dimension newDim;
+
+        newDim = new Dimension(appearanceSettings.getSizeFactor() * 2, appearanceSettings.getMargin());
         labelPlaceHolderWest.setPreferredSize(newDim);
         labelPlaceHolderEast.setPreferredSize(newDim);
 
@@ -441,11 +433,15 @@ public class Window {
     public void showPopup(String message) {
 
         board.setActive(false); //makes board diffuse
+
+        chatOutput.append("\n"+ message);
+        messageMenu.add(messageItem);
         messageMenu.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         messageMenu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor() * 2);
         messageItem.setText(message);
         messageItem.setFont(new Font("Times", Font.PLAIN, appearanceSettings.getSizeFactor() / 3));
         messageItem.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+
         messageMenu.show(board, 0, appearanceSettings.getMargin());
     }
 
@@ -499,4 +495,19 @@ public class Window {
         labelPlaceHolderWest.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         labelPlaceHolderEast.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
     }
+
+    class DialogRename extends DialogNameAndPassword {
+
+        public DialogRename() {
+            super(frame.getLocation());
+        }
+
+        public void buttonClicked() {
+
+            myName = nameIn.getText();
+            myPassword = Password.toSHA256String(nameIn.getText() + pwIn.getText());
+            dispose();
+        }
+    }
 }
+

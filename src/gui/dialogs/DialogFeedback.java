@@ -1,7 +1,5 @@
 package gui.dialogs;
 
-import jdk.nashorn.internal.scripts.JD;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,7 +14,7 @@ public abstract class DialogFeedback extends JDialog {
         add(textArea);
         add(sendButton);
         textArea.setBackground(new Color(238, 242, 246));
-        textArea.setPreferredSize(new Dimension(300,300));
+        textArea.setPreferredSize(new Dimension(300, 300));
         textArea.setFont(new Font("Courier New", Font.PLAIN, 14));
         sendButton.addActionListener(new ActionListener() {
             @Override
@@ -27,8 +25,6 @@ public abstract class DialogFeedback extends JDialog {
         setVisible(true);
     }
 
-    abstract public void buttonClicked();
-
     public DialogFeedback(String text, Point location) {
 
         setLocation(location);
@@ -37,11 +33,13 @@ public abstract class DialogFeedback extends JDialog {
     }
 
     public static void main(String[] args) {
-        new DialogFeedback("hi",new Point(100,100)){
-          public void buttonClicked(){
-              System.out.println(textArea.getText());
-              dispose();
-          }
+        new DialogFeedback("hi", new Point(100, 100)) {
+            public void buttonClicked() {
+                System.out.println(textArea.getText());
+                dispose();
+            }
         };
     }
+
+    abstract public void buttonClicked();
 }

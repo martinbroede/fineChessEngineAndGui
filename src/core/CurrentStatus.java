@@ -4,6 +4,7 @@ public class CurrentStatus {
 
     private Status status;
     private boolean drawOffered;
+
     public CurrentStatus() {
         reset();
     }

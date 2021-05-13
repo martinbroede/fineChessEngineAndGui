@@ -2,7 +2,9 @@ package chessNetwork;
 
 import gui.dialogs.DialogMessage;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
@@ -69,7 +71,7 @@ public class ChessServer extends NetInstance implements Runnable {
     }
 
     @Override
-    public void run(){
+    public void run() {
         host();
     }
 

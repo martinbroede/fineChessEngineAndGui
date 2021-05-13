@@ -1,9 +1,10 @@
 package core;
 
 import gui.dialogs.DialogMessage;
+
 import java.util.Stack;
 
-public class Chess extends MoveGenerator{
+public class Chess extends MoveGenerator {
 
     private final HashGenerator hashGenerator;
     public History history;
@@ -14,6 +15,7 @@ public class Chess extends MoveGenerator{
     private long whiteTimeStamp;
     private long blackTimeStamp;
     private short score;
+
     {
         whitePieces = new PieceCollectionWhite();
         blackPieces = new PieceCollectionBlack();

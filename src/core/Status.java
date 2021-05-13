@@ -13,7 +13,7 @@ public enum Status {
     DRAW_MATERIAL, //   draw due to lack of material on both sides // todo implement
     DRAW_REPETITION;//  draw due to repetion of current position
 
-    private final  String[] NOTICE = {
+    private final String[] NOTICE = {
             "Das Spiel ist noch offen",
             "Schwarz gewinnt durch Aufgabe",
             "Schwarz gewinnt durch Schachmatt.",
@@ -30,8 +30,8 @@ public enum Status {
         return NOTICE[this.ordinal()];
     }
 
-    public String getResult(){
-        switch(this.ordinal()){
+    public String getResult() {
+        switch (this.ordinal()) {
             case 0:
                 return "undecided";
             case 1:

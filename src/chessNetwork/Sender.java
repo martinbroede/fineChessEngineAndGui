@@ -2,7 +2,6 @@ package chessNetwork;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 class Sender {
@@ -23,14 +22,14 @@ class Sender {
 
     public void bufferedSend(String message) {
 
-        if (!message.equals("")){
+        if (!message.equals("")) {
             message = message + NetInstance.MESSAGE_DELIMITER;
-            String asciiMsg = message.replaceAll("ü","ue")
-                    .replaceAll("ö","oe")
-                    .replaceAll("ä","ae")
-                    .replaceAll("Ü","UE")
-                    .replaceAll("Ö","OE")
-                    .replaceAll("Ä","AE")
+            String asciiMsg = message.replaceAll("ü", "ue")
+                    .replaceAll("ö", "oe")
+                    .replaceAll("ä", "ae")
+                    .replaceAll("Ü", "UE")
+                    .replaceAll("Ö", "OE")
+                    .replaceAll("Ä", "AE")
                     .replaceAll("ß", "ss");
             asciiMsg = asciiMsg.replaceAll("[^\\x00-\\x7F]", "");
             sendingQueue.add(asciiMsg);

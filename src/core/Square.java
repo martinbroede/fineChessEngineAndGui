@@ -4,16 +4,8 @@ public class Square { // todo ... this is never used...
 
     private final byte position;
 
-    private Square(byte pos){
+    private Square(byte pos) {
         this.position = pos;
-    }
-
-    public byte getPosition(){
-        return position;
-    }
-
-    public void print(){
-        System.out.print("#"+ Util.parse(this.position) + " ");
     }
 
     public static Square[] createAllSquares() {
@@ -23,5 +15,13 @@ public class Square { // todo ... this is never used...
             allSquares[b] = new Square(b);
         }
         return allSquares;
+    }
+
+    public byte getPosition() {
+        return position;
+    }
+
+    public void print() {
+        System.out.print("#" + Util.parse(this.position) + " ");
     }
 }

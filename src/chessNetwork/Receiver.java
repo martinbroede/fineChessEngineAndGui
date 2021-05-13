@@ -9,7 +9,7 @@ public class Receiver extends Thread {
     private final LinkedList<String> messageQueue;
     private final NetInstance initiator;
     private final int SOCK_BUFFER_SIZE = 256;
-    Scanner scanner;
+    private final Scanner scanner;
     private Subscriber subscriber;
 
     public Receiver(String serviceName, NetInstance initiator) {
@@ -28,7 +28,7 @@ public class Receiver extends Thread {
     }
 
     public void unsubscribe() {
-
+        scanner.close();
         if (subscriber != null) subscriber.unsubscribe();
         System.out.println(getName() + " SIGNED OFF SUBSCRIBER");
     }
@@ -39,9 +39,9 @@ public class Receiver extends Thread {
 
         while (true) {
 
-            try{
-            message = scanner.next();}
-            catch(NoSuchElementException ex){
+            try {
+                message = scanner.next();
+            } catch (NoSuchElementException ex) {
                 System.out.println("RECEIVER ABORTED");
                 break;
             }

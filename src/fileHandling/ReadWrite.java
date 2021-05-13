@@ -48,7 +48,7 @@ public class ReadWrite {
         return myFont;
     }
 
-    static public String getStringFromFile(String filename){
+    static public String getStringFromFile(String filename) {
 
         StringBuilder text = new StringBuilder();
         try {
@@ -58,7 +58,7 @@ public class ReadWrite {
                 text.append(scanner.nextLine()).append('\n');
             }
         } catch (FileNotFoundException ex) {
-            System.err.println("FILE " + filename +" NOT FOUND");
+            System.err.println("FILE " + filename + " NOT FOUND");
         }
         return text.toString();
     }

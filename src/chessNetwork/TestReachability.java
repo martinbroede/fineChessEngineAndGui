@@ -35,7 +35,7 @@ public class TestReachability {
 
     }
 
-    class ReachableDialog extends IpAndPortDialog{
+    class ReachableDialog extends IpAndPortDialog {
 
         public void action() {
 

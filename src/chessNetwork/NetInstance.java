@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 public abstract class NetInstance implements Runnable {
 
+    public static final String MESSAGE_DELIMITER = "\u0003";
     protected String ip;
     protected int port;
     protected Socket socket;
@@ -17,7 +18,6 @@ public abstract class NetInstance implements Runnable {
     protected boolean connectionSuccessful;
     protected LinkedList<String> messageQueue;
     protected Scanner scanner;
-    public static final String MESSAGE_DELIMITER = "\u0003";
 
     public Receiver getReceiver() {
         return receiver;
@@ -45,6 +45,7 @@ public abstract class NetInstance implements Runnable {
 
         try {
             receiver.unsubscribe();
+            System.out.println("unsubscribe"); //todo...
             receiver.interrupt();
         } catch (NullPointerException ignored) {
         }

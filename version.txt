@@ -34,3 +34,4 @@ V0.52B  refactor chessNetwork classes
         improve exception handling
 V0.52b  bugfix move transmission
 V0.53   add password request
+V0.54   add Elo-rating

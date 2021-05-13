@@ -8,6 +8,7 @@ import fileHandling.ReadWrite;
 import gui.dialogs.DialogFeedback;
 import gui.dialogs.DialogInput;
 import gui.dialogs.DialogMessage;
+import gui.dialogs.DialogText;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,6 +21,7 @@ import java.util.TimerTask;
 
 import static fileHandling.StaticSetting.rememberSetting;
 import static fileHandling.StaticSetting.storeSettingsInFile;
+import static java.lang.Thread.sleep;
 
 public class Gui extends Window {
 
@@ -55,8 +57,9 @@ public class Gui extends Window {
             }
         }, 0, 100);
 
-        if (!(myName.equals("")||myPassword.equals("")))
+        if (!(myName.equals("") || myPassword.equals(""))) {
             network.createClient("chessnet.dynv6.net/55555");
+        }
 
         /* #################################### add action listeners ################################################ */
 
@@ -67,7 +70,7 @@ public class Gui extends Window {
             labelCapturedWhitePieces.setText("");
             userPlaysBothColors = true;
             refreshFrameContent(-1);
-            resetMoveString();
+            moveString = "";
             showPopup("Spiel beginnen");
         });
 
@@ -188,9 +191,9 @@ public class Gui extends Window {
 
         itemResign.addActionListener(e -> {
             if (chess.getTurnColor() == userPlaysColor && chess.currentStatus.getStatus() == Status.UNDECIDED) {
-                network.send("%MOVE " + Move.RESIGN);
-                network.send("%SERVER SCORING 0.0");
                 chess.userMove(new Move(Move.RESIGN), userPlaysColor, true);
+                network.send("%MOVE " + Move.RESIGN);
+                showAndTransmitScoring();
                 showPopup(chess.currentStatus.getStatusNotice());
             } else {
                 showPopup("Gib auf, wenn du am Zug bist.");
@@ -208,9 +211,9 @@ public class Gui extends Window {
         });
 
         itemAccept.addActionListener(e -> {
-            network.send("%MOVE " + Move.ACCEPT_DRAW);
             chess.userMove(new Move(Move.ACCEPT_DRAW), userPlaysColor, true);
-            network.send("%SERVER SCORING 0.5");
+            network.send("%MOVE " + Move.ACCEPT_DRAW);
+            showAndTransmitScoring();
             showPopup(chess.currentStatus.getStatusNotice());
         });
 
@@ -222,17 +225,24 @@ public class Gui extends Window {
 
         itemConnectWithPlayer.addActionListener(e -> network.send("%SERVER LINK"));
 
-        itemConnectToServer.addActionListener(e -> network.createClient("chessnet.dynv6.net/55555"));
+        itemRatingQuery.addActionListener(e -> network.send("%SERVER ELO"));
 
-        itemSendFeedback.addActionListener(e -> {
-            new DialogFeedback("Liebe Entwickler*innen von SoftPawn!\n\n" +
-                    "An diesem Programm\ngibt es absolut\nnichts auszusetzen!!!" +
-                    "\n\nGaligrü,\n"+myName, frame.getLocation()){
-                public void buttonClicked(){
-                    network.send("%SERVER FEEDBACK " + textArea.getText());
-                    dispose();
-                }
-            };
+        itemConnectToServer.addActionListener(e -> {
+            network.disconnect();
+            try { // todo...
+                sleep(1000);
+            } catch (InterruptedException ignored) {
+            }
+            network.createClient("chessnet.dynv6.net/55555");
+        });
+
+        itemSendFeedback.addActionListener(e -> new DialogFeedback("Hallo, Team von SoftPawn!\n\n" +
+                "An diesem Programm\ngibt es absolut\nnichts auszusetzen!!!" +
+                "\n\nGaligrü,\n" + myName, frame.getLocation()) {
+            public void buttonClicked() {
+                network.send("%SERVER FEEDBACK " + textArea.getText());
+                dispose();
+            }
         });
 
         frame.addKeyListener(new KeyListener() {
@@ -287,29 +297,10 @@ public class Gui extends Window {
     private boolean movePiece(Move move) {
 
         if (chess.userMove(move, userPlaysColor, userPlaysBothColors)) {
-
-            if (network.isActive()) network.send("%MOVE " + move.getInformation());
-
-            if (chess.currentStatus.getStatus() != Status.UNDECIDED) {
-                showPopup(chess.currentStatus.getStatusNotice());
-                if (network.isActive()) {
-                    if (chess.currentStatus.getStatus().getResult().equals("draw")) {
-                        network.send("%SERVER SCORING 0.5");
-                    } else if (userPlaysColor == WHITE) {
-                        if (chess.currentStatus.getStatus().getResult().equals("white wins"))
-                            network.send("%SERVER SCORING 1.0");
-                        else
-                            network.send("%SERVER SCORING 0.0");
-                    } else {
-                        if (chess.currentStatus.getStatus().getResult().equals("black wins"))
-                            network.send("%SERVER SCORING 1.0");
-                        else
-                            network.send("%SERVER SCORING 0.0");
-                    }
-                }
-            }
+            if (network.isActive())
+                network.send("%MOVE " + move.getInformation());
+            showAndTransmitScoring();
             return true;
-
         } else {
             return false;
         }
@@ -416,9 +407,26 @@ public class Gui extends Window {
         }
     }
 
-
-    public void resetMoveString() {
-        moveString = "";
+    private void showAndTransmitScoring() {
+        if (chess.currentStatus.getStatus() != Status.UNDECIDED) {
+            showPopup(chess.currentStatus.getStatusNotice());
+            if (network.isConnected() && (userPlaysColor == WHITE)) { // only one player transmits scoring to server
+                if (chess.currentStatus.getStatus().getResult().equals("draw")) {
+                    network.send("%SERVER SCORING 0.5");
+                } else if (userPlaysColor == WHITE) {
+                    if (chess.currentStatus.getStatus().getResult().equals("white wins"))
+                        network.send("%SERVER SCORING 1.0");
+                    else
+                        network.send("%SERVER SCORING 0.0");
+                } else {
+                    if (chess.currentStatus.getStatus().getResult().equals("black wins"))
+                        network.send("%SERVER SCORING 1.0");
+                    else
+                        network.send("%SERVER SCORING 0.0");
+                }
+                System.out.println("TRANSMITTED SCORING");
+            }
+        }
     }
 
     class ChatDialog extends JDialog {
@@ -577,22 +585,7 @@ public class Gui extends Window {
                                     refreshFrameContent(-1);
                             }
 
-                            if (chess.currentStatus.getStatus() != Status.UNDECIDED) {
-                                showPopup(chess.currentStatus.getStatusNotice());
-                                if (chess.currentStatus.getStatus().getResult().equals("draw")) {
-                                    network.send("%SERVER SCORING 0.5");
-                                } else if (userPlaysColor == WHITE) {
-                                    if (chess.currentStatus.getStatus().getResult().equals("white wins"))
-                                        network.send("%SERVER SCORING 1.0");
-                                    else
-                                        network.send("%SERVER SCORING 0.0");
-                                } else {
-                                    if (chess.currentStatus.getStatus().getResult().equals("black wins"))
-                                        network.send("%SERVER SCORING 1.0");
-                                    else
-                                        network.send("%SERVER SCORING 0.0");
-                                }
-                            }
+                            showAndTransmitScoring();
 
                             break;
                         case "%FEN":
@@ -600,6 +593,9 @@ public class Gui extends Window {
                             labelCapturedBlackPieces.setText("");
                             labelCapturedWhitePieces.setText("");
                             refreshFrameContent(-1);
+                            break;
+                        case "%ELO":
+                            new DialogText(message.replace("%ELO ", ""), frame.getLocation());
                             break;
                         case "%NOTE":
                             showPopup(message.replace("%NOTE ", ""));

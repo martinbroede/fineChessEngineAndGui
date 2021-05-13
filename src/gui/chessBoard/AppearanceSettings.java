@@ -13,10 +13,17 @@ public class AppearanceSettings {
             createFontFromFile("DejaVuSans", 1),
             new Font("Times", Font.PLAIN, 1),
             new Font("MS Gothic", Font.PLAIN, 1)};
-
+    int fontNumber;
+    Font font;
     private int sizeFactor;
     private int offset;
     private int margin;
+
+    public AppearanceSettings(ColorScheme ColorScheme) {
+
+        this.ColorScheme = ColorScheme;
+        this.font = FONT_ROULETTE[0];
+    }
 
     public gui.ColorScheme getColorScheme() {
         return ColorScheme;
@@ -36,15 +43,6 @@ public class AppearanceSettings {
 
     public Font getFont() {
         return font;
-    }
-
-    int fontNumber;
-    Font font;
-
-    public AppearanceSettings(ColorScheme ColorScheme) {
-
-        this.ColorScheme = ColorScheme;
-        this.font = FONT_ROULETTE[0];
     }
 
     public void adjustSize(int size_factor) {

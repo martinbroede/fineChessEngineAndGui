@@ -2,7 +2,9 @@ package chessNetwork;
 
 import gui.dialogs.DialogMessage;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.*;
 import java.util.LinkedList;
 import java.util.Scanner;

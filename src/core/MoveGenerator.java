@@ -26,8 +26,8 @@ public class MoveGenerator extends PiecePatterns {
 
     class Piece {
 
-        private byte position;
         private final char type;
+        private byte position;
         private PiecePattern pattern;
 
         public Piece(byte pos, char type) {
