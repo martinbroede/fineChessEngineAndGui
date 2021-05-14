@@ -434,7 +434,7 @@ public class Window {
 
         board.setActive(false); //makes board diffuse
 
-        chatOutput.append("\n"+ message);
+        chatOutput.append(message + "\n");
         messageMenu.add(messageItem);
         messageMenu.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
         messageMenu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor() * 2);

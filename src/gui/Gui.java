@@ -1,6 +1,7 @@
 package gui;
 
 import chessNetwork.Network;
+import chessNetwork.Password;
 import chessNetwork.Subscriber;
 import chessNetwork.TestReachability;
 import core.*;
@@ -177,7 +178,6 @@ public class Gui extends Window {
             userPlaysBothColors = false;
             board.setWhitePlayerSouth();
             refreshFrameContent(-1);
-            showPopup("Du spielst WEISS");
         });
 
         itemAssignOpponentWhite.addActionListener(e -> {
@@ -186,7 +186,6 @@ public class Gui extends Window {
             userPlaysBothColors = false;
             board.setWhitePlayerNorth();
             refreshFrameContent(-1);
-            showPopup("Du spielst SCHWARZ");
         });
 
         itemResign.addActionListener(e -> {
@@ -525,9 +524,10 @@ public class Gui extends Window {
                 changeTitle("-OFFLINE-", "-ONLINE-");
                 network.getInstance().getReceiver().register(this);
                 subscribed = true;
-                network.send("chessIsFun");
+                String authentication = Password.toSHA256String("chessIsFun");
+                network.send(authentication);
                 network.send("%NAME " + myName);
-                network.send(myPassword);
+                network.send(myPassword); //is a SHA256 Hex-String, so you can not draw conclusions from the real pw
             } else if (network.isConnected()) {
                 react();
             }
@@ -559,13 +559,13 @@ public class Gui extends Window {
                                     userPlaysColor = BLACK;
                                     board.setWhitePlayerNorth();
                                     userPlaysBothColors = false;
-                                    showPopup("Du spielst SCHWARZ");
+                                    refreshFrameContent(-1);
                                     break;
                                 case Move.OPPONENT_WHITE:
                                     userPlaysColor = WHITE;
                                     board.setWhitePlayerSouth();
                                     userPlaysBothColors = false;
-                                    showPopup("Du spielst WEISS");
+                                    refreshFrameContent(-1);
                                     break;
                                 case Move.OFFER_DRAW:
                                     chess.userMove(nextMove, userPlaysColor, true);

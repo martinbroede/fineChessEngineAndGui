@@ -5,11 +5,11 @@ import java.util.Stack;
 
 public class History extends Stack<State> {
 
-    private final Byte FIRST = 1;
-    private final Byte SECOND = 2;
-    private final Byte THIRD = 3;
-    HashMap<Long, Byte> repetitionCountMap = new HashMap<>();
-    Byte repetitionCount;
+    private final Object FIRST = new Object();
+    private final Object SECOND = new Object();
+    private final Object THIRD = new Object();
+    HashMap<Long, Object> repetitionCountMap = new HashMap<>();
+    Object repetitionCount;
 
     public short getLastMoveCoordinates() {
 
