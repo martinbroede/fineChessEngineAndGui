@@ -228,10 +228,6 @@ public class Gui extends Window {
 
         itemConnectToServer.addActionListener(e -> {
             network.disconnect();
-            try { // todo...
-                sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
             network.createClient("chessnet.dynv6.net/55555");
         });
 

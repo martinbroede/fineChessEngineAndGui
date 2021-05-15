@@ -44,8 +44,7 @@ public abstract class NetInstance implements Runnable {
     public void abort() {
 
         try {
-            receiver.unsubscribe();
-            System.out.println("unsubscribe"); //todo...
+            receiver.notify_subscriber();
             receiver.interrupt();
         } catch (NullPointerException ignored) {
         }

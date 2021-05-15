@@ -82,8 +82,8 @@ public class Network {
     public void disconnect() {
 
         if (instance != null) {
+            send("%SERVER DISCONNECT");
             instance.abort();
-            System.out.println("ABORT..."); // todo ...
         }
         instance = null;
         active = false;

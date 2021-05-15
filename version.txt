@@ -1,4 +1,4 @@
-#V0.54b (beta)
+#V0.54c (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -36,3 +36,4 @@ V0.52b  bugfix move transmission
 V0.53   add password request
 V0.54   add Elo-rating
 V0.54b  improve server authentication
+V0.54c  bugfix disconnect client socket

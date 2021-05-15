@@ -27,8 +27,7 @@ public class Receiver extends Thread {
         System.out.println(getName() + " GOT SUBSCRIBER");
     }
 
-    public void unsubscribe() {
-        scanner.close();
+    public void notify_subscriber() {
         if (subscriber != null) subscriber.unsubscribe();
         System.out.println(getName() + " SIGNED OFF SUBSCRIBER");
     }
@@ -50,5 +49,6 @@ public class Receiver extends Thread {
             if (subscriber != null) subscriber.react();
         }
         initiator.abort();
+        scanner.close();
     }
 }
