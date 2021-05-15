@@ -1,4 +1,4 @@
-#V0.54d (beta)
+#V0.54e (beta)
 
 V0.01   initial commit
 V0.1    add castling
