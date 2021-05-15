@@ -68,6 +68,7 @@ public class Board extends JPanel {
         Dimension newDimension = new Dimension(s.getMargin(), s.getMargin());
         setSize(newDimension);
         setPreferredSize(newDimension);
+        paint(getGraphics());
     }
 
     public void refreshChessBoard(boolean showMoves, boolean showLastMove, Moves moves, short move) {
@@ -117,7 +118,7 @@ public class Board extends JPanel {
     @Override
     public void paint(Graphics g) {
 
-        if (bufferGraphics != null) {
+        if (bufferGraphics != null && img != null) {
             Painter.paintBoard(bufferGraphics, s);
             Painter.paintPieces(bufferGraphics, s, boardArray, boardOrientation);
             Painter.paintFilesAndRanks(bufferGraphics, s, boardOrientation);
@@ -125,11 +126,12 @@ public class Board extends JPanel {
 
         if (!active) {
             // paint board diffuse
-            if (bufferGraphics != null) {
+            if (bufferGraphics != null && img != null) {
                 bufferGraphics.setColor(s.getColorScheme().LIGHT_COLOR);
                 bufferGraphics.fillRect(0, 0, s.getMargin(), s.getMargin());
             }
-            if (img != null) g.drawImage(img, 0, 0, this);
         }
+
+        if(img != null && g != null) g.drawImage(img, 0, 0, this);
     }
 }

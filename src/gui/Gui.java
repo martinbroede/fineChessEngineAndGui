@@ -42,7 +42,6 @@ public class Gui extends Window {
     public Gui(Chess chessGame) {
 
         super(chessGame);
-        frame.addWindowListener(new WindowListener());
         chatDialog = new ChatDialog();
         this.chess = chessGame;
         moveString = "";
@@ -62,7 +61,9 @@ public class Gui extends Window {
             network.createClient("chessnet.dynv6.net/55555");
         }
 
-        /* #################################### add action listeners ################################################ */
+        /* ######################################### add listeners ################################################## */
+
+        frame.addWindowListener(new WindowListener());
 
         itemNewGame.addActionListener(e -> {
             System.out.println("NEW GAME");
@@ -129,7 +130,7 @@ public class Gui extends Window {
         });
 
         itemUndo.addActionListener(e -> {
-            if (network.isActive()) {
+            if (network.isConnected()) {
                 System.out.println("UNDO NOT ALLOWED WHEN NETWORK IS ACTIVE");
             } else {
                 chess.userUndo();
@@ -138,7 +139,7 @@ public class Gui extends Window {
         });
 
         itemRedo.addActionListener(e -> {
-            if (network.isActive()) {
+            if (network.isConnected()) {
                 System.out.println("REDO NOT ALLOWED WHEN NETWORK IS ACTIVE");
             } else {
                 chess.userRedo();
@@ -292,7 +293,7 @@ public class Gui extends Window {
     private boolean movePiece(Move move) {
 
         if (chess.userMove(move, userPlaysColor, userPlaysBothColors)) {
-            if (network.isActive())
+            if (network.isConnected())
                 network.send("%MOVE " + move.getInformation());
             showAndTransmitScoring();
             return true;

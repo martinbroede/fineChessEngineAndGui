@@ -13,7 +13,6 @@ import static java.lang.Thread.sleep;
 public class Network {
 
     private NetInstance instance;
-    private boolean active;
 
     public static String resolveIpFromString(String input) {
 
@@ -40,7 +39,6 @@ public class Network {
 
         if (instance != null) disconnect();
         instance = new ChessServer(configIpAndPort);
-        active = true;
 
         Thread server = new Thread(instance);
         server.start();
@@ -56,7 +54,6 @@ public class Network {
             }
         }
         instance = new ChessClient(configIpAndPort);
-        active = true;
 
         Thread client = new Thread(instance);
         client.start();
@@ -66,10 +63,6 @@ public class Network {
 
         if (instance != null) return instance.isConnectionSuccessful();
         return false;
-    }
-
-    public boolean isActive() {
-        return active;
     }
 
     public void send(String message) {
@@ -86,7 +79,6 @@ public class Network {
             instance.abort();
         }
         instance = null;
-        active = false;
         System.out.println("DISCONNECTED SERVER/CLIENT\nTHREADS INTERRUPTED");
     }
 
