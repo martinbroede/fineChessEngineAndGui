@@ -100,8 +100,8 @@ public class MoveGenerator extends PiecePatterns {
             capturedPieces.print();
         }
 
-        public String getCapturedPiecesAsSymbols() {
-            return capturedPieces.getCapturedPiecesAsSymbols();
+        public String getCapturedPiecesString() {
+            return capturedPieces.getCapturedPiecesString();
         }
 
         /**
@@ -184,12 +184,12 @@ public class MoveGenerator extends PiecePatterns {
                 System.out.println("TOTAL: " + this.size() + " CAPTURED PIECES");
             }
 
-            protected String getCapturedPiecesAsSymbols() {
+            protected String getCapturedPiecesString() {
 
                 StringBuilder outp = new StringBuilder();
 
                 for (Piece p : this) {
-                    outp.append(Util.parseSymbol(p.type));
+                    outp.append(p.type);
                 }
 
                 return outp.toString();

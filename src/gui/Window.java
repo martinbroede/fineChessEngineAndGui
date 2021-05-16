@@ -2,6 +2,7 @@ package gui;
 
 import chessNetwork.Password;
 import core.Chess;
+import core.Util;
 import fineChessUpdater.Downloader;
 import gui.chessBoard.AppearanceSettings;
 import gui.chessBoard.Board;
@@ -14,6 +15,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import java.util.Scanner;
 
 import static fileHandling.ReadWrite.getStringFromFile;
@@ -185,10 +187,10 @@ public class Window {
         itemCastlingQueenside = new JMenuItem("lang");
 
         Font promotionItemFont = new Font("Times", Font.PLAIN, 100);
-        itemPromotionQueen = new JMenuItem("\u2655 \u265B");
-        itemPromotionKnight = new JMenuItem("\u2658 \u265E");
-        itemPromotionBishop = new JMenuItem("\u2657 \u265D");
-        itemPromotionRook = new JMenuItem("\u2656 \u265C");
+        itemPromotionQueen = new JMenuItem();
+        itemPromotionKnight = new JMenuItem();
+        itemPromotionBishop = new JMenuItem();
+        itemPromotionRook = new JMenuItem();
 
         itemAccept = new JMenuItem(" ja ");
         itemDecline = new JMenuItem("nein");
@@ -392,6 +394,32 @@ public class Window {
         frame.setTitle(frame.getTitle().replace(toReplace, replacement));
     }
 
+    public String replaceChessCharacters(String in) {
+        char[] temp = in.toCharArray();
+        HashMap<Character, Character> charConverter;
+
+        switch (appearanceSettings.getFont().getFontName()) {
+            case "Chess Regular":
+                charConverter = Util.SYMBOL_SARAH;
+                break;
+            case "DejaVu Sans":
+            case "Dialog.plain": // "Times"
+            case "MS Gothic":
+                charConverter = Util.SYMBOLS;
+                break;
+            default:
+                charConverter = Util.SYMBOL_SCF;
+        }
+
+        for (int i = 0; i < temp.length; i++) {
+            Character replacement = charConverter.get(temp[i]);
+            if (replacement != null)
+                temp[i] = charConverter.get(temp[i]);
+        }
+
+        return new String(temp);
+    }
+
     void checkVersion() {
         if (!VERSION.equals("VERSION UNKNOWN")) {
             String URL = "https://raw.githubusercontent.com/martinbro2021/fineChessEngineAndGui/main/version.txt";
@@ -461,6 +489,11 @@ public class Window {
         itemPromotionKnight.setFont(appearanceSettings.getFont());
         itemPromotionQueen.setFont(appearanceSettings.getFont());
         itemPromotionRook.setFont(appearanceSettings.getFont());
+
+        itemPromotionBishop.setText(replaceChessCharacters("B b"));
+        itemPromotionKnight.setText(replaceChessCharacters("N n"));
+        itemPromotionQueen.setText(replaceChessCharacters("Q q"));
+        itemPromotionRook.setText(replaceChessCharacters("R r"));
 
         menu.show(board, board.getWidth(), 0);
     }

@@ -260,6 +260,16 @@ public class Gui extends Window {
             @Override
             public void keyReleased(KeyEvent e) {
                 feature = false;
+                if (e.getKeyCode() == KeyEvent.VK_MINUS) {
+                    System.out.println("UNDO MOVE");
+                    chess.userUndo();
+                    refreshFrameContent(-1);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_PLUS) {
+                    System.out.println("REDO MOVE");
+                    chess.userRedo();
+                    refreshFrameContent(-1);
+                }
             }
         });
 
@@ -294,6 +304,7 @@ public class Gui extends Window {
         if (chess.userMove(move, userPlaysColor, userPlaysBothColors)) {
             if (network.isConnected())
                 network.send("%MOVE " + move.getInformation());
+            network.send("%BOARD " + chess.boardToString());
             showAndTransmitScoring();
             return true;
         } else {
@@ -376,8 +387,12 @@ public class Gui extends Window {
         board.refreshChessBoard(true, true,
                 chess.getUserLegalMoves(userPlaysColor, userPlaysBothColors).getMovesFrom((byte) pos), lastMove);
 
-        labelCapturedWhitePieces.setText(" " + chess.whitePieces.getCapturedPiecesAsSymbols() + " ");
-        labelCapturedBlackPieces.setText(" " + chess.blackPieces.getCapturedPiecesAsSymbols() + " ");
+        String whiteCaptPieces = chess.whitePieces.getCapturedPiecesString();
+        String blackCaptPieces = chess.blackPieces.getCapturedPiecesString();
+        whiteCaptPieces = replaceChessCharacters(whiteCaptPieces);
+        blackCaptPieces = replaceChessCharacters(blackCaptPieces);
+        labelCapturedWhitePieces.setText(whiteCaptPieces);
+        labelCapturedBlackPieces.setText(blackCaptPieces);
 
         {
             String space = "<br><br><br><br><br><br><br><br>";
@@ -625,6 +640,9 @@ public class Gui extends Window {
                             break;
                         case "%CHAT": // display chat in chat window
                             chatDialog.addChatMessage(myFriendsName + ": " + message.replace("%CHAT ", "") + "\n");
+                            break;
+                        case "%BOARD":
+                            System.out.println(message.replace("%BOARD ", ""));
                             break;
                         case "%": // show information in chat window
                             chatDialog.addChatMessage(message.replace("% ", "") + "\n");

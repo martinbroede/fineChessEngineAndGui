@@ -7,7 +7,7 @@ import java.util.InputMismatchException;
 /** includes all parsing functions */
 public final class Util {
 
-    private static final HashMap<Character, Character> SYMBOLS = new HashMap<Character, Character>() {{
+    public static final HashMap<Character, Character> SYMBOLS = new HashMap<Character, Character>() {{
         put('K', '\u2654');
         put('Q', '\u2655');
         put('R', '\u2656');
@@ -23,7 +23,7 @@ public final class Util {
         put(' ', ' ');
     }};
 
-    private static final HashMap<Character, Character> SYMBOL_SCF = new HashMap<Character, Character>() {{
+    public static final HashMap<Character, Character> SYMBOL_SCF = new HashMap<Character, Character>() {{
         put('K', 'k');
         put('Q', 'q');
         put('R', 'r');
@@ -39,7 +39,7 @@ public final class Util {
         put(' ', ' ');
     }};
 
-    private static final HashMap<Character, Character> SYMBOL_SARAH = new HashMap<Character, Character>() {{
+    public static final HashMap<Character, Character> SYMBOL_SARAH = new HashMap<Character, Character>() {{
         put('K', 'E');
         put('Q', 'F');
         put('R', 'D');

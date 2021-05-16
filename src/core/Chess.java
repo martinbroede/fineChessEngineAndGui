@@ -65,8 +65,9 @@ public class Chess extends MoveGenerator {
         hashGenerator.reset();
         currentStatus.reset();
 
+        char[] initArray = init.toCharArray();
         for (byte pos = 0; pos <= 63; pos++) {
-            char c = (char) (init.getBytes()[pos]);
+            char c = initArray[pos];
             board[pos] = c;
             if (is_white_piece(c)) {
                 Piece piece = new Piece(pos, c);
@@ -146,6 +147,7 @@ public class Chess extends MoveGenerator {
                     }
                 }
             }
+
         } catch (Exception ex) {
             ex.printStackTrace();
             System.err.println("FEN NOT ACCEPTED");
@@ -164,6 +166,10 @@ public class Chess extends MoveGenerator {
         blackTime = 0;
 
         score = calculateScore();
+    }
+
+    public String boardToString() {
+        return new String(board).replace(' ', '_');
     }
 
     public short getScore() {
