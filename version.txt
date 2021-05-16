@@ -1,4 +1,4 @@
-#V0.54e (beta)
+#V0.55  (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -12,7 +12,7 @@ V0.42   implement sendingQueue
 V0.43   add user resign
 V0.44   add menu items
 V0.45   bugfix board rotation -> square colors correct now
-        add updater for Windows10
+        add updater for windows10
 V0.46   represent en passant captures correctly - not playable yet though!
 V0.47   add en passant capture - FINALLY!
         add "draw offer" + "accept draw" for online games
@@ -34,8 +34,9 @@ V0.52B  refactor chessNetwork classes
         improve exception handling
 V0.52b  bugfix move transmission
 V0.53   add password request
-V0.54   add Elo-rating
+V0.54   add elo-rating
 V0.54b  improve server authentication
 V0.54c  bugfix disconnect client socket
 V0.54d  simplify network class
 V0.54e  bugfix null pointer exc in painter class
+V0.55   add sarahs' design (Chess-Regular.ttf)

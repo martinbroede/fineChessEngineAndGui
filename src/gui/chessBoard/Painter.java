@@ -68,36 +68,54 @@ public class Painter {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        int x_factor, y_factor, x_offset, y_offset;
+        x_factor = settings.getSizeFactor();
+        y_factor = settings.getSizeFactor();
+        switch (settings.font.getFontName()) {
+            case "DejaVu Sans":
+                x_offset = +settings.getOffset() + settings.getSizeFactor() / 2
+                        - settings.font.getSize() / 2 + settings.getOffset() / 5;
+                y_offset = settings.getOffset() + settings.getSizeFactor() / 2
+                        + settings.font.getSize() * 2 / 5 + settings.getOffset() / 5;
+                break;
+            case "Chess Regular":
+                x_offset = settings.getOffset() + settings.getSizeFactor() * 29 / 100; // ++:=> ### --:<=
+                y_offset = settings.getOffset() + settings.getSizeFactor() * 90 / 100; // --:up ### ++:down
+                break;
+            case "Dialog.plain": // "Times"
+            case "MS Gothic":
+            default:
+                x_offset = settings.getOffset() + settings.getSizeFactor() / 2
+                        - settings.font.getSize() / 2;
+                y_offset = settings.getOffset() + settings.getSizeFactor() / 2
+                        + settings.font.getSize() * 2 / 5;
+                break;
+        }
+
         g2.setFont(settings.font);
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 int pos = boardOrientation ? x + (7 - y) * 8 : (7 - x) + y * 8;
 
                 g2.setColor(settings.getColorScheme().PIECE_COLOR);
+                String piece;
                 switch (settings.font.getFontName()) {
+
                     case "DejaVu Sans":
-                        g2.drawString("" + Util.parseSymbol(board[pos]),
-                                x * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
-                                        - settings.font.getSize() / 2 + settings.getOffset() / 5,
-                                y * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
-                                        + settings.font.getSize() * 2 / 5 + settings.getOffset() / 5);
-                        break;
                     case "Dialog.plain": // "Times"
                     case "MS Gothic":
-                        g2.drawString("" + Util.parseSymbol(board[pos]),
-                                x * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
-                                        - settings.font.getSize() / 2,
-                                y * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
-                                        + settings.font.getSize() * 2 / 5);
+                        piece = Character.toString(Util.parseSymbol(board[pos]));
+                        break;
+                    case "Chess Regular":
+                        piece = Character.toString(Util.parseSarahFont(board[pos]));
                         break;
                     default:
-                        g2.drawString("" + Util.parseSymbolFromChessFont(board[pos]),
-                                x * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
-                                        - settings.font.getSize() / 2,
-                                y * settings.getSizeFactor() + settings.getOffset() + settings.getSizeFactor() / 2
-                                        + settings.font.getSize() * 2 / 5);
+                        piece = Character.toString(Util.parseSymbolFromChessFont(board[pos]));
                         break;
                 }
+                g2.drawString(piece,
+                        x * x_factor + x_offset,
+                        y * y_factor + y_offset);
             }
         }
     }
@@ -109,28 +127,31 @@ public class Painter {
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
         Font rankFont = new Font("Times", Font.PLAIN, settings.getSizeFactor() * 15 / 100);
+        int factor = settings.getSizeFactor();
+        int offset = factor * 78 / 100;
         g2.setFont(rankFont);
         for (int x = 0; x < 8; x++) {
             int file = boardOrientation ? x : 7 - x;
             int y = 7;
             g2.setColor(settings.getColorScheme().PIECE_COLOR);
             g2.drawString("" + Util.getFileName(file),
-                    x * settings.getSizeFactor() + settings.getOffset()
-                            + settings.getSizeFactor() / 2 - settings.font.getSize() / 2,
-                    y * settings.getSizeFactor() + settings.getOffset()
-                            + settings.getSizeFactor() / 2 + settings.font.getSize() * 45 / 100);
+                    x * factor + settings.getOffset()
+                            + factor / 2 - offset / 2,
+                    y * factor + settings.getOffset()
+                            + factor / 2 + offset * 45 / 100);
         }
         for (int y = 1; y < 8; y++) {
             int rank = boardOrientation ? y : 7 - y;
             g2.setColor(settings.getColorScheme().PIECE_COLOR);
             g2.drawString("" + Util.getRankName(rank),
-                    settings.getOffset() + settings.getSizeFactor() / 2 - settings.font.getSize() / 2,
-                    (7 - y) * settings.getSizeFactor() + settings.getOffset()
-                            + settings.getSizeFactor() / 2 + settings.font.getSize() * 45 / 100);
+                    settings.getOffset() + factor / 2 - offset / 2,
+                    (7 - y) * factor + settings.getOffset()
+                            + factor / 2 + offset * 45 / 100);
         }
     }
 
-    protected static void paintHighlights(Graphics g, AppearanceSettings settings, Moves squares, boolean boardOrientation) {
+    protected static void paintHighlights(Graphics g, AppearanceSettings settings, Moves squares,
+                                          boolean boardOrientation) {
 
         if (squares == null) return;
         Color highlight = settings.getColorScheme().HIGHLIGHT_1_COLOR;
@@ -148,7 +169,8 @@ public class Painter {
         }
     }
 
-    protected static void paintLastMove(Graphics g, AppearanceSettings settings, short moveInformation, boolean boardOrientation) {
+    protected static void paintLastMove(Graphics g, AppearanceSettings settings, short moveInformation,
+                                        boolean boardOrientation) {
 
         if (moveInformation < 0) return;
         int diminish = settings.getSizeFactor() / 13;

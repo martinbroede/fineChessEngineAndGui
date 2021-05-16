@@ -10,7 +10,7 @@ abstract class PiecePattern {
     /**
      * Get pseudo legal moves.
      *
-     * @param from Position of piece
+     * @param from piece position
      * @return Moves
      */
     abstract Moves getMoves(byte from, byte enPassantRights);
@@ -18,7 +18,7 @@ abstract class PiecePattern {
     /**
      * Update squares the piece is threatening.
      *
-     * @param from    Position of piece
+     * @param from    piece position
      * @param threats byte[] threats. E.g. if the piece threatens H8, the array threats at 63==H8 will increase.
      */
     abstract void updateThreats(byte from, byte[] threats);
@@ -27,10 +27,10 @@ abstract class PiecePattern {
      * Get legal moves of king
      * To be overwritten by king's pattern
      *
-     * @param from              Position of piece
-     * @param threats           threats of other color
-     * @param KingSideCastling  right of Castling
-     * @param QueenSideCastling right of Castling
+     * @param from              piece position
+     * @param threats           threats
+     * @param KingSideCastling  right of castling
+     * @param QueenSideCastling right of castling
      * @return Moves
      */
     public Moves getKingMoves(byte from, byte[] threats, boolean KingSideCastling, boolean QueenSideCastling) {

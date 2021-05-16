@@ -16,7 +16,7 @@ public class StaticSetting {
         String[] args = generalSettings.split("\n");
         for (String arg : args) {
             if (arg.startsWith(settingName)) {
-                return arg.replaceAll(settingName + " ", "");
+                return arg.replace(settingName + " ", "");
             }
         }
         return "";
@@ -34,7 +34,7 @@ public class StaticSetting {
             }
             int index1 = generalSettings.indexOf('\n', index0);
             String sub = generalSettings.substring(index0, index1);
-            generalSettings = generalSettings.replaceAll(sub, newSetting);
+            generalSettings = generalSettings.replace(sub, newSetting);
         }
     }
 

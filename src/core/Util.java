@@ -39,7 +39,27 @@ public final class Util {
         put(' ', ' ');
     }};
 
+    private static final HashMap<Character, Character> SYMBOL_SARAH = new HashMap<Character, Character>() {{
+        put('K', 'E');
+        put('Q', 'F');
+        put('R', 'D');
+        put('B', 'C');
+        put('N', 'B');
+        put('P', 'A');
+        put('k', 'M');
+        put('q', 'N');
+        put('r', 'L');
+        put('b', 'K');
+        put('n', 'J');
+        put('p', 'I');
+        put(' ', ' ');
+    }};
+
     private Util() {
+    }
+
+    public static char parseSarahFont(char c) {
+        return SYMBOL_SARAH.get(c);
     }
 
     public static char parseSymbol(char c) {

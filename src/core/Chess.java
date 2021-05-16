@@ -118,15 +118,15 @@ public class Chess extends MoveGenerator {
             moveCounter = (short) (Short.parseShort(args[5]) - 1);
 
             String init = args[0]
-                    .replaceAll("8", "        ")
-                    .replaceAll("7", "       ")
-                    .replaceAll("6", "      ")
-                    .replaceAll("5", "     ")
-                    .replaceAll("4", "    ")
-                    .replaceAll("3", "   ")
-                    .replaceAll("2", "  ")
-                    .replaceAll("1", " ")
-                    .replaceAll("/", "");
+                    .replace("8", "        ")
+                    .replace("7", "       ")
+                    .replace("6", "      ")
+                    .replace("5", "     ")
+                    .replace("4", "    ")
+                    .replace("3", "   ")
+                    .replace("2", "  ")
+                    .replace("1", " ")
+                    .replace("/", "");
 
             for (byte x = 0; x <= 7; x++) {
                 for (byte y = 0; y <= 7; y++) {
@@ -295,7 +295,7 @@ public class Chess extends MoveGenerator {
         return true;
     }
 
-    /** move piece without check. Computer won't try  illegal moves ;) */
+    /** move piece without check. Computer won't try illegal moves ;) */
     private void movePiece(Move move) {
 
         byte from = move.getFrom();
@@ -658,20 +658,6 @@ public class Chess extends MoveGenerator {
                 combinedThreats[i] = Byte.MAX_VALUE;
         }
         return combinedThreats;
-
-        /*String outp = "";
-        String line = "|";
-        for (int i = 0; i <= 63; i++) {
-            if (combinedThreats[i] >= 0) line += " ";
-            line += combinedThreats[i] + "|";
-            if (i % 8 == 7) {
-                outp = line + " " + (i / 8 + 1) + "\n" + outp;
-                line = "|";
-            }
-        }
-        outp = outp + "| A. B. C. D. E. F. G. H|" + "\n";
-
-        System.out.println(outp);*/
     }
 
     public boolean pieceAtSquare(int i, boolean color) {

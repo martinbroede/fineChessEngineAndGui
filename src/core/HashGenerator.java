@@ -5,9 +5,9 @@ import java.util.Random;
 
 public class HashGenerator {
 
-    private final char[] pieceTypes = {'B', 'b', 'K', 'k', 'N', 'n', 'P', 'p', 'Q', 'q', 'R', 'r'};
-    private final int castlingOptions = 16;
-    private final int enPassantOptions = 8;
+    static final char[] PIECE_TYPES = {'B', 'b', 'K', 'k', 'N', 'n', 'P', 'p', 'Q', 'q', 'R', 'r'};
+    static final int CASTLING_OPTIONS = 16;
+    static final int EN_PASSANT_OPTIONS = 8;
     private final long turnValue;
     private final long[] castlingValues;
     private final long[] enPassantValues;
@@ -21,7 +21,7 @@ public class HashGenerator {
         Random rnd = new Random(0);
 
 
-        for (char type : pieceTypes) {
+        for (char type : PIECE_TYPES) {
             long[] values = new long[64];
             for (int i = 0; i <= 63; i++) {
                 values[i] = rnd.nextLong();
@@ -30,18 +30,18 @@ public class HashGenerator {
         }
 
         {
-            long[] values = new long[enPassantOptions];
+            long[] values = new long[EN_PASSANT_OPTIONS];
 
-            for (int i = 0; i < enPassantOptions; i++) {
+            for (int i = 0; i < EN_PASSANT_OPTIONS; i++) {
                 values[i] = rnd.nextLong();
             }
             enPassantValues = values;
         }
 
         {
-            long[] values = new long[castlingOptions];
+            long[] values = new long[CASTLING_OPTIONS];
 
-            for (int i = 0; i < castlingOptions; i++) {
+            for (int i = 0; i < CASTLING_OPTIONS; i++) {
                 values[i] = rnd.nextLong();
             }
             castlingValues = values;

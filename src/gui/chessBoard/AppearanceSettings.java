@@ -11,6 +11,7 @@ public class AppearanceSettings {
     private final ColorScheme ColorScheme;
     private final Font[] FONT_ROULETTE = {
             createFontFromFile("DejaVuSans", 1),
+            createFontFromFile("Chess-Regular", 1),
             new Font("Times", Font.PLAIN, 1),
             new Font("MS Gothic", Font.PLAIN, 1)};
     int fontNumber;
@@ -48,7 +49,10 @@ public class AppearanceSettings {
     public void adjustSize(int size_factor) {
 
         this.sizeFactor = size_factor;
-        this.font = font.deriveFont((float) size_factor * 78 / 100);
+        if (font.getFontName().equals("Chess Regular")) {
+            this.font = font.deriveFont((float) size_factor * 128 / 100);
+        } else
+            this.font = font.deriveFont((float) size_factor * 78 / 100);
         this.offset = size_factor / 4;
         this.margin = size_factor * 8 + 2 * this.offset;
     }

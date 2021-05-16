@@ -22,7 +22,6 @@ import java.util.TimerTask;
 
 import static fileHandling.StaticSetting.rememberSetting;
 import static fileHandling.StaticSetting.storeSettingsInFile;
-import static java.lang.Thread.sleep;
 
 public class Gui extends Window {
 
@@ -586,13 +585,21 @@ public class Gui extends Window {
 
                             break;
                         case "%FEN":
-                            chess.startFromFEN(message.replaceAll("%FEN ", ""));
+                            chess.startFromFEN(message.replace("%FEN ", ""));
                             labelCapturedBlackPieces.setText("");
                             labelCapturedWhitePieces.setText("");
                             refreshFrameContent(-1);
                             break;
                         case "%ELO":
-                            new DialogText(message.replace("%ELO ", ""), frame.getLocation());
+                            String elo = message.replace("%ELO ", "");
+                            elo += "\nAktualisieren >Hier klicken<";
+                            new DialogText(elo, frame.getLocation()) {
+                                @Override
+                                public void onMouseClick() {
+                                    network.send("%SERVER ELO");
+                                    dispose();
+                                }
+                            };
                             break;
                         case "%NOTE":
                             showPopup(message.replace("%NOTE ", ""));
@@ -607,7 +614,7 @@ public class Gui extends Window {
                             network.send("%ECHO");
                             break;
                         case "%VERSION": // received friend's version
-                            chatOutput.append(message.replaceAll("%VERSION ", "") + "\n");
+                            chatOutput.append(message.replace("%VERSION ", "") + "\n");
                             break;
                         case "%NAME?": // received name request
                             network.send("%NAME " + myName);
@@ -617,10 +624,10 @@ public class Gui extends Window {
                             System.out.println("YOU PLAY AGAINST " + myFriendsName);
                             break;
                         case "%CHAT": // display chat in chat window
-                            chatDialog.addChatMessage(myFriendsName + ": " + message.replaceAll("%CHAT ", "") + "\n");
+                            chatDialog.addChatMessage(myFriendsName + ": " + message.replace("%CHAT ", "") + "\n");
                             break;
                         case "%": // show information in chat window
-                            chatDialog.addChatMessage(message.replaceAll("%", "") + "\n");
+                            chatDialog.addChatMessage(message.replace("% ", "") + "\n");
                             System.out.println(message);
                             break;
                         default:

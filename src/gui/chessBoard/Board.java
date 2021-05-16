@@ -132,6 +132,6 @@ public class Board extends JPanel {
             }
         }
 
-        if(img != null && g != null) g.drawImage(img, 0, 0, this);
+        if (img != null && g != null) g.drawImage(img, 0, 0, this);
     }
 }

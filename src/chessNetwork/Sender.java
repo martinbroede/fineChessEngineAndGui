@@ -24,13 +24,13 @@ class Sender {
 
         if (!message.equals("")) {
             message = message + NetInstance.MESSAGE_DELIMITER;
-            String asciiMsg = message.replaceAll("ü", "ue")
-                    .replaceAll("ö", "oe")
-                    .replaceAll("ä", "ae")
-                    .replaceAll("Ü", "UE")
-                    .replaceAll("Ö", "OE")
-                    .replaceAll("Ä", "AE")
-                    .replaceAll("ß", "ss");
+            String asciiMsg = message.replace("ü", "ue")
+                    .replace("ö", "oe")
+                    .replace("ä", "ae")
+                    .replace("Ü", "UE")
+                    .replace("Ö", "OE")
+                    .replace("Ä", "AE")
+                    .replace("ß", "ss");
             asciiMsg = asciiMsg.replaceAll("[^\\x00-\\x7F]", "");
             sendingQueue.add(asciiMsg);
         }
