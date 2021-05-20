@@ -13,13 +13,12 @@ import static core.Util.isWhitePiece;
 
 public class Chess {
 
+    public final ChessClock clock;
     public final char[] board = PiecePatterns.getBoard();
     public final History history;
     public final Stack<Move> undoneMovesHistory;
     public final GameStatus gameStatus;
     private final HashGenerator hashGenerator;
-    public long whiteTime;
-    public long blackTime;
     public PieceCollectionWhite whitePieces;
     public PieceCollectionBlack blackPieces;
     public Castling castling;
@@ -27,8 +26,6 @@ public class Chess {
     protected short moveCounter;
     protected short lastCaptureOrPawnMove;
     protected byte enPassantPawn; // the file number ('A' = 0) in which the pawn to be captured is located
-    private long whiteTimeStamp;
-    private long blackTimeStamp;
     private short score;
 
     {
@@ -39,6 +36,7 @@ public class Chess {
         undoneMovesHistory = new Stack<>();
         hashGenerator = new HashGenerator();
         gameStatus = new GameStatus();
+        clock = new ChessClock(this);
     }
 
     public Chess() {
@@ -58,12 +56,8 @@ public class Chess {
         hashGenerator.hashCastling(Castling.ALL_RIGHTS);
         castling.setRights((byte) castlingRights);
         hashGenerator.hashCastling((byte) castlingRights);
-
-        blackTimeStamp = System.currentTimeMillis();
-        whiteTime = 0;
-        blackTime = 0;
-
         score = calculateScore();
+        clock.initialize();
     }
 
     public void newGame(String init) {
@@ -101,12 +95,8 @@ public class Chess {
         System.out.println("BOARD HASHED " + hashGenerator.getHashCode());
         whitePieces.updateThreats();
         blackPieces.updateThreats();
-
-        blackTimeStamp = System.currentTimeMillis();
-        whiteTime = 0;
-        blackTime = 0;
-
         score = calculateScore();
+        clock.initialize();
     }
 
     public void startFromFEN(String FEN) {
@@ -175,12 +165,8 @@ public class Chess {
         System.out.println("BOARD HASHED " + hashGenerator.getHashCode());
         whitePieces.updateThreats();
         blackPieces.updateThreats();
-
-        blackTimeStamp = System.currentTimeMillis();
-        whiteTime = 0;
-        blackTime = 0;
-
         score = calculateScore();
+        clock.initialize();
     }
 
     public String boardToString() {
@@ -308,17 +294,9 @@ public class Chess {
             System.out.print("USER MOVE" + move + " IS ILLEGAL (CHESS) / ");
             return false;
         }
-
-        if (whiteToMove) {
-            whiteTimeStamp = System.currentTimeMillis();
-            whiteTime += whiteTimeStamp - blackTimeStamp;
-        } else {
-            blackTimeStamp = System.currentTimeMillis();
-            blackTime += blackTimeStamp - whiteTimeStamp;
-        }
-
         gameStatus.setDrawOffered(false);
         undoneMovesHistory.clear();
+        clock.update();
         movePiece(move);
         getUserLegalMoves(); //to make sure a checkmate will be detected
         return true;

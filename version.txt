@@ -1,4 +1,4 @@
-#V0.55c (beta)
+#V0.55d (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -32,7 +32,7 @@ V0.52   store preferred ip
 V0.52B  refactor chessNetwork classes
         unify threads
         improve exception handling
-V0.52b  bugfix move transmission
+V0.52b  bugfix move transmission<
 V0.53   add password request
 V0.54   add elo-rating
 V0.54b  improve server authentication
@@ -43,3 +43,4 @@ V0.55   add sarahs' design (Chess-Regular.ttf)
 V0.55b  bugfix display captured pieces
 V0.55c  enable redo/undo-view in online games
         refactor core. simplify inheritance. unify classes MoveGenerator and Chess
+V0.55d  add chess clock

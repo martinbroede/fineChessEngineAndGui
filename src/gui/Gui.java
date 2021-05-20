@@ -48,12 +48,18 @@ public class Gui extends Window {
         NetworkListener networkListener = new NetworkListener();
 
         Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 networkListener.networkQuery();
             }
         }, 0, 100);
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                refreshLabels();
+            }
+        }, 0, 1000);
 
         /* todo remove
         Scanner in = new Scanner(System.in);
@@ -376,7 +382,10 @@ public class Gui extends Window {
         short lastMove = chess.history.getLastMoveCoordinates();
         board.refreshChessBoard(true, true,
                 chess.getUserLegalMoves(userPlaysColor, userPlaysBothColors).getMovesFrom((byte) pos), lastMove);
+        refreshLabels();
+    }
 
+    private void refreshLabels() {
         String whiteCaptPieces = chess.whitePieces.getCapturedPiecesString();
         String blackCaptPieces = chess.blackPieces.getCapturedPiecesString();
         whiteCaptPieces = replaceChessCharacters(whiteCaptPieces);
@@ -384,27 +393,25 @@ public class Gui extends Window {
         labelCapturedWhitePieces.setText(whiteCaptPieces);
         labelCapturedBlackPieces.setText(blackCaptPieces);
 
-        {
-            String space = "<br><br><br><br><br><br><br><br>";
-            String textWest = "<html> &#160 &#x25a0" + space; //square and linefeed...
-            String textEast = "<html> &#160 &#160 &#x25a1" + space;
+        String space = "<br><br><br><br><br><br><br><br>";
+        String textWest = "<html> &#160 &#x25a0" + space; //square and linefeed...
+        String textEast = "<html> &#160 &#160 &#x25a1" + space;
 
-            int score = Math.round((float) (chess.getScore() / 100));
+        int score = Math.round((float) (chess.getScore() / 100));
 
-            if (score < 0)
-                textWest += " &#160 &#160 +" + Math.abs(score);
-            else if (score > 0)
-                textEast += " &#160 +" + Math.abs(score);
+        if (score < 0)
+            textWest += " &#160 &#160 +" + Math.abs(score);
+        else if (score > 0)
+            textEast += " &#160 +" + Math.abs(score);
 
-            textWest += space + " &#160 " + timeParser.format(new Date(chess.blackTime));
-            textEast += space + timeParser.format(new Date(chess.whiteTime)) + " &#160 ";
+        textWest += space + " &#160 " + timeParser.format(new Date(chess.clock.blackTime));
+        textEast += space + timeParser.format(new Date(chess.clock.whiteTime)) + " &#160 ";
 
-            textWest += "</html>";
-            textEast += "</html>";
+        textWest += "</html>";
+        textEast += "</html>";
 
-            labelPlaceHolderWest.setText(textWest);
-            labelPlaceHolderEast.setText(textEast);
-        }
+        labelPlaceHolderWest.setText(textWest);
+        labelPlaceHolderEast.setText(textEast);
     }
 
     private void showAndTransmitScoring() {
