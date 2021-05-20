@@ -15,7 +15,7 @@ public class CoreASCII {
         chess.newGame();
         Scanner scanner = new Scanner(System.in);
 
-        while (chess.currentStatus.getStatus() == Status.UNDECIDED) {
+        while (chess.gameStatus.getStatus() == Status.UNDECIDED) {
             chess.print();
             System.out.println("NEXT MOVE: _");
             String nextMoveInput = scanner.nextLine();
@@ -29,6 +29,6 @@ public class CoreASCII {
             }
         }
         scanner.close();
-        System.out.println(chess.currentStatus.getStatusNotice());
+        System.out.println(chess.gameStatus.getStatusNotice());
     }
 }

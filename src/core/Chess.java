@@ -2,16 +2,31 @@ package core;
 
 import gui.dialogs.DialogMessage;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.InputMismatchException;
 import java.util.Stack;
 
-public class Chess extends MoveGenerator {
+import static core.PiecePatterns.*;
+import static core.Util.isBlackPiece;
+import static core.Util.isWhitePiece;
 
+public class Chess {
+
+    public final char[] board = PiecePatterns.getBoard();
+    public final History history;
+    public final Stack<Move> undoneMovesHistory;
+    public final GameStatus gameStatus;
     private final HashGenerator hashGenerator;
-    public History history;
-    public Stack<Move> undoneMovesHistory;
-    public CurrentStatus currentStatus;
     public long whiteTime;
     public long blackTime;
+    public PieceCollectionWhite whitePieces;
+    public PieceCollectionBlack blackPieces;
+    public Castling castling;
+    protected boolean whiteToMove;
+    protected short moveCounter;
+    protected short lastCaptureOrPawnMove;
+    protected byte enPassantPawn; // the file number ('A' = 0) in which the pawn to be captured is located
     private long whiteTimeStamp;
     private long blackTimeStamp;
     private short score;
@@ -23,7 +38,7 @@ public class Chess extends MoveGenerator {
         history = new History();
         undoneMovesHistory = new Stack<>();
         hashGenerator = new HashGenerator();
-        currentStatus = new CurrentStatus();
+        gameStatus = new GameStatus();
     }
 
     public Chess() {
@@ -63,18 +78,18 @@ public class Chess extends MoveGenerator {
         history.clear();
         undoneMovesHistory.clear();
         hashGenerator.reset();
-        currentStatus.reset();
+        gameStatus.reset();
 
         char[] initArray = init.toCharArray();
         for (byte pos = 0; pos <= 63; pos++) {
             char c = initArray[pos];
             board[pos] = c;
-            if (is_white_piece(c)) {
+            if (isWhitePiece(c)) {
                 Piece piece = new Piece(pos, c);
                 whitePieces.add(piece);
                 if (c == 'K') whitePieces.setKing(piece);
             }
-            if (is_black_piece(c)) {
+            if (isBlackPiece(c)) {
                 Piece piece = new Piece(pos, c);
                 blackPieces.add(piece);
                 if (c == 'k') blackPieces.setKing(piece);
@@ -101,7 +116,7 @@ public class Chess extends MoveGenerator {
         history.clear();
         undoneMovesHistory.clear();
         hashGenerator.reset();
-        currentStatus.reset();
+        gameStatus.reset();
 
         try {
             String[] args = FEN.split(" ");
@@ -135,12 +150,12 @@ public class Chess extends MoveGenerator {
                     byte posBOARD = (byte) (63 - (x + y * 8));
                     char c = init.toCharArray()[posFEN];
                     board[posBOARD] = c;
-                    if (is_white_piece(c)) {
+                    if (isWhitePiece(c)) {
                         Piece piece = new Piece(posBOARD, c);
                         whitePieces.add(piece);
                         if (c == 'K') whitePieces.setKing(piece);
                     }
-                    if (is_black_piece(c)) {
+                    if (isBlackPiece(c)) {
                         Piece piece = new Piece(posBOARD, c);
                         blackPieces.add(piece);
                         if (c == 'k') blackPieces.setKing(piece);
@@ -174,6 +189,14 @@ public class Chess extends MoveGenerator {
 
     public short getScore() {
         return score;
+    }
+
+    public String getStatusNotice() {
+        return gameStatus.getStatusNotice();
+    }
+
+    public Status getStatus() {
+        return gameStatus.getStatus();
     }
 
     private short calculateScore() {
@@ -218,9 +241,9 @@ public class Chess extends MoveGenerator {
 
             if (pseudoMoves.size() == 0) {
                 if (blackPieces.getThreats()[whitePieces.king.getPosition()] > 0)
-                    currentStatus.setStatus(Status.WHITE_CHECKMATED);
+                    gameStatus.setStatus(Status.WHITE_CHECKMATED);
                 else
-                    currentStatus.setStatus(Status.DRAW_STALEMATE);
+                    gameStatus.setStatus(Status.DRAW_STALEMATE);
             }
 
         } else {
@@ -239,9 +262,9 @@ public class Chess extends MoveGenerator {
 
             if (pseudoMoves.size() == 0) {
                 if (whitePieces.getThreats()[blackPieces.king.getPosition()] > 0)
-                    currentStatus.setStatus(Status.BLACK_CHECKMATED);
+                    gameStatus.setStatus(Status.BLACK_CHECKMATED);
                 else
-                    currentStatus.setStatus(Status.DRAW_STALEMATE);
+                    gameStatus.setStatus(Status.DRAW_STALEMATE);
             }
 
         }
@@ -251,7 +274,7 @@ public class Chess extends MoveGenerator {
     /** check if legal, if so move piece */
     public boolean userMove(Move move, boolean userColor, boolean userPlaysBoth) {
 
-        if (currentStatus.getStatus() != Status.UNDECIDED) return false;
+        if (gameStatus.getStatus() != Status.UNDECIDED) return false;
 
         if (move.getInformation() < 0) {
 
@@ -259,25 +282,25 @@ public class Chess extends MoveGenerator {
 
                 case Move.RESIGN:
                     if (whiteToMove) {
-                        currentStatus.setStatus(Status.WHITE_RESIGNED);
+                        gameStatus.setStatus(Status.WHITE_RESIGNED);
                     } else {
-                        currentStatus.setStatus(Status.BLACK_RESIGNED);
+                        gameStatus.setStatus(Status.BLACK_RESIGNED);
                     }
                     return true;
 
                 case Move.OFFER_DRAW:
-                    currentStatus.setDrawOffered(true);
+                    gameStatus.setDrawOffered(true);
                     return true;
 
                 case Move.ACCEPT_DRAW:
-                    if (currentStatus.isDrawOffered()) {
-                        currentStatus.setStatus(Status.DRAW_ACCEPTED);
+                    if (gameStatus.isDrawOffered()) {
+                        gameStatus.setStatus(Status.DRAW_ACCEPTED);
                         return true;
                     }
                     return false; // nothing to accept if not offered
 
                 case Move.DECLINE_DRAW:
-                    currentStatus.setDrawOffered(false);
+                    gameStatus.setDrawOffered(false);
                     return true;
             }
 
@@ -294,7 +317,7 @@ public class Chess extends MoveGenerator {
             blackTime += blackTimeStamp - whiteTimeStamp;
         }
 
-        currentStatus.setDrawOffered(false);
+        gameStatus.setDrawOffered(false);
         undoneMovesHistory.clear();
         movePiece(move);
         getUserLegalMoves(); //to make sure a checkmate will be detected
@@ -379,25 +402,25 @@ public class Chess extends MoveGenerator {
                 } else if (move.getSpecial() == Move.PROMOTION_QUEEN) {
                     board[to] = 'Q';
                     typePromotedPiece = 'Q';
-                    movingPiece.setPattern(whiteQueenPattern);
-                    score -= PIECE_VALUES.get(whitePawnPattern);
-                    score += PIECE_VALUES.get(whiteQueenPattern);
+                    movingPiece.setPattern(WHITE_QUEEN);
+                    score -= PIECE_VALUES.get(WHITE_PAWN);
+                    score += PIECE_VALUES.get(WHITE_QUEEN);
                 } else if (move.getSpecial() == Move.PROMOTION_BISHOP) {
                     board[to] = 'B';
                     typePromotedPiece = 'B';
-                    movingPiece.setPattern(whiteBishopPattern);
-                    score -= PIECE_VALUES.get(whitePawnPattern);
-                    score += PIECE_VALUES.get(whiteBishopPattern);
+                    movingPiece.setPattern(WHITE_BISHOP);
+                    score -= PIECE_VALUES.get(WHITE_PAWN);
+                    score += PIECE_VALUES.get(WHITE_BISHOP);
                 } else if (move.getSpecial() == Move.PROMOTION_KNIGHT) {
                     board[to] = 'N';
                     typePromotedPiece = 'N';
-                    movingPiece.setPattern(whiteKnightPattern);
+                    movingPiece.setPattern(WHITE_KNIGHT);
                 } else if (move.getSpecial() == Move.PROMOTION_ROOK) {
                     board[to] = 'R';
                     typePromotedPiece = 'R';
-                    movingPiece.setPattern(whiteRookPattern);
-                    score -= PIECE_VALUES.get(whitePawnPattern);
-                    score += PIECE_VALUES.get(whiteRookPattern);
+                    movingPiece.setPattern(WHITE_ROOK);
+                    score -= PIECE_VALUES.get(WHITE_PAWN);
+                    score += PIECE_VALUES.get(WHITE_ROOK);
                 } else if (move.getSpecial() == Move.EN_PASSANT) {
                     board[to - 8] = ' ';
                     hashGenerator.hashPosition('p', (byte) (to - 8));
@@ -470,27 +493,27 @@ public class Chess extends MoveGenerator {
                 } else if (move.getSpecial() == Move.PROMOTION_QUEEN) {
                     board[to] = 'q';
                     typePromotedPiece = 'q';
-                    movingPiece.setPattern(blackQueenPattern);
-                    score -= PIECE_VALUES.get(blackPawnPattern);
-                    score += PIECE_VALUES.get(blackQueenPattern);
+                    movingPiece.setPattern(BLACK_QUEEN);
+                    score -= PIECE_VALUES.get(BLACK_PAWN);
+                    score += PIECE_VALUES.get(BLACK_QUEEN);
                 } else if (move.getSpecial() == Move.PROMOTION_BISHOP) {
                     board[to] = 'b';
                     typePromotedPiece = 'b';
-                    movingPiece.setPattern(blackBishopPattern);
-                    score -= PIECE_VALUES.get(blackPawnPattern);
-                    score += PIECE_VALUES.get(blackBishopPattern);
+                    movingPiece.setPattern(BLACK_BISHOP);
+                    score -= PIECE_VALUES.get(BLACK_PAWN);
+                    score += PIECE_VALUES.get(BLACK_BISHOP);
                 } else if (move.getSpecial() == Move.PROMOTION_KNIGHT) {
                     board[to] = 'n';
                     typePromotedPiece = 'n';
-                    movingPiece.setPattern(blackKnightPattern);
-                    score -= PIECE_VALUES.get(blackPawnPattern);
-                    score += PIECE_VALUES.get(blackKnightPattern);
+                    movingPiece.setPattern(BLACK_KNIGHT);
+                    score -= PIECE_VALUES.get(BLACK_PAWN);
+                    score += PIECE_VALUES.get(BLACK_KNIGHT);
                 } else if (move.getSpecial() == Move.PROMOTION_ROOK) {
                     board[to] = 'r';
                     typePromotedPiece = 'r';
-                    movingPiece.setPattern(blackRookPattern);
-                    score -= PIECE_VALUES.get(blackPawnPattern);
-                    score += PIECE_VALUES.get(blackRookPattern);
+                    movingPiece.setPattern(BLACK_ROOK);
+                    score -= PIECE_VALUES.get(BLACK_PAWN);
+                    score += PIECE_VALUES.get(BLACK_ROOK);
                 } else if (move.getSpecial() == Move.EN_PASSANT) {
                     board[to + 8] = ' ';
                     hashGenerator.hashPosition('P', (byte) (to + 8));
@@ -513,10 +536,10 @@ public class Chess extends MoveGenerator {
         hashGenerator.hashTurn(); // 2nd
 
         if (history.drawDueToRepetition(hashGenerator.getHashCode()))
-            currentStatus.setStatus(Status.DRAW_REPETITION);
+            gameStatus.setStatus(Status.DRAW_REPETITION);
 
         if (moveCounter - lastCaptureOrPawnMove >= Constants.MAX_MOVES)
-            currentStatus.setStatus(Status.DRAW_MOVES);
+            gameStatus.setStatus(Status.DRAW_MOVES);
 
         assert testHashGenerator();
     }
@@ -549,6 +572,14 @@ public class Chess extends MoveGenerator {
         movePiece(redo);
     }
 
+    public int userRedoAll() {
+        int size = undoneMovesHistory.size();
+        for (int i = 0; i <= size; i++) {
+            userRedo();
+        }
+        return size;
+    }
+
     /**
      * Revoke last move.
      *
@@ -557,7 +588,7 @@ public class Chess extends MoveGenerator {
     private short undo() {
 
         State state = history.pop();
-        currentStatus.setStatus(Status.UNDECIDED);
+        gameStatus.setStatus(Status.UNDECIDED);
         enPassantPawn = state.enPassant;
         byte from = Move.getFrom(state.moveInformation);
         byte to = Move.getTo(state.moveInformation);
@@ -587,7 +618,7 @@ public class Chess extends MoveGenerator {
                         (Move.getSpecial(state.moveInformation) == Move.PROMOTION_KNIGHT) ||
                         (Move.getSpecial(state.moveInformation) == Move.PROMOTION_BISHOP)) {
                     board[to] = 'p';
-                    movingPiece.setPattern(blackPawnPattern);
+                    movingPiece.setPattern(BLACK_PAWN);
                 } else if ((Move.getSpecial(state.moveInformation) == Move.EN_PASSANT)) {
                     board[to + 8] = 'P';
                     state.capture = ' ';
@@ -613,7 +644,7 @@ public class Chess extends MoveGenerator {
                         (Move.getSpecial(state.moveInformation) == Move.PROMOTION_KNIGHT) ||
                         (Move.getSpecial(state.moveInformation) == Move.PROMOTION_BISHOP)) {
                     board[to] = 'P';
-                    movingPiece.setPattern(whitePawnPattern);
+                    movingPiece.setPattern(WHITE_PAWN);
                 } else if ((Move.getSpecial(state.moveInformation) == Move.EN_PASSANT)) {
                     board[to - 8] = 'p';
                     state.capture = ' ';
@@ -668,8 +699,8 @@ public class Chess extends MoveGenerator {
 
     public boolean pieceAtSquare(int i, boolean color) {
 
-        if (color == Constants.WHITE) return is_white_piece(board[i]);
-        else return is_black_piece(board[i]);
+        if (color == Constants.WHITE) return isWhitePiece(board[i]);
+        else return isBlackPiece(board[i]);
     }
 
     public char[] getBoard() {
@@ -699,6 +730,60 @@ public class Chess extends MoveGenerator {
     public void print() {
         System.out.println(this.toString());
     }
+
+    public Moves getPseudoLegalMoves() {
+
+        if (whiteToMove) {
+            return whitePieces.getPseudoLegalMoves();
+        } else return blackPieces.getPseudoLegalMoves();
+    }
+
+    public class PieceCollectionWhite extends PieceCollection {
+
+        public PieceCollectionWhite() {
+
+            super();
+        }
+
+        public Moves getPseudoLegalMoves() {
+
+            Moves moves = new Moves();
+            for (Piece p : this) moves.addAll(p.getPseudoLegalMoves(enPassantPawn));
+            moves.addAll(king.getPseudoLegalKingMoves(blackPieces.getThreats(),
+                    castling.whiteKingSide(), castling.whiteQueenSide()));
+            return moves;
+        }
+
+        @Override
+        public void printThreats() {
+
+            System.out.println("\nWHITE THREATS: \n");
+            super.printThreats();
+        }
+    }
+
+    public class PieceCollectionBlack extends PieceCollection {
+
+        public PieceCollectionBlack() {
+            super();
+        }
+
+        public Moves getPseudoLegalMoves() {
+
+            Moves moves = new Moves();
+            for (Piece p : this) moves.addAll(p.getPseudoLegalMoves(enPassantPawn));
+            moves.addAll(king.getPseudoLegalKingMoves(whitePieces.getThreats(),
+                    castling.blackKingSide(), castling.blackQueenSide()));
+            return moves;
+        }
+
+        @Override
+        public void printThreats() {
+
+            System.out.println("\nBLACK THREATS: \n");
+            super.printThreats();
+        }
+    }
 }
 
 class State {
@@ -723,5 +808,194 @@ class State {
         this.enPassant = enPassant;
         this.castling = castling;
         this.score = score;
+    }
+}
+
+class GameStatus {
+
+    private Status status;
+    private boolean drawOffered;
+
+    public GameStatus() {
+        reset();
+    }
+
+    public boolean isDrawOffered() {
+        return drawOffered;
+    }
+
+    public void setDrawOffered(boolean drawOffered) {
+        this.drawOffered = drawOffered;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public void reset() {
+        status = Status.UNDECIDED;
+    }
+
+    public String getStatusNotice() {
+        return status.getNotice();
+    }
+}
+
+
+abstract class PieceCollection extends HashSet<Piece> {
+
+    private final Stack<Piece> capturedPieces;
+    private final byte[] threats;
+    protected Piece king;
+
+    public PieceCollection() {
+        threats = new byte[64];
+        capturedPieces = new Stack<>();
+    }
+
+    abstract public Moves getPseudoLegalMoves();
+
+    public void setKing(Piece king) {
+        this.king = king;
+    }
+
+    public byte[] getThreats() {
+        return threats;
+    }
+
+    public void print() {
+        for (Piece p : this) {
+            p.print();
+        }
+        System.out.println("TOTAL: " + this.size() + " ACTIVE PIECES");
+    }
+
+    public String getCapturedPiecesString() {
+
+        StringBuilder outp = new StringBuilder();
+        for (Piece p : capturedPieces) {
+            outp.append(p.type);
+        }
+        return outp.toString();
+    }
+
+    /**
+     * Change position of chess piece on position "from" to position "to". Return piece that changes position."
+     *
+     * @param from square the piece comes from
+     * @param to   square the piece shall move to
+     * @return piece that moves
+     */
+    public Piece changePosition(byte from, byte to) {
+        for (Piece p : this) { //todo hashMap with squares should be faster than a loop...
+            if (p.getPosition() == from) {
+                p.setPosition(to);
+                return p;
+            }
+        }
+        throw new InputMismatchException("NO PIECE AT " + Util.parse(from));
+    }
+
+    /**
+     * Remove piece located at given position
+     *
+     * @param pos Position of the piece to be removed
+     * @return value of the removed piece
+     */
+    public short removePiece(byte pos) {
+
+        Piece removePiece = null;
+        for (Piece p : this) {
+            if (p.getPosition() == pos) {
+                removePiece = p;
+                break;
+            }
+        }
+        this.remove(removePiece);
+        capturedPieces.add(removePiece);
+        assert removePiece != null;
+        return PiecePatterns.PIECE_VALUES.get(removePiece.getPattern());
+    }
+
+    public void activateLastCapturedPiece() {
+        this.add(capturedPieces.pop());
+    }
+
+    public void updateThreats() {
+
+        Arrays.fill(threats, (byte) 0);
+        for (Piece p : this) p.updateThreats(threats);
+    }
+
+    public void printThreats() {
+
+        StringBuilder outp = new StringBuilder();
+        StringBuilder line = new StringBuilder("|");
+        for (int i = 0; i <= 63; i++) {
+            line.append(threats[i]).append("|");
+            if (i % 8 == 7) {
+                outp.insert(0, line.toString() + (i / 8 + 1) + "\n");
+                line = new StringBuilder("|");
+            }
+        }
+        outp.append(".A.B.C.D.E.F.G.H.").append("\n");
+
+        System.out.println(outp);
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        capturedPieces.clear();
+    }
+}
+
+class Piece {
+
+    public final char type;
+    private byte position;
+    private PiecePattern pattern;
+
+    public Piece(byte pos, char type) {
+
+        this.position = pos;
+        this.type = type;
+        this.pattern = PiecePatterns.getPiecePattern(type);
+    }
+
+    public PiecePattern getPattern() {
+        return pattern;
+    }
+
+    public void setPattern(PiecePattern pattern) {
+        this.pattern = pattern;
+    }
+
+    public byte getPosition() {
+        return position;
+    }
+
+    public void setPosition(byte position) {
+        this.position = position;
+    }
+
+    public void updateThreats(byte[] threats) {
+        pattern.updateThreats(this.position, threats);
+    }
+
+    public Moves getPseudoLegalMoves(byte enPassantPawn) {
+        return pattern.getMoves(position, enPassantPawn);
+    }
+
+    public Moves getPseudoLegalKingMoves(byte[] threats, boolean kingSideCastling, boolean queenSideCastling) {
+        return pattern.getKingMoves(position, threats, kingSideCastling, queenSideCastling);
+    }
+
+    public void print() {
+        System.out.print(Util.parseSymbol(type) + " #" + Util.parse(position) + " | ");
     }
 }

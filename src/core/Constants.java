@@ -6,25 +6,25 @@ import java.util.InputMismatchException;
 
 public class Constants {
 
+    static public final boolean WHITE = true;
     static public final boolean BLACK = false;
-    static public final boolean WHITE = !BLACK;
     static public final int MAX_MOVES = 100; //to implement 50-moves-rule
-    final byte[][] WHITE_PAWN_CAPTURE_SQUARES;
-    final byte[][] WHITE_PAWN_EN_PASSANT_CAPTURE;
-    final byte[][] WHITE_PAWN_STRAIGHT_SQUARES;
-    final byte[][] BLACK_PAWN_CAPTURE_SQUARES;
-    final byte[][] BLACK_PAWN_EN_PASSANT_CAPTURE;
-    final byte[][] BLACK_PAWN_STRAIGHT_SQUARES;
-    final byte[][][] ROOK_SQUARES;
-    final byte[][][] BISHOP_SQUARES;
-    final byte[][] KNIGHT_SQUARES;
-    final byte[][][] QUEEN_SQUARES;
-    final byte[][] KING_SQUARES;
-    Square[] allSquares; // todo remove
+    static byte[][] WHITE_PAWN_CAPTURE_SQUARES;
+    static byte[][] WHITE_PAWN_EN_PASSANT_CAPTURE;
+    static byte[][] WHITE_PAWN_STRAIGHT_SQUARES;
+    static byte[][] BLACK_PAWN_CAPTURE_SQUARES;
+    static byte[][] BLACK_PAWN_EN_PASSANT_CAPTURE;
+    static byte[][] BLACK_PAWN_STRAIGHT_SQUARES;
+    static byte[][][] ROOK_SQUARES;
+    static byte[][][] BISHOP_SQUARES;
+    static byte[][] KNIGHT_SQUARES;
+    static byte[][][] QUEEN_SQUARES;
+    static byte[][] KING_SQUARES;
 
-    public Constants() {
+    private Constants() {
+    }
 
-        allSquares = Square.createAllSquares();
+    public static void precalculateMoves() {
 
         ROOK_SQUARES = new byte[4][64][];
         for (int i = 0; i <= 63; i++) {
@@ -269,7 +269,6 @@ public class Constants {
             outp[i] = pos;
             if (inRank('8', pos)) break;
         }
-
         return outp;
     }
 
@@ -423,9 +422,4 @@ public class Constants {
         }
         return inp >> 3 == (int) rank - (int) '1';
     }
-
-    public Square getSquare(byte pos) {
-        return allSquares[pos];
-    }
-
 }

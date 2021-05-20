@@ -1,6 +1,5 @@
 package core;
 
-
 import java.util.HashMap;
 import java.util.InputMismatchException;
 
@@ -120,5 +119,34 @@ public final class Util {
 
     public static char getRankName(int i) {
         return (char) ((int) '1' + i);
+    }
+
+    //shortcut for 'lower case' (black pieces)
+    public static boolean isBlackOccupied(char c) {
+        return (byte) c >= 97;
+    }
+
+    //shortcut for 'upper case' (white pieces)
+    public static boolean isWhiteOccupied(char c) {
+        return (byte) c >= 65 && (byte) c <= 90;
+    }
+
+    // ' ' : not occupied
+    public static boolean isNotOccupied(char c) {
+        return c == ' ';
+    }
+
+    // ' ' : not occupied
+    public static boolean isOccupied(char c) {
+        return c != ' ';
+    }
+
+    // redundant but improves readability
+    public static boolean isBlackPiece(char c) {
+        return (byte) c >= 97;
+    }
+
+    public static boolean isWhitePiece(char c) {
+        return (byte) c >= 65 && (byte) c <= 90;
     }
 }

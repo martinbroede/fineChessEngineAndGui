@@ -1,4 +1,4 @@
-#V0.55b (beta)
+#V0.55c (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -41,3 +41,5 @@ V0.54d  simplify network class
 V0.54e  bugfix null pointer exc in painter class
 V0.55   add sarahs' design (Chess-Regular.ttf)
 V0.55b  bugfix display captured pieces
+V0.55c  enable redo/undo-view in online games
+        refactor core. simplify inheritance. unify classes MoveGenerator and Chess

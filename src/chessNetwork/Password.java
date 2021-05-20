@@ -5,7 +5,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Password {
+
     public static String toSHA256String(String input) {
+
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");
@@ -21,9 +23,9 @@ public class Password {
 
     /* found on
     https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
-    thanks to maybeWeCouldStealAVan :)
-     */
+    thanks to maybeWeCouldStealAVan :) */
     private static String bytesToHex(byte[] bytes) {
+
         char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {

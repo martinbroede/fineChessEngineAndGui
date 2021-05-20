@@ -1,8 +1,8 @@
 package core;
 
 import java.util.InputMismatchException;
+import java.util.LinkedList;
 
-@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 public class Move {
 
     public static final short KING_SIDE_CASTLING =/*    */0b0001000000000000; // readability

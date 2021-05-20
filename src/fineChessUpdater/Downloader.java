@@ -36,8 +36,7 @@ public class Downloader {
         } finally {
             try {
                 sleep(1000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
+            } catch (InterruptedException ignored) {
             }
             System.out.println("DOWNLOADER GOODBYE");
         }

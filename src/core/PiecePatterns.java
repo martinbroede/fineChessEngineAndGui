@@ -3,172 +3,128 @@ package core;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 
+import static core.Util.*;
+
+/**
+ * Provides all the moves a piece is allowed to make.
+ * Moves are pseudo legal, i.e. the king could be left in check.
+ */
+abstract class PiecePattern {
+
+    /**
+     * Get pseudo legal moves.
+     *
+     * @param from piece position
+     * @return Moves
+     */
+    abstract Moves getMoves(byte from, byte enPassantRights);
+
+    /**
+     * Update squares the piece is threatening.
+     *
+     * @param from    piece position
+     * @param threats byte[] threats. E.g. if the piece threatens H8, the array threats at 63==H8 will increase.
+     */
+    abstract void updateThreats(byte from, byte[] threats);
+
+    /**
+     * Get legal moves of king
+     * To be overwritten by king's pattern
+     *
+     * @param from              piece position
+     * @param threats           threats
+     * @param KingSideCastling  right of castling
+     * @param QueenSideCastling right of castling
+     * @return Moves
+     */
+    public Moves getKingMoves(byte from, byte[] threats, boolean KingSideCastling, boolean QueenSideCastling) {
+        System.err.println("PIECE IS NOT KING. CAN NOT RETURN KingMoves");
+        return new Moves();
+    }
+}
+
 public class PiecePatterns {
 
-    final char[] board;
-    final WhitePawnPattern whitePawnPattern;
-    final WhiteKnightPattern whiteKnightPattern;
-    final WhiteRookPattern whiteRookPattern;
-    final WhiteBishopPattern whiteBishopPattern;
-    final WhiteQueenPattern whiteQueenPattern;
-    final WhiteKingPattern whiteKingPattern;
-    final BlackPawnPattern blackPawnPattern;
-    final BlackKnightPattern blackKnightPattern;
-    final BlackRookPattern blackRookPattern;
-    final BlackBishopPattern blackBishopPattern;
-    final BlackQueenPattern blackQueenPattern;
-    final BlackKingPattern blackKingPattern;
-    final HashMap<PiecePattern, Short> PIECE_VALUES;
-    Constants constants;
-
-
-    public PiecePatterns() {
-
-        constants = new Constants(); //precalculate moves
-        board = new char[64];
-
-        whitePawnPattern = new WhitePawnPattern();
-        blackPawnPattern = new BlackPawnPattern();
-        whiteKnightPattern = new WhiteKnightPattern();
-        blackKnightPattern = new BlackKnightPattern();
-        whiteRookPattern = new WhiteRookPattern();
-        blackRookPattern = new BlackRookPattern();
-        whiteBishopPattern = new WhiteBishopPattern();
-        blackBishopPattern = new BlackBishopPattern();
-        whiteQueenPattern = new WhiteQueenPattern();
-        blackQueenPattern = new BlackQueenPattern();
-        whiteKingPattern = new WhiteKingPattern();
-        blackKingPattern = new BlackKingPattern();
-
-        PIECE_VALUES = new HashMap<PiecePattern, Short>() {{
-
-        /*
-        910*9 + 530*2 + 330*2 + 320*2 = 10550 = MAX from Pieces.
+    final static PiecePattern WHITE_PAWN = new WhitePawnPattern();
+    final static PiecePattern BLACK_PAWN = new BlackPawnPattern();
+    final static PiecePattern WHITE_KNIGHT = new WhiteKnightPattern();
+    final static PiecePattern BLACK_KNIGHT = new BlackKnightPattern();
+    final static PiecePattern WHITE_ROOK = new WhiteRookPattern();
+    final static PiecePattern BLACK_ROOK = new BlackRookPattern();
+    final static PiecePattern WHITE_BISHOP = new WhiteBishopPattern();
+    final static PiecePattern BLACK_BISHOP = new BlackBishopPattern();
+    final static PiecePattern WHITE_QUEEN = new WhiteQueenPattern();
+    final static PiecePattern BLACK_QUEEN = new BlackQueenPattern();
+    final static PiecePattern WHITE_KING = new WhiteKingPattern();
+    final static PiecePattern BLACK_KING = new BlackKingPattern();
+    final static HashMap<PiecePattern, Short> PIECE_VALUES = new HashMap<PiecePattern, Short>() {{
+        /*      910*9 + 530*2 + 330*2 + 320*2 = 10550 = MAX from Pieces.
         => MAX_TOTAL = PIECE_VALUES + KING VALUE = 21101 / Short.MAX_VALUE is 32767 > 21101
-        PIECE_VALUES seem to be reasonable...?
-         */
-            put(whiteKingPattern, (short) 10551);
-            put(whiteQueenPattern, (short) 910);
-            put(whiteRookPattern, (short) 530);
-            put(whiteBishopPattern, (short) 330);
-            put(whiteKnightPattern, (short) 320);
-            put(whitePawnPattern, (short) 100);
-            put(blackKingPattern, (short) (-10551));
-            put(blackQueenPattern, (short) (-910));
-            put(blackRookPattern, (short) (-530));
-            put(blackBishopPattern, (short) (-330));
-            put(blackKnightPattern, (short) (-320));
-            put(blackPawnPattern, (short) (-100));
-        }};
+        PIECE_VALUES seem to be reasonable...?      */
+        put(WHITE_KING, (short) 10551);
+        put(WHITE_QUEEN, (short) 910);
+        put(WHITE_ROOK, (short) 530);
+        put(WHITE_BISHOP, (short) 330);
+        put(WHITE_KNIGHT, (short) 320);
+        put(WHITE_PAWN, (short) 100);
+        put(BLACK_KING, (short) (-10551));
+        put(BLACK_QUEEN, (short) (-910));
+        put(BLACK_ROOK, (short) (-530));
+        put(BLACK_BISHOP, (short) (-330));
+        put(BLACK_KNIGHT, (short) (-320));
+        put(BLACK_PAWN, (short) (-100));
+    }};
+    private static final char[] board = new char[64];
 
-        System.out.println("CHESS PIECES INITIALIZED");
+    static {
+        Constants.precalculateMoves();
     }
 
-    public PiecePattern getWhitePiecePattern(char c) {
-
-        switch (c) {
-            case 'P':
-                return whitePawnPattern;
-            case 'N':
-                return whiteKnightPattern;
-            case 'R':
-                return whiteRookPattern;
-            case 'B':
-                return whiteBishopPattern;
-            case 'K':
-                return whiteKingPattern;
-            case 'Q':
-                return whiteQueenPattern;
-        }
-        throw new InputMismatchException(c + " IS NOT IMPLEMENTED IN WHITE PIECE PATTERNS");
+    private PiecePatterns() {
     }
 
-    public PiecePattern getBlackPiecePattern(char c) {
+    public static char[] getBoard() {
+        return board;
+    }
+
+    public static PiecePattern getPiecePattern(char c) {
 
         switch (c) {
             case 'p':
-                return blackPawnPattern;
+                return BLACK_PAWN;
             case 'n':
-                return blackKnightPattern;
+                return BLACK_KNIGHT;
             case 'r':
-                return blackRookPattern;
+                return BLACK_ROOK;
             case 'b':
-                return blackBishopPattern;
+                return BLACK_BISHOP;
             case 'k':
-                return blackKingPattern;
+                return BLACK_KING;
             case 'q':
-                return blackQueenPattern;
-        }
-        throw new InputMismatchException(c + " IS NOT IMPLEMENTED IN BLACK PIECE PATTERNS");
-    }
-
-    public PiecePattern getPiecePattern(char c) {
-
-        switch (c) {
-            case 'p':
-                return blackPawnPattern;
-            case 'n':
-                return blackKnightPattern;
-            case 'r':
-                return blackRookPattern;
-            case 'b':
-                return blackBishopPattern;
-            case 'k':
-                return blackKingPattern;
-            case 'q':
-                return blackQueenPattern;
+                return BLACK_QUEEN;
             case 'P':
-                return whitePawnPattern;
+                return WHITE_PAWN;
             case 'N':
-                return whiteKnightPattern;
+                return WHITE_KNIGHT;
             case 'R':
-                return whiteRookPattern;
+                return WHITE_ROOK;
             case 'B':
-                return whiteBishopPattern;
+                return WHITE_BISHOP;
             case 'K':
-                return whiteKingPattern;
+                return WHITE_KING;
             case 'Q':
-                return whiteQueenPattern;
+                return WHITE_QUEEN;
         }
         throw new InputMismatchException(c + " IS NOT IMPLEMENTED");
     }
 
-    //shortcut for 'lower case' (black pieces)
-    private boolean is_black_occupied(char c) {
-        return (byte) c >= 97;
-    }
-
-    //shortcut for 'upper case' (white pieces)
-    private boolean is_white_occupied(char c) {
-        return (byte) c >= 65 && (byte) c <= 90;
-    }
-
-    // ' ' : not occupied
-    private boolean is_not_occupied(char c) {
-        return c == ' ';
-    }
-
-    // ' ' : not occupied
-    private boolean is_occupied(char c) {
-        return c != ' ';
-    }
-
-    /* redundant but improves readability */
-    public boolean is_black_piece(char c) {
-        return (byte) c >= 97;
-    }
-
-    public boolean is_white_piece(char c) {
-        return (byte) c >= 65 && (byte) c <= 90;
-    }
-
-    class WhitePawnPattern extends PiecePattern {
+    static class WhitePawnPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte to : constants.WHITE_PAWN_STRAIGHT_SQUARES[from]) {
+            for (byte to : Constants.WHITE_PAWN_STRAIGHT_SQUARES[from]) {
                 if (board[to] != ' ') break;
                 if (to / 8 == 7) {// if getFile(to) == 7 : PROMOTION MOVE
                     legalMoves.add(new Move(from, to, Move.PROMOTION_QUEEN));
@@ -178,8 +134,8 @@ public class PiecePatterns {
                 } else legalMoves.add(new Move(from, to)); // REGULAR MOVE
             }
 
-            for (byte to : constants.WHITE_PAWN_CAPTURE_SQUARES[from]) {
-                if (is_black_occupied(board[to])) {
+            for (byte to : Constants.WHITE_PAWN_CAPTURE_SQUARES[from]) {
+                if (isBlackOccupied(board[to])) {
                     if (to / 8 == 7) {// if getFile(to) == 7 : PROMOTION MOVE
                         legalMoves.add(new Move(from, to, Move.PROMOTION_QUEEN));
                         legalMoves.add(new Move(from, to, Move.PROMOTION_KNIGHT));
@@ -191,7 +147,7 @@ public class PiecePatterns {
 
             if (enPassantRights >= 0) {
 
-                byte to = constants.WHITE_PAWN_EN_PASSANT_CAPTURE[enPassantRights][from];
+                byte to = Constants.WHITE_PAWN_EN_PASSANT_CAPTURE[enPassantRights][from];
                 if (to >= 0) {
                     legalMoves.add(new Move(from, to, Move.EN_PASSANT));
                 }
@@ -202,19 +158,19 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte to : constants.WHITE_PAWN_CAPTURE_SQUARES[from]) {
+            for (byte to : Constants.WHITE_PAWN_CAPTURE_SQUARES[from]) {
                 threats[to]++;
             }
         }
     }
 
-    class BlackPawnPattern extends PiecePattern {
+    static class BlackPawnPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte to : constants.BLACK_PAWN_STRAIGHT_SQUARES[from]) {
+            for (byte to : Constants.BLACK_PAWN_STRAIGHT_SQUARES[from]) {
                 if (board[to] != ' ') break;
                 if (to / 8 == 0) {// if getFile(to) == 0 : PROMOTION MOVE
                     legalMoves.add(new Move(from, to, Move.PROMOTION_QUEEN));
@@ -224,8 +180,8 @@ public class PiecePatterns {
                 } else legalMoves.add(new Move(from, to)); // REGULAR MOVE
             }
 
-            for (byte to : constants.BLACK_PAWN_CAPTURE_SQUARES[from]) {
-                if (is_white_occupied(board[to])) {
+            for (byte to : Constants.BLACK_PAWN_CAPTURE_SQUARES[from]) {
+                if (isWhiteOccupied(board[to])) {
                     if (to / 8 == 0) {// if getFile(to) == 0 : PROMOTION MOVE
                         legalMoves.add(new Move(from, to, Move.PROMOTION_QUEEN));
                         legalMoves.add(new Move(from, to, Move.PROMOTION_KNIGHT));
@@ -237,7 +193,7 @@ public class PiecePatterns {
 
             if (enPassantRights >= 0) {
 
-                byte to = constants.BLACK_PAWN_EN_PASSANT_CAPTURE[enPassantRights][from];
+                byte to = Constants.BLACK_PAWN_EN_PASSANT_CAPTURE[enPassantRights][from];
                 if (to >= 0) {
                     legalMoves.add(new Move(from, to, Move.EN_PASSANT));
                 }
@@ -248,20 +204,20 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte to : constants.BLACK_PAWN_CAPTURE_SQUARES[from]) {
+            for (byte to : Constants.BLACK_PAWN_CAPTURE_SQUARES[from]) {
                 threats[to]++;
             }
         }
     }
 
-    class WhiteKnightPattern extends PiecePattern {
+    static class WhiteKnightPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte to : constants.KNIGHT_SQUARES[from]) {
-                if (!is_white_occupied(board[to])) {
+            for (byte to : Constants.KNIGHT_SQUARES[from]) {
+                if (!isWhiteOccupied(board[to])) {
                     legalMoves.add(new Move(from, to));
                 }
             }
@@ -270,20 +226,20 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte to : constants.KNIGHT_SQUARES[from]) {
+            for (byte to : Constants.KNIGHT_SQUARES[from]) {
                 threats[to]++;
             }
         }
     }
 
-    class BlackKnightPattern extends PiecePattern {
+    static class BlackKnightPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte to : constants.KNIGHT_SQUARES[from]) {
-                if (!is_black_occupied(board[to])) {
+            for (byte to : Constants.KNIGHT_SQUARES[from]) {
+                if (!isBlackOccupied(board[to])) {
                     legalMoves.add(new Move(from, to));
                 }
             }
@@ -292,25 +248,25 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte to : constants.KNIGHT_SQUARES[from]) {
+            for (byte to : Constants.KNIGHT_SQUARES[from]) {
                 threats[to]++;
             }
         }
     }
 
-    class WhiteRookPattern extends PiecePattern {
+    static class WhiteRookPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte[][] line : constants.ROOK_SQUARES) {
+            for (byte[][] line : Constants.ROOK_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_black_occupied(board[to])) {
+                    if (isBlackOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                     } else break;
                 }
@@ -320,13 +276,13 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte[][] line : constants.ROOK_SQUARES) {
+            for (byte[][] line : Constants.ROOK_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_occupied(board[to])) {
+                    if (isOccupied(board[to])) {
                         threats[to]++;
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         threats[to]++;
                     }
                 }
@@ -334,19 +290,19 @@ public class PiecePatterns {
         }
     }
 
-    class BlackRookPattern extends PiecePattern {
+    static class BlackRookPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte[][] line : constants.ROOK_SQUARES) {
+            for (byte[][] line : Constants.ROOK_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_white_occupied(board[to])) {
+                    if (isWhiteOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                     } else break;
                 }
@@ -356,13 +312,13 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte[][] line : constants.ROOK_SQUARES) {
+            for (byte[][] line : Constants.ROOK_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_occupied(board[to])) {
+                    if (isOccupied(board[to])) {
                         threats[to]++;
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         threats[to]++;
                     }
                 }
@@ -370,19 +326,19 @@ public class PiecePatterns {
         }
     }
 
-    public class WhiteBishopPattern extends PiecePattern {
+    public static class WhiteBishopPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte[][] line : constants.BISHOP_SQUARES) {
+            for (byte[][] line : Constants.BISHOP_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_black_occupied(board[to])) {
+                    if (isBlackOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                     } else break;
                 }
@@ -392,13 +348,13 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte[][] line : constants.BISHOP_SQUARES) {
+            for (byte[][] line : Constants.BISHOP_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_occupied(board[to])) {
+                    if (isOccupied(board[to])) {
                         threats[to]++;
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         threats[to]++;
                     }
                 }
@@ -406,19 +362,19 @@ public class PiecePatterns {
         }
     }
 
-    public class BlackBishopPattern extends PiecePattern {
+    public static class BlackBishopPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte[][] line : constants.BISHOP_SQUARES) {
+            for (byte[][] line : Constants.BISHOP_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_white_occupied(board[to])) {
+                    if (isWhiteOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                     } else break;
                 }
@@ -428,13 +384,13 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte[][] line : constants.BISHOP_SQUARES) {
+            for (byte[][] line : Constants.BISHOP_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_occupied(board[to])) {
+                    if (isOccupied(board[to])) {
                         threats[to]++;
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         threats[to]++;
                     }
                 }
@@ -442,20 +398,20 @@ public class PiecePatterns {
         }
     }
 
-    public class WhiteQueenPattern extends PiecePattern {
+    public static class WhiteQueenPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte[][] line : constants.QUEEN_SQUARES) {
+            for (byte[][] line : Constants.QUEEN_SQUARES) {
 
                 for (byte to : line[from]) {
-                    if (is_black_occupied(board[to])) {
+                    if (isBlackOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                     } else break;
                 }
@@ -465,13 +421,13 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte[][] line : constants.QUEEN_SQUARES) {
+            for (byte[][] line : Constants.QUEEN_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_occupied(board[to])) {
+                    if (isOccupied(board[to])) {
                         threats[to]++;
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         threats[to]++;
                     }
                 }
@@ -479,19 +435,19 @@ public class PiecePatterns {
         }
     }
 
-    public class BlackQueenPattern extends PiecePattern {
+    public static class BlackQueenPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
 
             Moves legalMoves = new Moves();
 
-            for (byte[][] line : constants.QUEEN_SQUARES) {
+            for (byte[][] line : Constants.QUEEN_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_white_occupied(board[to])) {
+                    if (isWhiteOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                     } else break;
                 }
@@ -501,13 +457,13 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte[][] line : constants.QUEEN_SQUARES) {
+            for (byte[][] line : Constants.QUEEN_SQUARES) {
                 for (byte to : line[from]) {
-                    if (is_occupied(board[to])) {
+                    if (isOccupied(board[to])) {
                         threats[to]++;
                         break;
                     }
-                    if (is_not_occupied(board[to])) {
+                    if (isNotOccupied(board[to])) {
                         threats[to]++;
                     }
                 }
@@ -515,7 +471,7 @@ public class PiecePatterns {
         }
     }
 
-    public class WhiteKingPattern extends PiecePattern {
+    public static class WhiteKingPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
             return new Moves(); //todo optimize...
@@ -525,9 +481,9 @@ public class PiecePatterns {
 
             Moves legalMoves = new Moves();
 
-            for (byte to : constants.KING_SQUARES[from]) {
+            for (byte to : Constants.KING_SQUARES[from]) {
                 if (threats[to] == 0) {
-                    if (!is_white_occupied(board[to])) {
+                    if (!isWhiteOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                     }
                 }
@@ -554,13 +510,13 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte to : constants.KING_SQUARES[from]) {
+            for (byte to : Constants.KING_SQUARES[from]) {
                 threats[to]++;
             }
         }
     }
 
-    public class BlackKingPattern extends PiecePattern {
+    public static class BlackKingPattern extends PiecePattern {
 
         public Moves getMoves(byte from, byte enPassantRights) {
             return new Moves(); //todo optimize...
@@ -570,9 +526,9 @@ public class PiecePatterns {
 
             Moves legalMoves = new Moves();
 
-            for (byte to : constants.KING_SQUARES[from]) {
+            for (byte to : Constants.KING_SQUARES[from]) {
                 if (threats[to] == 0) {
-                    if (!is_black_occupied(board[to])) {
+                    if (!isBlackOccupied(board[to])) {
                         legalMoves.add(new Move(from, to));
                     }
                 }
@@ -599,7 +555,7 @@ public class PiecePatterns {
 
         public void updateThreats(byte from, byte[] threats) {
 
-            for (byte to : constants.KING_SQUARES[from]) {
+            for (byte to : Constants.KING_SQUARES[from]) {
                 threats[to]++;
             }
         }

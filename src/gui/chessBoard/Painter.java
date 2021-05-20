@@ -92,12 +92,13 @@ public class Painter {
                 break;
         }
 
+        Color dark = settings.getColorScheme().PIECE_COLOR;
+        g2.setColor(dark);
         g2.setFont(settings.font);
+
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 int pos = boardOrientation ? x + (7 - y) * 8 : (7 - x) + y * 8;
-
-                g2.setColor(settings.getColorScheme().PIECE_COLOR);
                 String piece;
                 switch (settings.font.getFontName()) {
 
