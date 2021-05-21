@@ -558,6 +558,10 @@ public class Chess {
         return size;
     }
 
+    public boolean isUndoneListEven(){
+        return undoneMovesHistory.size() % 2 == 0;
+    }
+
     /**
      * Revoke last move.
      *

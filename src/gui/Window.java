@@ -195,14 +195,9 @@ public class Window {
         itemAccept = new JMenuItem(" ja ");
         itemDecline = new JMenuItem("nein");
 
-        KeyStroke ctrlLeft = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ctrlRight = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         itemUndo = new JMenuItem("<<");
         itemRedo = new JMenuItem(">>");
-        itemUndo.setAccelerator(ctrlLeft);
-        itemRedo.setAccelerator(ctrlRight);
-
-
+        
         itemRotateBoard = new JMenuItem("Brett drehen");
         itemFromFEN = new JMenuItem("Spiel beginnen aus FEN");
         itemRename = new JMenuItem("Namen ändern");

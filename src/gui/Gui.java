@@ -22,12 +22,14 @@ import java.util.TimerTask;
 import static fileHandling.StaticSetting.rememberSetting;
 import static fileHandling.StaticSetting.storeSettingsInFile;
 
-public class Gui extends Window {
+public class Gui extends Window implements ClockSubscriber {
 
     public final Network network;
+    final String SERVER_ADRESS = "chessnet.dynv6.net";
+    final String SERVER_PORT = "/55555";
     final boolean WHITE = Constants.WHITE; //for readability reasons
     final boolean BLACK = Constants.BLACK;
-    private final String storagePath = "chessUserData/currentGame.txt";
+    final String storagePath = "chessUserData/currentGame.txt";
     private final ChatDialog chatDialog;
     private final Chess chess;
     private final SimpleDateFormat timeParser = new SimpleDateFormat("mm:ss");
@@ -42,6 +44,7 @@ public class Gui extends Window {
         super(chessGame);
         chatDialog = new ChatDialog();
         this.chess = chessGame;
+        chess.clock.callbackQuery(this);
         moveString = "";
         moveStringSpecialMoves = "";
         network = new Network();
@@ -70,7 +73,7 @@ public class Gui extends Window {
         }*/
 
         if (!(myName.equals("") || myPassword.equals(""))) {
-            network.createClient("chessnet.dynv6.net/55555");
+            network.createClient(SERVER_ADRESS + SERVER_PORT);
         }
 
         /* ######################################### add listeners ################################################## */
@@ -197,7 +200,7 @@ public class Gui extends Window {
             if (chess.getTurnColor() == userPlaysColor && chess.getStatus() == Status.UNDECIDED) {
                 chess.userMove(new Move(Move.RESIGN), userPlaysColor, true);
                 network.send("%MOVE " + Move.RESIGN);
-                showAndTransmitScoring();
+                processScoring();
                 showPopup(chess.getStatusNotice());
             } else {
                 showPopup("Gib auf, wenn du am Zug bist.");
@@ -217,7 +220,7 @@ public class Gui extends Window {
         itemAccept.addActionListener(e -> {
             chess.userMove(new Move(Move.ACCEPT_DRAW), userPlaysColor, true);
             network.send("%MOVE " + Move.ACCEPT_DRAW);
-            showAndTransmitScoring();
+            processScoring();
             showPopup(chess.getStatusNotice());
         });
 
@@ -233,7 +236,7 @@ public class Gui extends Window {
 
         itemConnectToServer.addActionListener(e -> {
             network.disconnect();
-            network.createClient("chessnet.dynv6.net/55555");
+            network.createClient(SERVER_ADRESS + SERVER_PORT);
         });
 
         itemSendFeedback.addActionListener(e -> new DialogFeedback("Hallo, Team von SoftPawn!\n\n" +
@@ -257,6 +260,13 @@ public class Gui extends Window {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.isControlDown() && e.isAltDown()) feature = true;
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    chess.userRedo();
+                    refreshFrameContent(-1);
+                } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                    chess.userUndo();
+                    refreshFrameContent(-1);
+                }
             }
 
             @Override
@@ -298,10 +308,10 @@ public class Gui extends Window {
 
         if (chess.userMove(move, userPlaysColor, userPlaysBothColors)) {
             if (network.isConnected()) {
-                network.send("%MOVE " + move.getInformation());
-                network.send("%BOARD " + chess.boardToString());
+                network.send(//     send move information           and time stamps
+                        "%MOVE " + move.getInformation() + ' ' + chess.clock.whiteTime + ' ' + chess.clock.blackTime);
             }
-            showAndTransmitScoring();
+            processScoring();
             return true;
         } else {
             return false;
@@ -386,6 +396,7 @@ public class Gui extends Window {
     }
 
     private void refreshLabels() {
+
         String whiteCaptPieces = chess.whitePieces.getCapturedPiecesString();
         String blackCaptPieces = chess.blackPieces.getCapturedPiecesString();
         whiteCaptPieces = replaceChessCharacters(whiteCaptPieces);
@@ -414,19 +425,20 @@ public class Gui extends Window {
         labelPlaceHolderEast.setText(textEast);
     }
 
-    private void showAndTransmitScoring() {
+    public void processScoring() {
+
         if (chess.getStatus() != Status.UNDECIDED) {
             showPopup(chess.getStatusNotice());
             if (network.isConnected() && (userPlaysColor == WHITE)) { // only one player transmits scoring to server
-                if (chess.getStatus().getResult().equals("draw")) {
+                if (chess.getStatus().getResult() == Status.Scoring.HALF) {
                     network.send("%SERVER SCORING 0.5");
                 } else if (userPlaysColor == WHITE) {
-                    if (chess.getStatus().getResult().equals("white wins"))
+                    if (chess.getStatus().getResult() == Status.Scoring.WHITE_ONE)
                         network.send("%SERVER SCORING 1.0");
                     else
                         network.send("%SERVER SCORING 0.0");
                 } else {
-                    if (chess.getStatus().getResult().equals("black wins"))
+                    if (chess.getStatus().getResult() == Status.Scoring.BLACK_ONE)
                         network.send("%SERVER SCORING 1.0");
                     else
                         network.send("%SERVER SCORING 0.0");
@@ -556,10 +568,8 @@ public class Gui extends Window {
                     switch (args[0]) {
                         case "%MOVE":
 
-                            if (network.isConnected()) {
-                                if (chess.userRedoAll() > 0) {
-                                    refreshFrameContent(-1);
-                                }
+                            if (chess.userRedoAll() > 0) {
+                                refreshFrameContent(-1);
                             }
 
                             Move nextMove = new Move(Short.parseShort(args[1]));
@@ -601,7 +611,14 @@ public class Gui extends Window {
                                     refreshFrameContent(-1);
                             }
 
-                            showAndTransmitScoring();
+                            try {
+                                chess.clock.whiteTime = Long.parseLong(args[2]);
+                                chess.clock.blackTime = Long.parseLong(args[3]);
+                            } catch (Exception ex) {
+                                System.out.println("PARSING ERROR\n" + ex.getMessage());
+                            }
+
+                            processScoring();
 
                             break;
                         case "%FEN":

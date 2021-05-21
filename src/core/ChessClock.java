@@ -1,17 +1,17 @@
 package core;
 
-import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class ChessClock {
 
-    Timer clock;
-    private boolean running;
+    private final Chess chess;
     public long blackTime;
     public long whiteTime;
+    Timer clock;
+    private boolean isTicking;
     private long lastStamp;
-    private Chess chess;
+    private ClockSubscriber subscriber;
 
     public ChessClock(Chess chess) {
         this.chess = chess;
@@ -19,48 +19,52 @@ public class ChessClock {
 
     public void initialize() {
         if (clock != null) clock.cancel();
-        running = true;
+        isTicking = true;
         lastStamp = System.currentTimeMillis();
-        whiteTime = 0;
-        blackTime = 0;
+        whiteTime = 5 * 60 * 1000;
+        blackTime = 5 * 60 * 1000;
         clock = new Timer();
-        clock.scheduleAtFixedRate(new ClockTask(), 1000, 1000);
+        clock.scheduleAtFixedRate(new ClockTask(), 0, 1000);
+    }
+
+    public void callbackQuery(ClockSubscriber sub) {
+        subscriber = sub;
     }
 
     public void whiteTimeExceeded() {
-        print();
-        System.out.println("black wins");
-        initialize();
+        isTicking = false;
+        chess.gameStatus.setStatus(Status.WHITE_TIME_EXCEEDED);
+        if (subscriber != null)
+            subscriber.processScoring();
     }
 
     public void blackTimeExceeded() {
-        print();
-        System.out.println("white wins");
-        clock.cancel();
-    }
-
-    void print() {
-        long b = blackTime;
-        long w = whiteTime;
-        System.out.printf("black: %d, white: %d\n", b, w);
+        isTicking = false;
+        chess.gameStatus.setStatus(Status.BLACK_TIME_EXCEEDED);
+        if (subscriber != null)
+            subscriber.processScoring();
     }
 
     void update() {
+        if (!isTicking) return;
         long now = System.currentTimeMillis();
         long difference = now - lastStamp;
         lastStamp = now;
-        if (chess.whiteToMove) {
-            whiteTime += difference;
+        if (chess.whiteToMove == chess.isUndoneListEven()) {
+            whiteTime -= difference;
         } else {
-            blackTime += difference;
+            blackTime -= difference;
         }
+        if (whiteTime <= 1000)
+            whiteTimeExceeded();
+        if (blackTime <= 1000)
+            blackTimeExceeded();
     }
 
     class ClockTask extends TimerTask {
         @Override
 
         public void run() {
-            if(!running) return;
             update();
         }
     }
