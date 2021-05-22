@@ -558,7 +558,7 @@ public class Chess {
         return size;
     }
 
-    public boolean isUndoneListEven(){
+    public boolean isUndoneListEven() {
         return undoneMovesHistory.size() % 2 == 0;
     }
 

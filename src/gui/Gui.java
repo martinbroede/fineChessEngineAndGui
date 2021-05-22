@@ -690,7 +690,7 @@ public class Gui extends Window implements ClockSubscriber {
 
         @Override
         public void windowClosing(WindowEvent e) {
-            if(network.isConnected())
+            if (network.isConnected())
                 network.disconnect();
             rememberSetting("%NAME " + myName);
             rememberSetting("%PW " + myPassword);

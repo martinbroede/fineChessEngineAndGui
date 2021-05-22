@@ -207,7 +207,7 @@ public class Window {
 
         itemUndo = new JMenuItem("<<");
         itemRedo = new JMenuItem(">>");
-        
+
         itemRotateBoard = new JMenuItem("Brett drehen");
         itemFromFEN = new JMenuItem("Spiel beginnen aus FEN");
         itemRename = new JMenuItem("Namen ändern");

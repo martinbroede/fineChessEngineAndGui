@@ -1,7 +1,6 @@
 package core;
 
 import java.util.InputMismatchException;
-import java.util.LinkedList;
 
 public class Move {
 

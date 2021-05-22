@@ -46,3 +46,4 @@ V0.55c  enable redo/undo-view in online games
 V0.55d  add chess clock
 V0.55e  transmit timestamp for each move (to level network delay)
 V0.55f  fix reconnect issues
+        improve exception handling related to createFontFromFile

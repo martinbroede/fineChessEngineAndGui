@@ -31,7 +31,7 @@ public class ReadWrite {
         }
     }
 
-    static public Font createFontFromFile(String name, int size) {
+    static public Font createFontFromFile(String name, int size) throws IOException, FontFormatException {
 
         String FONT_PATH = "fonts/" + name + ".ttf";
         Font myFont;
@@ -40,10 +40,10 @@ public class ReadWrite {
                     new FileInputStream(FONT_PATH));
             Font ttfBase = Font.createFont(Font.TRUETYPE_FONT, myStream);
             myFont = ttfBase.deriveFont(Font.PLAIN, size);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.err.println("LOADING FONT FAILED.");
-            return null;
+        } catch (FileNotFoundException ex) {
+            throw new FileNotFoundException();
+        } catch (IOException ex) {
+            throw new IOException();
         }
         return myFont;
     }

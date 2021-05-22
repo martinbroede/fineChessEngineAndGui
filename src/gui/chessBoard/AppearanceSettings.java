@@ -22,14 +22,18 @@ public class AppearanceSettings {
         FONTS = new LinkedList<>();
 
         try {
-            FONTS.add(new Font("Times", Font.PLAIN, 1));
-            FONTS.add(new Font("MS Gothic", Font.PLAIN, 1));
-            FONTS.add(createFontFromFile("DejaVuSans", 1));
-            FONTS.add(createFontFromFile("Chess-Regular", 1));
+            Font newFont;
+            newFont = new Font("Times", Font.PLAIN, 1);
+            FONTS.add(newFont);
+            newFont = new Font("MS Gothic", Font.PLAIN, 1);
+            FONTS.add(newFont);
+            newFont = createFontFromFile("DejaVuSans", 1);
+            FONTS.add(newFont);
+            newFont = createFontFromFile("Chess-Regular", 1);
+            FONTS.add(newFont);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
         this.colorScheme = ColorScheme;
         this.font = FONTS.get(0);
     }
@@ -39,8 +43,8 @@ public class AppearanceSettings {
         font = FONTS.get(this.fontNumber);
     }
 
-    public int getFontNumer(){
-        return fontNumber%FONTS.size();
+    public int getFontNumer() {
+        return fontNumber % FONTS.size();
     }
 
     public void adjustSize(int size_factor) {
