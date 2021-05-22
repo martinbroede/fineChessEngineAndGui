@@ -1,4 +1,4 @@
-#V0.55e (beta)
+#V0.55f (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -45,3 +45,4 @@ V0.55c  enable redo/undo-view in online games
         refactor core. simplify inheritance. unify classes MoveGenerator and Chess
 V0.55d  add chess clock
 V0.55e  transmit timestamp for each move (to level network delay)
+V0.55f  fix reconnect issues

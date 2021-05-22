@@ -486,7 +486,7 @@ public class Gui extends Window implements ClockSubscriber {
         public void addChatMessage(String message) {
 
             chatOutput.append(message);
-            while (chatOutput.getLineCount() >= appearanceSettings.getSizeFactor() / 2) {
+            while (chatOutput.getLineCount() >= appearanceSettings.sizeFactor / 2) {
                 String text = chatOutput.getText();
                 text = text.substring(text.indexOf('\n') + 1);
                 chatOutput.setText(text);
@@ -495,13 +495,13 @@ public class Gui extends Window implements ClockSubscriber {
 
         public void toggleVisibility() {
 
-            Dimension newDim = new Dimension(appearanceSettings.getMargin(), appearanceSettings.getMargin());
+            Dimension newDim = new Dimension(appearanceSettings.margin, appearanceSettings.margin);
             chatOutput.setPreferredSize(newDim);
-            chatOutput.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+            chatOutput.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
 
-            newDim = new Dimension(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor());
+            newDim = new Dimension(appearanceSettings.margin, appearanceSettings.sizeFactor);
             chatInput.setPreferredSize(newDim);
-            chatInput.setBackground(appearanceSettings.getColorScheme().HIGHLIGHT_1_COLOR);
+            chatInput.setBackground(appearanceSettings.colorScheme.HIGHLIGHT_1_COLOR);
 
             Point location = frame.getLocation();
             location.translate(frame.getWidth(), 0);
@@ -690,12 +690,14 @@ public class Gui extends Window implements ClockSubscriber {
 
         @Override
         public void windowClosing(WindowEvent e) {
-
+            if(network.isConnected())
+                network.disconnect();
             rememberSetting("%NAME " + myName);
             rememberSetting("%PW " + myPassword);
-            rememberSetting("%SIZE " + appearanceSettings.getSizeFactor());
-            rememberSetting("%STYLE " + appearanceSettings.getColorScheme().getCurrentScheme());
+            rememberSetting("%SIZE " + appearanceSettings.sizeFactor);
+            rememberSetting("%STYLE " + appearanceSettings.colorScheme.getCurrentScheme());
             rememberSetting("%LOCATION " + frame.getLocation().getX() + "/" + frame.getLocation().getY());
+            rememberSetting("%PIECES " + appearanceSettings.getFontNumer());
             storeSettingsInFile();
             e.getWindow().dispose();
             System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY");

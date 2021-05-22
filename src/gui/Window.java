@@ -12,7 +12,6 @@ import gui.dialogs.DialogText;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
@@ -84,7 +83,6 @@ public class Window {
     final JMenuItem itemOfferDraw;
     final JTextField chatInput;
     final JTextArea chatOutput;
-    final ColorScheme colorScheme;
     final int SIZE_L = 70;
     final int SIZE_M = 45;
     final int SIZE_S = 30;
@@ -97,6 +95,8 @@ public class Window {
 
         frame.setResizable(false);
         frame.setTitle("Schach -OFFLINE- ");
+        ColorScheme colorScheme = new ColorScheme();
+        appearanceSettings = new AppearanceSettings(colorScheme);
 
         getStoredSettings();
         myName = getSetting("%NAME");
@@ -123,6 +123,18 @@ public class Window {
             System.err.println("VERSION FILE NOT FOUND");
         }
 
+        int frameSize = SIZE_S;
+        {
+            String style = getSetting("%STYLE");
+            if (!style.equals("")) colorScheme.setColors(Integer.parseInt(style));
+
+            String pieces = getSetting("%PIECES");
+            if (!pieces.equals("")) appearanceSettings.setFont(Integer.parseInt(pieces));
+
+            String size = getSetting("%SIZE");
+            if (!size.equals("")) frameSize = Integer.parseInt(size);
+        }
+
         messageMenu = new JPopupMenu();
         messageItem = new JMenuItem();
 
@@ -130,27 +142,25 @@ public class Window {
         labelCapturedBlackPieces = new JLabel("", JLabel.CENTER);
         labelPlaceHolderWest = new JLabel("", JLabel.LEFT);
         labelPlaceHolderEast = new JLabel("", JLabel.RIGHT);
-        colorScheme = new ColorScheme();
-        appearanceSettings = new AppearanceSettings(colorScheme);
         board = new Board(SIZE_S, chess, appearanceSettings);
 
         content = new JPanel();
         content.setLayout(new BorderLayout());
         content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        labelCapturedWhitePieces.setFont(appearanceSettings.getFont());
-        labelCapturedBlackPieces.setFont(appearanceSettings.getFont());
-        labelPlaceHolderWest.setFont(appearanceSettings.getFont());
-        labelPlaceHolderEast.setFont(appearanceSettings.getFont());
+        labelCapturedWhitePieces.setFont(appearanceSettings.font);
+        labelCapturedBlackPieces.setFont(appearanceSettings.font);
+        labelPlaceHolderWest.setFont(appearanceSettings.font);
+        labelPlaceHolderEast.setFont(appearanceSettings.font);
         labelCapturedWhitePieces.setOpaque(true);
         labelCapturedBlackPieces.setOpaque(true);
         labelPlaceHolderWest.setOpaque(true);
         labelPlaceHolderEast.setOpaque(true);
         labelPlaceHolderWest.setVerticalAlignment(JLabel.CENTER);
         labelPlaceHolderEast.setVerticalAlignment(JLabel.CENTER);
-        labelCapturedWhitePieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        labelCapturedBlackPieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        labelPlaceHolderWest.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        labelPlaceHolderEast.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelCapturedWhitePieces.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
+        labelCapturedBlackPieces.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
+        labelPlaceHolderWest.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
+        labelPlaceHolderEast.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
 
         frame.setContentPane(content);
 
@@ -308,19 +318,11 @@ public class Window {
         content.add(labelPlaceHolderEast, BorderLayout.EAST);
         content.add(labelCapturedBlackPieces, BorderLayout.SOUTH);
 
-        {
-            String dressCode = getSetting("%STYLE");
-            if (!dressCode.equals("")) colorScheme.setColors(Integer.parseInt(dressCode));
-
-            String size = getSetting("%SIZE");
-            if (!size.equals("")) adjustBoardAndFrameSize(Integer.parseInt(size));
-            else adjustBoardAndFrameSize(SIZE_S);
-        }
-
         itemRestore.setEnabled(false);
         itemStore.setEnabled(false);
         itemBegin.setEnabled(false);
 
+        adjustBoardAndFrameSize(frameSize);
         frame.setVisible(true);
 
         checkVersion();
@@ -344,11 +346,11 @@ public class Window {
             board.repaint();
         });
         itemEnlarge.addActionListener(e -> {
-            adjustBoardAndFrameSize(appearanceSettings.getSizeFactor() * 6 / 5);
+            adjustBoardAndFrameSize(appearanceSettings.sizeFactor * 6 / 5);
             board.repaint();
         });
         itemDiminish.addActionListener(e -> {
-            adjustBoardAndFrameSize(appearanceSettings.getSizeFactor() * 5 / 6);
+            adjustBoardAndFrameSize(appearanceSettings.sizeFactor * 5 / 6);
             board.repaint();
         });
 
@@ -393,7 +395,7 @@ public class Window {
         char[] temp = in.toCharArray();
         HashMap<Character, Character> charConverter;
 
-        switch (appearanceSettings.getFont().getFontName()) {
+        switch (appearanceSettings.font.getFontName()) {
             case "Chess Regular":
                 charConverter = Util.SYMBOL_SARAH;
                 break;
@@ -431,19 +433,23 @@ public class Window {
     private void adjustBoardAndFrameSize(int size_factor) {
 
         appearanceSettings.adjustSize(size_factor);
+        adjustBoardAndFrameSize();
+    }
+
+    private void adjustBoardAndFrameSize() {
 
         Dimension newDim;
 
-        newDim = new Dimension(appearanceSettings.getSizeFactor() * 2, appearanceSettings.getMargin());
+        newDim = new Dimension(appearanceSettings.sizeFactor * 2, appearanceSettings.margin);
         labelPlaceHolderWest.setPreferredSize(newDim);
         labelPlaceHolderEast.setPreferredSize(newDim);
 
-        newDim = new Dimension(appearanceSettings.getSizeFactor() * 2 + appearanceSettings.getMargin(),
-                appearanceSettings.getSizeFactor() * 2);
+        newDim = new Dimension(appearanceSettings.sizeFactor * 2 + appearanceSettings.margin,
+                appearanceSettings.sizeFactor * 2);
         labelCapturedWhitePieces.setPreferredSize(newDim);
         labelCapturedBlackPieces.setPreferredSize(newDim);
 
-        newDim = new Dimension(appearanceSettings.getSizeFactor() * 4, appearanceSettings.getMargin() * 2);
+        newDim = new Dimension(appearanceSettings.sizeFactor * 4, appearanceSettings.margin * 2);
         chatOutput.setPreferredSize(newDim);
 
         board.adjustSize();
@@ -459,13 +465,13 @@ public class Window {
 
         chatOutput.append(message + "\n");
         messageMenu.add(messageItem);
-        messageMenu.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        messageMenu.setPopupSize(appearanceSettings.getMargin(), appearanceSettings.getSizeFactor() * 2);
+        messageMenu.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
+        messageMenu.setPopupSize(appearanceSettings.margin, appearanceSettings.sizeFactor * 2);
         messageItem.setText(message);
-        messageItem.setFont(new Font("Times", Font.PLAIN, appearanceSettings.getSizeFactor() / 3));
-        messageItem.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        messageItem.setFont(new Font("Times", Font.PLAIN, appearanceSettings.sizeFactor / 3));
+        messageItem.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
 
-        messageMenu.show(board, 0, appearanceSettings.getMargin());
+        messageMenu.show(board, 0, appearanceSettings.margin);
     }
 
     public void showPromotionPopup() {
@@ -473,17 +479,17 @@ public class Window {
         board.setActive(false); //makes board diffuse
 
         JPopupMenu menu = menuPromotion;
-        menu.setPopupSize(appearanceSettings.getSizeFactor() * 4 / 2, appearanceSettings.getMargin());
+        menu.setPopupSize(appearanceSettings.sizeFactor * 4 / 2, appearanceSettings.margin);
 
-        itemPromotionBishop.setBackground(appearanceSettings.getColorScheme().BLACK_SQUARES_COLOR);
-        itemPromotionKnight.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        itemPromotionQueen.setBackground(appearanceSettings.getColorScheme().BLACK_SQUARES_COLOR);
-        itemPromotionRook.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        itemPromotionBishop.setBackground(appearanceSettings.colorScheme.BLACK_SQUARES_COLOR);
+        itemPromotionKnight.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
+        itemPromotionQueen.setBackground(appearanceSettings.colorScheme.BLACK_SQUARES_COLOR);
+        itemPromotionRook.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
 
-        itemPromotionBishop.setFont(appearanceSettings.getFont());
-        itemPromotionKnight.setFont(appearanceSettings.getFont());
-        itemPromotionQueen.setFont(appearanceSettings.getFont());
-        itemPromotionRook.setFont(appearanceSettings.getFont());
+        itemPromotionBishop.setFont(appearanceSettings.font);
+        itemPromotionKnight.setFont(appearanceSettings.font);
+        itemPromotionQueen.setFont(appearanceSettings.font);
+        itemPromotionRook.setFont(appearanceSettings.font);
 
         itemPromotionBishop.setText(replaceChessCharacters("B b"));
         itemPromotionKnight.setText(replaceChessCharacters("N n"));
@@ -499,29 +505,29 @@ public class Window {
         board.setActive(false); //makes board diffuse
 
         JPopupMenu menu = menuDraw;
-        menu.setPopupSize(appearanceSettings.getSizeFactor() * 4 / 2, appearanceSettings.getMargin());
+        menu.setPopupSize(appearanceSettings.sizeFactor * 4 / 2, appearanceSettings.margin);
 
-        itemAccept.setBackground(appearanceSettings.getColorScheme().BLACK_SQUARES_COLOR);
-        itemDecline.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        itemAccept.setBackground(appearanceSettings.colorScheme.BLACK_SQUARES_COLOR);
+        itemDecline.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
 
-        itemAccept.setFont(appearanceSettings.getFont());
-        itemDecline.setFont(appearanceSettings.getFont());
+        itemAccept.setFont(appearanceSettings.font);
+        itemDecline.setFont(appearanceSettings.font);
 
         menu.show(board, board.getWidth(), 0);
     }
 
     public void setStyleSettings() {
 
-        menuBar.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        labelCapturedWhitePieces.setFont(appearanceSettings.getFont());
-        labelCapturedBlackPieces.setFont(appearanceSettings.getFont());
-        Font westEastFont = new Font("Courier New", Font.PLAIN, appearanceSettings.getSizeFactor() * 2 / 5);
+        menuBar.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
+        labelCapturedWhitePieces.setFont(appearanceSettings.font);
+        labelCapturedBlackPieces.setFont(appearanceSettings.font);
+        Font westEastFont = new Font("Courier New", Font.PLAIN, appearanceSettings.sizeFactor * 2 / 5);
         labelPlaceHolderWest.setFont(westEastFont);
         labelPlaceHolderEast.setFont(westEastFont);
-        labelCapturedWhitePieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        labelCapturedBlackPieces.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        labelPlaceHolderWest.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
-        labelPlaceHolderEast.setBackground(appearanceSettings.getColorScheme().WHITE_SQUARES_COLOR);
+        labelCapturedWhitePieces.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
+        labelCapturedBlackPieces.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
+        labelPlaceHolderWest.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
+        labelPlaceHolderEast.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
     }
 
     class DialogRename extends DialogNameAndPassword {

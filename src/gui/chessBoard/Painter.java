@@ -10,22 +10,22 @@ public class Painter {
 
     protected static void paintBoard(Graphics g, AppearanceSettings settings) {
 
-        g.setColor(settings.getColorScheme().MARGIN_COLOR);
-        g.fillRect(0, 0, settings.getMargin(), settings.getMargin());
+        g.setColor(settings.colorScheme.MARGIN_COLOR);
+        g.fillRect(0, 0, settings.margin, settings.margin);
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 if (((x + y) % 2) == 0) {
-                    g.setColor(settings.getColorScheme().WHITE_SQUARES_COLOR);
-                } else g.setColor(settings.getColorScheme().BLACK_SQUARES_COLOR);
+                    g.setColor(settings.colorScheme.WHITE_SQUARES_COLOR);
+                } else g.setColor(settings.colorScheme.BLACK_SQUARES_COLOR);
 
-                g.fillRect(x * settings.getSizeFactor() + settings.getOffset(),
-                        y * settings.getSizeFactor() + settings.getOffset(),
-                        settings.getSizeFactor(), settings.getSizeFactor());
+                g.fillRect(x * settings.sizeFactor + settings.offset,
+                        y * settings.sizeFactor + settings.offset,
+                        settings.sizeFactor, settings.sizeFactor);
 
-                g.setColor(settings.getColorScheme().FILL_COLOR);
-                g.drawRect(x * settings.getSizeFactor() + settings.getOffset(),
-                        y * settings.getSizeFactor() + settings.getOffset(),
-                        settings.getSizeFactor(), settings.getSizeFactor());
+                g.setColor(settings.colorScheme.FILL_COLOR);
+                g.drawRect(x * settings.sizeFactor + settings.offset,
+                        y * settings.sizeFactor + settings.offset,
+                        settings.sizeFactor, settings.sizeFactor);
             }
         }
     }
@@ -40,25 +40,25 @@ public class Painter {
 
                 byte val = combinedThreats[pos];
                 if (boardOrientation) { // white's point of view
-                    if (val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
-                    else if (val > 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
-                    else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
-                    if (blackThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
+                    if (val == Byte.MAX_VALUE) g.setColor(settings.colorScheme.HIGHLIGHT_2_COLOR.brighter());
+                    else if (val > 0) g.setColor(settings.colorScheme.HIGHLIGHT_1_COLOR.brighter());
+                    else g.setColor(settings.colorScheme.HIGHLIGHT_2_COLOR);
+                    if (blackThreats[pos] == 0) g.setColor(settings.colorScheme.HIGHLIGHT_1_COLOR);
                 } else { //black's point of view
-                    if (val == Byte.MAX_VALUE) g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR.brighter());
-                    else if (val < 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR.brighter());
-                    else g.setColor(settings.getColorScheme().HIGHLIGHT_2_COLOR);
-                    if (whiteThreats[pos] == 0) g.setColor(settings.getColorScheme().HIGHLIGHT_1_COLOR);
+                    if (val == Byte.MAX_VALUE) g.setColor(settings.colorScheme.HIGHLIGHT_2_COLOR.brighter());
+                    else if (val < 0) g.setColor(settings.colorScheme.HIGHLIGHT_1_COLOR.brighter());
+                    else g.setColor(settings.colorScheme.HIGHLIGHT_2_COLOR);
+                    if (whiteThreats[pos] == 0) g.setColor(settings.colorScheme.HIGHLIGHT_1_COLOR);
                 }
 
-                g.fillRect(x * settings.getSizeFactor() + settings.getOffset(),
-                        y * settings.getSizeFactor() + settings.getOffset(),
-                        settings.getSizeFactor(), settings.getSizeFactor());
+                g.fillRect(x * settings.sizeFactor + settings.offset,
+                        y * settings.sizeFactor + settings.offset,
+                        settings.sizeFactor, settings.sizeFactor);
 
-                g.setColor(settings.getColorScheme().FILL_COLOR);
-                g.drawRect(x * settings.getSizeFactor() + settings.getOffset(),
-                        y * settings.getSizeFactor() + settings.getOffset(),
-                        settings.getSizeFactor(), settings.getSizeFactor());
+                g.setColor(settings.colorScheme.FILL_COLOR);
+                g.drawRect(x * settings.sizeFactor + settings.offset,
+                        y * settings.sizeFactor + settings.offset,
+                        settings.sizeFactor, settings.sizeFactor);
             }
         }
     }
@@ -69,30 +69,30 @@ public class Painter {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         int x_factor, y_factor, x_offset, y_offset;
-        x_factor = settings.getSizeFactor();
-        y_factor = settings.getSizeFactor();
+        x_factor = settings.sizeFactor;
+        y_factor = settings.sizeFactor;
         switch (settings.font.getFontName()) {
             case "DejaVu Sans":
-                x_offset = +settings.getOffset() + settings.getSizeFactor() / 2
-                        - settings.font.getSize() / 2 + settings.getOffset() / 5;
-                y_offset = settings.getOffset() + settings.getSizeFactor() / 2
-                        + settings.font.getSize() * 2 / 5 + settings.getOffset() / 5;
+                x_offset = +settings.offset + settings.sizeFactor / 2
+                        - settings.font.getSize() / 2 + settings.offset / 5;
+                y_offset = settings.offset + settings.sizeFactor / 2
+                        + settings.font.getSize() * 2 / 5 + settings.offset / 5;
                 break;
             case "Chess Regular":
-                x_offset = settings.getOffset() + settings.getSizeFactor() * 29 / 100; // ++:=> ### --:<=
-                y_offset = settings.getOffset() + settings.getSizeFactor() * 90 / 100; // --:up ### ++:down
+                x_offset = settings.offset + settings.sizeFactor * 29 / 100; // ++:=> ### --:<=
+                y_offset = settings.offset + settings.sizeFactor * 90 / 100; // --:up ### ++:down
                 break;
             case "Dialog.plain": // "Times"
             case "MS Gothic":
             default:
-                x_offset = settings.getOffset() + settings.getSizeFactor() / 2
+                x_offset = settings.offset + settings.sizeFactor / 2
                         - settings.font.getSize() / 2;
-                y_offset = settings.getOffset() + settings.getSizeFactor() / 2
+                y_offset = settings.offset + settings.sizeFactor / 2
                         + settings.font.getSize() * 2 / 5;
                 break;
         }
 
-        Color dark = settings.getColorScheme().PIECE_COLOR;
+        Color dark = settings.colorScheme.PIECE_COLOR;
         g2.setColor(dark);
         g2.setFont(settings.font);
 
@@ -127,26 +127,26 @@ public class Painter {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
-        Font rankFont = new Font("Times", Font.PLAIN, settings.getSizeFactor() * 15 / 100);
-        int factor = settings.getSizeFactor();
+        Font rankFont = new Font("Times", Font.PLAIN, settings.sizeFactor * 15 / 100);
+        int factor = settings.sizeFactor;
         int offset = factor * 78 / 100;
         g2.setFont(rankFont);
         for (int x = 0; x < 8; x++) {
             int file = boardOrientation ? x : 7 - x;
             int y = 7;
-            g2.setColor(settings.getColorScheme().PIECE_COLOR);
+            g2.setColor(settings.colorScheme.PIECE_COLOR);
             g2.drawString("" + Util.getFileName(file),
-                    x * factor + settings.getOffset()
+                    x * factor + settings.offset
                             + factor / 2 - offset / 2,
-                    y * factor + settings.getOffset()
+                    y * factor + settings.offset
                             + factor / 2 + offset * 45 / 100);
         }
         for (int y = 1; y < 8; y++) {
             int rank = boardOrientation ? y : 7 - y;
-            g2.setColor(settings.getColorScheme().PIECE_COLOR);
+            g2.setColor(settings.colorScheme.PIECE_COLOR);
             g2.drawString("" + Util.getRankName(rank),
-                    settings.getOffset() + factor / 2 - offset / 2,
-                    (7 - y) * factor + settings.getOffset()
+                    settings.offset + factor / 2 - offset / 2,
+                    (7 - y) * factor + settings.offset
                             + factor / 2 + offset * 45 / 100);
         }
     }
@@ -155,18 +155,18 @@ public class Painter {
                                           boolean boardOrientation) {
 
         if (squares == null) return;
-        Color highlight = settings.getColorScheme().HIGHLIGHT_1_COLOR;
+        Color highlight = settings.colorScheme.HIGHLIGHT_1_COLOR;
         for (Move square : squares) {
             int x = boardOrientation ? square.getTo() % 8 : 7 - square.getTo() % 8;
             int y = boardOrientation ? 7 - square.getTo() / 8 : square.getTo() / 8;
             g.setColor(highlight);
-            g.fillRect(x * settings.getSizeFactor() + settings.getOffset(),
-                    y * settings.getSizeFactor() + settings.getOffset(),
-                    settings.getSizeFactor(), settings.getSizeFactor());
-            g.setColor(settings.getColorScheme().FILL_COLOR);
-            g.drawRect(x * settings.getSizeFactor() + settings.getOffset(),
-                    y * settings.getSizeFactor() + settings.getOffset(),
-                    settings.getSizeFactor(), settings.getSizeFactor());
+            g.fillRect(x * settings.sizeFactor + settings.offset,
+                    y * settings.sizeFactor + settings.offset,
+                    settings.sizeFactor, settings.sizeFactor);
+            g.setColor(settings.colorScheme.FILL_COLOR);
+            g.drawRect(x * settings.sizeFactor + settings.offset,
+                    y * settings.sizeFactor + settings.offset,
+                    settings.sizeFactor, settings.sizeFactor);
         }
     }
 
@@ -174,21 +174,21 @@ public class Painter {
                                         boolean boardOrientation) {
 
         if (moveInformation < 0) return;
-        int diminish = settings.getSizeFactor() / 13;
+        int diminish = settings.sizeFactor / 13;
         int from = Move.getFrom(moveInformation);
         int to = Move.getTo(moveInformation);
         int[] squares = {from, to};
         for (int square : squares) {
             int x = boardOrientation ? square % 8 : 7 - square % 8;
             int y = boardOrientation ? 7 - square / 8 : square / 8;
-            g.setColor(settings.getColorScheme().MARGIN_COLOR);
-            g.drawRect(x * settings.getSizeFactor() + settings.getOffset() + diminish,
-                    y * settings.getSizeFactor() + settings.getOffset() + diminish,
-                    settings.getSizeFactor() - 2 * diminish, settings.getSizeFactor() - 2 * diminish);
-            g.drawRect(x * settings.getSizeFactor() + settings.getOffset() + diminish + 1,
-                    y * settings.getSizeFactor() + settings.getOffset() + diminish + 1,
-                    settings.getSizeFactor() - 2 * diminish - 2,
-                    settings.getSizeFactor() - 2 * diminish - 2);
+            g.setColor(settings.colorScheme.MARGIN_COLOR);
+            g.drawRect(x * settings.sizeFactor + settings.offset + diminish,
+                    y * settings.sizeFactor + settings.offset + diminish,
+                    settings.sizeFactor - 2 * diminish, settings.sizeFactor - 2 * diminish);
+            g.drawRect(x * settings.sizeFactor + settings.offset + diminish + 1,
+                    y * settings.sizeFactor + settings.offset + diminish + 1,
+                    settings.sizeFactor - 2 * diminish - 2,
+                    settings.sizeFactor - 2 * diminish - 2);
         }
     }
 }

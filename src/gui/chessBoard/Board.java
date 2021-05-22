@@ -63,9 +63,9 @@ public class Board extends JPanel {
 
     public void adjustSize() {
 
-        img = new BufferedImage(s.getMargin(), s.getMargin(), BufferedImage.TYPE_INT_RGB);
+        img = new BufferedImage(s.margin, s.margin, BufferedImage.TYPE_INT_RGB);
         bufferGraphics = img.getGraphics();
-        Dimension newDimension = new Dimension(s.getMargin(), s.getMargin());
+        Dimension newDimension = new Dimension(s.margin, s.margin);
         setSize(newDimension);
         setPreferredSize(newDimension);
         paint(getGraphics());
@@ -87,8 +87,8 @@ public class Board extends JPanel {
 
     public byte coordFromEvent(MouseEvent e) {
 
-        int x = (e.getX() - s.getOffset()) / s.getSizeFactor();
-        int y = 7 - (e.getY() - s.getOffset()) / s.getSizeFactor();
+        int x = (e.getX() - s.offset) / s.sizeFactor;
+        int y = 7 - (e.getY() - s.offset) / s.sizeFactor;
 
         x = boardOrientation ? x : 7 - x;
         y = boardOrientation ? y : 7 - y;
@@ -99,14 +99,14 @@ public class Board extends JPanel {
     @Override
     public int getWidth() {
         if (s != null)
-            return s.getMargin();
+            return s.margin;
         else return 0;
     }
 
     @Override
     public int getHeight() {
         if (s != null)
-            return s.getMargin();
+            return s.margin;
         else return 0;
     }
 
@@ -127,8 +127,8 @@ public class Board extends JPanel {
         if (!active) {
             // paint board diffuse
             if (bufferGraphics != null && img != null) {
-                bufferGraphics.setColor(s.getColorScheme().LIGHT_COLOR);
-                bufferGraphics.fillRect(0, 0, s.getMargin(), s.getMargin());
+                bufferGraphics.setColor(s.colorScheme.LIGHT_COLOR);
+                bufferGraphics.fillRect(0, 0, s.margin, s.margin);
             }
         }
 

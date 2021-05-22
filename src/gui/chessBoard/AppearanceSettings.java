@@ -3,47 +3,44 @@ package gui.chessBoard;
 import gui.ColorScheme;
 
 import java.awt.*;
+import java.util.LinkedList;
 
 import static fileHandling.ReadWrite.createFontFromFile;
 
 public class AppearanceSettings {
 
-    private final ColorScheme ColorScheme;
-    private final Font[] FONT_ROULETTE = {
-            createFontFromFile("DejaVuSans", 1),
-            createFontFromFile("Chess-Regular", 1),
-            new Font("Times", Font.PLAIN, 1),
-            new Font("MS Gothic", Font.PLAIN, 1)};
-    int fontNumber;
-    Font font;
-    private int sizeFactor;
-    private int offset;
-    private int margin;
+    public final ColorScheme colorScheme;
+    public final LinkedList<Font> FONTS;
+    public Font font;
+    public int fontNumber;
+    public int sizeFactor;
+    public int offset;
+    public int margin;
 
     public AppearanceSettings(ColorScheme ColorScheme) {
 
-        this.ColorScheme = ColorScheme;
-        this.font = FONT_ROULETTE[0];
+        FONTS = new LinkedList<>();
+
+        try {
+            FONTS.add(new Font("Times", Font.PLAIN, 1));
+            FONTS.add(new Font("MS Gothic", Font.PLAIN, 1));
+            FONTS.add(createFontFromFile("DejaVuSans", 1));
+            FONTS.add(createFontFromFile("Chess-Regular", 1));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        this.colorScheme = ColorScheme;
+        this.font = FONTS.get(0);
     }
 
-    public gui.ColorScheme getColorScheme() {
-        return ColorScheme;
+    public void setFont(int fontNumber) {
+        this.fontNumber = fontNumber % FONTS.size();
+        font = FONTS.get(this.fontNumber);
     }
 
-    public int getSizeFactor() {
-        return sizeFactor;
-    }
-
-    public int getOffset() {
-        return offset;
-    }
-
-    public int getMargin() {
-        return margin;
-    }
-
-    public Font getFont() {
-        return font;
+    public int getFontNumer(){
+        return fontNumber%FONTS.size();
     }
 
     public void adjustSize(int size_factor) {
@@ -60,7 +57,7 @@ public class AppearanceSettings {
     public void nextFont() {
 
         fontNumber++;
-        font = FONT_ROULETTE[fontNumber % FONT_ROULETTE.length];
+        font = FONTS.get(fontNumber % FONTS.size());
         adjustSize(this.sizeFactor);
     }
 }
