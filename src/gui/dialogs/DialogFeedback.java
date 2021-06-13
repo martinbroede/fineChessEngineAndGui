@@ -1,27 +1,26 @@
 package gui.dialogs;
 
+import gui.MainWindow;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
+import static misc.Properties.resourceBundle;
 
 public abstract class DialogFeedback extends JDialog {
-    public JTextArea textArea = new JTextArea();
-    JButton sendButton = new JButton(" Feedback senden ");
+    public final JTextArea textArea = new JTextArea();
+    final JButton sendButton = new JButton(resourceBundle.getString("send.feedback"));
+    private final JScrollPane scrollPane = new JScrollPane(textArea);
 
     {
-        setLayout(new FlowLayout());
-        add(textArea);
-        add(sendButton);
+        setLayout(new BorderLayout());
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        add(scrollPane, BorderLayout.NORTH);
+        add(sendButton, BorderLayout.SOUTH);
         textArea.setBackground(new Color(238, 242, 246));
-        textArea.setPreferredSize(new Dimension(300, 300));
-        textArea.setFont(new Font("Courier New", Font.PLAIN, 14));
-        sendButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                buttonClicked();
-            }
-        });
+        scrollPane.setPreferredSize(new Dimension(300, 300));
+        textArea.setFont(new Font(MainWindow.COURIER_NEW, Font.PLAIN, 14));
+        sendButton.addActionListener(e -> buttonClicked());
         setVisible(true);
     }
 
@@ -30,15 +29,6 @@ public abstract class DialogFeedback extends JDialog {
         setLocation(location);
         textArea.setText(text);
         pack();
-    }
-
-    public static void main(String[] args) {
-        new DialogFeedback("hi", new Point(100, 100)) {
-            public void buttonClicked() {
-                System.out.println(textArea.getText());
-                dispose();
-            }
-        };
     }
 
     abstract public void buttonClicked();

@@ -1,4 +1,4 @@
-package chessNetwork;
+package misc;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -8,17 +8,18 @@ public class Password {
 
     public static String toSHA256String(String input) {
 
+        String exMsg = "";
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
+            exMsg = ex.getMessage();
         }
         if (digest != null) {
             final byte[] hashBytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
             return bytesToHex(hashBytes);
         }
-        return "NO SUCH ALGORITHM";
+        return exMsg; // can not be returned since "SHA-256" is a valid argument for getInstance...
     }
 
     /* found on

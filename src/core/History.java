@@ -5,10 +5,10 @@ import java.util.Stack;
 
 public class History extends Stack<State> {
 
+    final HashMap<Long, Object> repetitionCountMap = new HashMap<>();
     private final Object FIRST = new Object();
     private final Object SECOND = new Object();
     private final Object THIRD = new Object();
-    HashMap<Long, Object> repetitionCountMap = new HashMap<>();
     Object repetitionCount;
 
     public short getLastMoveCoordinates() {
@@ -24,7 +24,7 @@ public class History extends Stack<State> {
     @Override
     public boolean add(State state) {
 
-        System.err.println("PLEASE USE PUSH INSTEAD OF ADD");
+        System.out.println("PLEASE USE PUSH INSTEAD OF ADD");
         return super.add(state);
     }
 
@@ -51,7 +51,7 @@ public class History extends Stack<State> {
             repetitionCountMap.put(state.hashCode, THIRD);
 
         } else {
-            System.err.println("SOMETHING EVIL HAPPENED HERE");
+            System.out.println("SOMETHING EVIL HAPPENED HERE");
         }
 
         return super.push(state);
@@ -73,7 +73,7 @@ public class History extends Stack<State> {
             repetitionCountMap.remove(state.hashCode);
 
         } else {
-            System.err.println("THAT'S EVIL - HASH NOT IN HISTORY");
+            System.out.println("THAT'S EVIL - HASH NOT IN HISTORY");
         }
         return state;
     }

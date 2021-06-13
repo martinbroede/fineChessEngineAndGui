@@ -1,16 +1,17 @@
-package chessNetwork;
+package network;
 
-import gui.dialogs.IpAndPortDialog;
+import gui.dialogs.DialogIpAddr;
 
 import java.awt.*;
 import java.net.InetAddress;
 import java.util.LinkedList;
 
-import static fileHandling.StaticSetting.getSetting;
-import static fileHandling.StaticSetting.rememberSetting;
 import static java.lang.Thread.sleep;
+import static misc.Properties.resourceBundle;
+import static misc.StaticSetting.getSetting;
+import static misc.StaticSetting.rememberSetting;
 
-public class Network {
+public abstract class Network {
 
     private NetInstance instance;
 
@@ -20,7 +21,7 @@ public class Network {
             String[] args = input.split("/");
             InetAddress inetAddress = InetAddress.getByName(args[0]);
             String ip = inetAddress.getHostAddress();
-            return ip + '/' + args[1];
+            return String.format("%s/%s", ip, args[1]);
         } catch (Exception ex) {
             ex.printStackTrace();
             return "";
@@ -32,17 +33,34 @@ public class Network {
     }
 
     public LinkedList<String> getMessageQueue() {
+
+        assert instance != null;
         return instance.getMessageQueue();
     }
 
     public void createServer(String configIpAndPort) {
 
         if (instance != null) disconnect();
-        instance = new ChessServer(configIpAndPort);
+
+        instance = new ChessServer(configIpAndPort) {
+            @Override
+            void showMessage(String msg) {
+                Network.this.showMessage(msg);
+            }
+
+            @Override
+            void notifyOnlineToOffline() {
+                Network.this.notifyOnlineToOffline();
+            }
+        };
 
         Thread server = new Thread(instance);
         server.start();
     }
+
+    abstract public void notifyOnlineToOffline();
+
+    abstract public void showMessage(String msg);
 
     public void createClient(String configIpAndPort) {
 
@@ -53,7 +71,18 @@ public class Network {
             } catch (InterruptedException ignored) {
             }
         }
-        instance = new ChessClient(configIpAndPort);
+
+        instance = new ChessClient(configIpAndPort) {
+            @Override
+            void showMessage(String msg) {
+                Network.this.showMessage(msg);
+            }
+
+            @Override
+            void notifyOnlineToOffline() {
+                Network.this.notifyOnlineToOffline();
+            }
+        };
 
         Thread client = new Thread(instance);
         client.start();
@@ -69,7 +98,7 @@ public class Network {
 
         if (instance != null) {
             instance.send(message);
-        } else System.out.println("NETWORK IS NOT ACTIVE - DID NOT SEND " + message);
+        } else System.out.printf("NETWORK IS NOT ACTIVE - DID NOT SEND %s%n", message);
     }
 
     public void disconnect() {
@@ -83,17 +112,17 @@ public class Network {
     }
 
     public void showServerIpDialog(Point location) {
-        new ServerIpDialog(location);
+        new ServerDialogIpAddr(location);
     }
 
     public void showClientIpDialog(Point location) {
-        new ClientIpDialog(location);
+        new ClientDialogIpAddr(location);
     }
 
 
-    class ServerIpDialog extends IpAndPortDialog {
+    class ServerDialogIpAddr extends DialogIpAddr {
 
-        public ServerIpDialog(Point location) {
+        public ServerDialogIpAddr(Point location) {
 
             super(location);
             String preferredIP = getSetting("%SERVER_IP");
@@ -101,25 +130,25 @@ public class Network {
                 ipField.setText(preferredIP);
                 portField.setText(getSetting("%SERVER_PORT"));
             }
-            dialog.setTitle("IP Konfiguration Server");
+            dialog.setTitle(resourceBundle.getString("ip.config.server"));
         }
 
         @Override
         public void action() {
 
-            rememberSetting("%SERVER_IP " + getIp());
-            rememberSetting("%SERVER_PORT " + getPort());
+            rememberSetting(String.format("%%SERVER_IP %s", getIp()));
+            rememberSetting(String.format("%%SERVER_PORT %s", getPort()));
             dialog.dispose();
 
-            String config = getIp() + "/" + getPort();
+            String config = String.format("%s/%s", getIp(), getPort());
             config = resolveIpFromString(config);
             createServer(config);
         }
     }
 
-    class ClientIpDialog extends IpAndPortDialog {
+    class ClientDialogIpAddr extends DialogIpAddr {
 
-        public ClientIpDialog(Point location) {
+        public ClientDialogIpAddr(Point location) {
 
             super(location);
             String preferredIP = getSetting("%CLIENT_IP");
@@ -133,11 +162,10 @@ public class Network {
         @Override
         public void action() {
 
-            rememberSetting("%CLIENT_IP " + getIp());
-            rememberSetting("%CLIENT_PORT " + getPort());
+            rememberSetting(String.format("%%CLIENT_IP %s", getIp()));
+            rememberSetting(String.format("%%CLIENT_PORT %s", getPort()));
             dialog.dispose();
-
-            String config = getIp() + "/" + getPort();
+            String config = String.format("%s/%s", getIp(), getPort());
             config = resolveIpFromString(config);
             createClient(config);
         }

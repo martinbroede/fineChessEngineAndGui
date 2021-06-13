@@ -1,11 +1,9 @@
-package gui.chessBoard;
-
-import gui.ColorScheme;
+package gui;
 
 import java.awt.*;
 import java.util.LinkedList;
 
-import static fileHandling.ReadWrite.createFontFromFile;
+import static misc.FileHandling.createFontFromFile;
 
 public class AppearanceSettings {
 
@@ -17,15 +15,16 @@ public class AppearanceSettings {
     public int offset;
     public int margin;
 
-    public AppearanceSettings(ColorScheme ColorScheme) {
+    public AppearanceSettings() {
 
+        colorScheme = new ColorScheme();
         FONTS = new LinkedList<>();
 
         try {
             Font newFont;
-            newFont = new Font("Times", Font.PLAIN, 1);
+            newFont = new Font(MainWindow.TIMES, Font.PLAIN, 1);
             FONTS.add(newFont);
-            newFont = new Font("MS Gothic", Font.PLAIN, 1);
+            newFont = new Font(MainWindow.MS_GOTHIC, Font.PLAIN, 1);
             FONTS.add(newFont);
             newFont = createFontFromFile("DejaVuSans", 1);
             FONTS.add(newFont);
@@ -34,7 +33,6 @@ public class AppearanceSettings {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        this.colorScheme = ColorScheme;
         this.font = FONTS.get(0);
     }
 
@@ -50,7 +48,7 @@ public class AppearanceSettings {
     public void adjustSize(int size_factor) {
 
         this.sizeFactor = size_factor;
-        if (font.getFontName().equals("Chess Regular")) {
+        if (font.getFontName().equals(MainWindow.CHESS_REGULAR)) {
             this.font = font.deriveFont((float) size_factor * 128 / 100);
         } else
             this.font = font.deriveFont((float) size_factor * 78 / 100);

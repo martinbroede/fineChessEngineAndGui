@@ -3,6 +3,8 @@ package gui.chessBoard;
 import core.Move;
 import core.Moves;
 import core.Util;
+import gui.AppearanceSettings;
+import gui.MainWindow;
 
 import java.awt.*;
 
@@ -72,18 +74,18 @@ public class Painter {
         x_factor = settings.sizeFactor;
         y_factor = settings.sizeFactor;
         switch (settings.font.getFontName()) {
-            case "DejaVu Sans":
+            case MainWindow.DEJA_VU_SANS:
                 x_offset = +settings.offset + settings.sizeFactor / 2
                         - settings.font.getSize() / 2 + settings.offset / 5;
                 y_offset = settings.offset + settings.sizeFactor / 2
                         + settings.font.getSize() * 2 / 5 + settings.offset / 5;
                 break;
-            case "Chess Regular":
+            case MainWindow.CHESS_REGULAR:
                 x_offset = settings.offset + settings.sizeFactor * 29 / 100; // ++:=> ### --:<=
                 y_offset = settings.offset + settings.sizeFactor * 90 / 100; // --:up ### ++:down
                 break;
-            case "Dialog.plain": // "Times"
-            case "MS Gothic":
+            case MainWindow.DIALOG_PLAIN: // "Times"
+            case MainWindow.MS_GOTHIC:
             default:
                 x_offset = settings.offset + settings.sizeFactor / 2
                         - settings.font.getSize() / 2;
@@ -102,12 +104,12 @@ public class Painter {
                 String piece;
                 switch (settings.font.getFontName()) {
 
-                    case "DejaVu Sans":
-                    case "Dialog.plain": // "Times"
-                    case "MS Gothic":
+                    case MainWindow.DEJA_VU_SANS:
+                    case MainWindow.DIALOG_PLAIN: // "Times"
+                    case MainWindow.MS_GOTHIC:
                         piece = Character.toString(Util.parseSymbol(board[pos]));
                         break;
-                    case "Chess Regular":
+                    case MainWindow.CHESS_REGULAR:
                         piece = Character.toString(Util.parseSarahFont(board[pos]));
                         break;
                     default:
@@ -127,7 +129,7 @@ public class Painter {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
-        Font rankFont = new Font("Times", Font.PLAIN, settings.sizeFactor * 15 / 100);
+        Font rankFont = new Font(MainWindow.TIMES, Font.PLAIN, settings.sizeFactor * 15 / 100);
         int factor = settings.sizeFactor;
         int offset = factor * 78 / 100;
         g2.setFont(rankFont);

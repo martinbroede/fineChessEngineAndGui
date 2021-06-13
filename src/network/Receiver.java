@@ -1,4 +1,4 @@
-package chessNetwork;
+package network;
 
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -8,7 +8,6 @@ public class Receiver extends Thread {
 
     private final LinkedList<String> messageQueue;
     private final NetInstance initiator;
-    private final int SOCK_BUFFER_SIZE = 256;
     private final Scanner scanner;
     private Subscriber subscriber;
 
@@ -28,13 +27,14 @@ public class Receiver extends Thread {
     }
 
     public void notify_subscriber() {
+
         if (subscriber != null) subscriber.unsubscribe();
         System.out.println(getName() + " SIGNED OFF SUBSCRIBER");
     }
 
     public void run() {
 
-        String message = "";
+        String message;
 
         while (true) {
 

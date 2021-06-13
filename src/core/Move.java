@@ -135,7 +135,7 @@ public class Move {
         else if ((information & 0b1111000000000000) == QUEEN_SIDE_CASTLING) return " | o-o-o";
         else if ((information & 0b1111000000000000) == KING_SIDE_CASTLING) return " | o-o";
         else {
-            System.err.println("DON'T KNOW THIS MOVE: " + information + " (FROM CLASS: Move.java)");
+            System.out.println("DON'T KNOW THIS MOVE: " + information + " (FROM CLASS: Move.java)");
             return "?";
         }
     }

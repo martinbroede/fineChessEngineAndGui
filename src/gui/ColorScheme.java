@@ -46,8 +46,8 @@ public class ColorScheme {
                 BLACK_SQUARES_COLOR = new Color(0x88A0B4); /* BLACK SQUARES */
                 MARGIN_COLOR = new Color(0x4394e); /* MARGIN */
                 PIECE_COLOR = new Color(0x0); /* PIECES */
-                FILL_COLOR = new Color(0xe9e9ff); /* SPACE BETWEEN SQUARES */
-                HIGHLIGHT_1_COLOR = new Color(0xa7c2db); /*HIGHLIGHT "OK" */
+                FILL_COLOR = new Color(0xDADAE0); /* SPACE BETWEEN SQUARES */
+                HIGHLIGHT_1_COLOR = new Color(0xB0D3F3); /*HIGHLIGHT "OK" */
                 HIGHLIGHT_2_COLOR = new Color(0xdc9696); /*HIGHLIGHT "NOT OK" */
                 LIGHT_COLOR = new Color(0x5C88A0B4, true);
                 break;

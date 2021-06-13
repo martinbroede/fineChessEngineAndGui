@@ -1,4 +1,4 @@
-package chessNetwork;
+package network;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -6,13 +6,10 @@ import java.util.LinkedList;
 
 class Sender {
 
-    private final String serviceName;
     private final LinkedList<String> sendingQueue;
     private BufferedWriter bufferedWriter;
 
-    public Sender(String serviceName) {
-
-        this.serviceName = serviceName;
+    public Sender() {
         sendingQueue = new LinkedList<>();
     }
 
@@ -20,10 +17,11 @@ class Sender {
         this.bufferedWriter = bufferedWriter;
     }
 
-    public void bufferedSend(String message) {
+    public void bufferedSend(String msg) {
 
+        String message = msg;
         if (!message.equals("")) {
-            message = message + NetInstance.MESSAGE_DELIMITER;
+            message += NetInstance.MESSAGE_DELIMITER;
             String asciiMsg = message.replace("ü", "ue")
                     .replace("ö", "oe")
                     .replace("ä", "ae")
@@ -43,10 +41,10 @@ class Sender {
                     successfullySent.add(line);
                 }
             } catch (IOException ex) {
-                System.out.println("SENDING FROM " + serviceName + " DID NOT GO WELL");
+                System.out.println("SENDING NOT POSSIBLE");
             }
         } else {
-            System.out.println(serviceName + " NOT READY TO SEND " + message);
+            System.out.printf("NOT READY TO SEND %s%n", message);
         }
         sendingQueue.removeAll(successfullySent);
     }

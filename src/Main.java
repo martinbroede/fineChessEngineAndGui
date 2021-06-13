@@ -1,7 +1,7 @@
 import core.Chess;
 import core.CoreASCII;
-import fineChessUpdater.Downloader;
 import gui.Gui;
+import misc.Downloader;
 
 public class Main {
 
@@ -28,7 +28,7 @@ public class Main {
                     gui.network.createClient(args[1]);
                     break;
                 default:
-                    System.err.println("DO NOT KNOW ARGUMENT " + args[0]);
+                    System.out.println("DO NOT KNOW ARGUMENT " + args[0]);
             }
         } else {
             new Gui(new Chess());

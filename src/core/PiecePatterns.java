@@ -38,7 +38,7 @@ abstract class PiecePattern {
      * @return Moves
      */
     public Moves getKingMoves(byte from, byte[] threats, boolean KingSideCastling, boolean QueenSideCastling) {
-        System.err.println("PIECE IS NOT KING. CAN NOT RETURN KingMoves");
+        System.out.println("PIECE IS NOT KING. CAN NOT RETURN KingMoves");
         return new Moves();
     }
 }

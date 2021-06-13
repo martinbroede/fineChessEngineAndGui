@@ -17,12 +17,12 @@ public class ChessClock {
         this.chess = chess;
     }
 
-    public void initialize() {
+    public void initialize(int timePreset) {
         if (clock != null) clock.cancel();
         isTicking = true;
         lastStamp = System.currentTimeMillis();
-        whiteTime = 5 * 60 * 1000;
-        blackTime = 5 * 60 * 1000;
+        whiteTime = (long) timePreset * 60 * 1000;
+        blackTime = (long) timePreset * 60 * 1000;
         clock = new Timer();
         clock.scheduleAtFixedRate(new ClockTask(), 0, 1000);
     }

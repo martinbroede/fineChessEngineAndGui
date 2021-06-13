@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.InputMismatchException;
 
 /** includes all parsing functions */
+@SuppressWarnings("ALL")
 public final class Util {
 
     public static final HashMap<Character, Character> SYMBOLS = new HashMap<Character, Character>() {{

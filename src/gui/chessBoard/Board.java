@@ -1,8 +1,9 @@
 package gui.chessBoard;
 
-import core.Chess;
+import core.ChessModel;
 import core.Moves;
 import core.Util;
+import gui.AppearanceSettings;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,25 +12,25 @@ import java.awt.image.BufferedImage;
 
 public class Board extends JPanel {
 
+    public final AppearanceSettings s;
     final boolean WHITE_PLAYER_SOUTH = true;
     final boolean WHITE_PLAYER_NORTH = false;
-    private final Chess chess;
-    public AppearanceSettings s;
-    char[] boardArray;
+    final char[] boardArray;
+    private final ChessModel chess;
     private boolean active;
     private BufferedImage img;
     private Graphics bufferGraphics;
     private boolean boardOrientation = WHITE_PLAYER_SOUTH;
     private boolean showHints = false;
 
-    public Board(int size_factor, Chess chess, AppearanceSettings appearanceSettings) {
+    public Board(int size_factor, ChessModel chessModel, AppearanceSettings appearanceSettings) {
 
         active = true;
         s = appearanceSettings;
         s.adjustSize(size_factor);
-        boardArray = chess.getBoard();
+        boardArray = chessModel.getBoard();
         adjustSize();
-        this.chess = chess;
+        this.chess = chessModel;
     }
 
     public void setActive(boolean active) {

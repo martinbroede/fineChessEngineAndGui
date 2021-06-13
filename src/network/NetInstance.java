@@ -1,6 +1,4 @@
-package chessNetwork;
-
-import gui.Window;
+package network;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -10,14 +8,24 @@ import java.util.Scanner;
 public abstract class NetInstance implements Runnable {
 
     public static final String MESSAGE_DELIMITER = "\u0003";
+    protected final Sender sender;
+    protected final LinkedList<String> messageQueue;
     protected String ip;
     protected int port;
     protected Socket socket;
     protected Receiver receiver;
-    protected Sender sender;
     protected boolean connectionSuccessful;
-    protected LinkedList<String> messageQueue;
     protected Scanner scanner;
+
+    public NetInstance() {
+        messageQueue = new LinkedList<>();
+        sender = new Sender();
+    }
+
+    public void setAddr(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
+    }
 
     public Receiver getReceiver() {
         return receiver;
@@ -49,7 +57,6 @@ public abstract class NetInstance implements Runnable {
         } catch (NullPointerException ignored) {
         }
 
-        receiver = null;
         connectionSuccessful = false;
 
         try {
@@ -58,6 +65,8 @@ public abstract class NetInstance implements Runnable {
         } catch (IOException | NullPointerException ignored) {
         }
 
-        Window.changeTitle("-ONLINE-", "-OFFLINE-");
+        notifyOnlineToOffline();
     }
+
+    abstract void notifyOnlineToOffline();
 }

@@ -1,4 +1,4 @@
-#V0.55f (beta)
+#V0.56  (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -29,7 +29,7 @@ V0.51   add simple timer
         add proper score
 V0.52   store preferred ip
         resolve inetAddress
-V0.52B  refactor chessNetwork classes
+V0.52B  refactor network classes
         unify threads
         improve exception handling
 V0.52b  bugfix move transmission<
@@ -47,3 +47,7 @@ V0.55d  add chess clock
 V0.55e  transmit timestamp for each move (to level network delay)
 V0.55f  fix reconnect issues
         improve exception handling related to createFontFromFile
+        refactor gui
+        add properties
+V0.56   add scrollbars
+        add challenge-player-dialog

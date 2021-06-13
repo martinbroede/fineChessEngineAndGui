@@ -1,7 +1,5 @@
 package core;
 
-import gui.dialogs.DialogMessage;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.InputMismatchException;
@@ -11,17 +9,19 @@ import static core.PiecePatterns.*;
 import static core.Util.isBlackPiece;
 import static core.Util.isWhitePiece;
 
-public class Chess {
+public class Chess implements ChessModel {
 
     public final ChessClock clock;
     public final char[] board = PiecePatterns.getBoard();
     public final History history;
     public final Stack<Move> undoneMovesHistory;
     public final GameStatus gameStatus;
+    public final PieceCollectionWhite whitePieces;
+    public final PieceCollectionBlack blackPieces;
+    public final Castling castling;
     private final HashGenerator hashGenerator;
-    public PieceCollectionWhite whitePieces;
-    public PieceCollectionBlack blackPieces;
-    public Castling castling;
+    public int timePreset;
+    public boolean started;
     protected boolean whiteToMove;
     protected short moveCounter;
     protected short lastCaptureOrPawnMove;
@@ -37,6 +37,7 @@ public class Chess {
         hashGenerator = new HashGenerator();
         gameStatus = new GameStatus();
         clock = new ChessClock(this);
+        timePreset = 5; // 5 Minutes
     }
 
     public Chess() {
@@ -57,9 +58,11 @@ public class Chess {
         castling.setRights((byte) castlingRights);
         hashGenerator.hashCastling((byte) castlingRights);
         score = calculateScore();
-        clock.initialize();
+        clock.initialize(timePreset);
+        started = false;
     }
 
+    @SuppressWarnings("DuplicateStringLiteralInspection")
     public void newGame(String init) {
 
         moveCounter = 0;
@@ -96,9 +99,11 @@ public class Chess {
         whitePieces.updateThreats();
         blackPieces.updateThreats();
         score = calculateScore();
-        clock.initialize();
+        clock.initialize(timePreset);
+        started = false;
     }
 
+    @SuppressWarnings("DuplicateStringLiteralInspection")
     public void startFromFEN(String FEN) {
 
         whitePieces.clear();
@@ -118,7 +123,7 @@ public class Chess {
             if (!args[2].contains("k")) castling.disableBlackKingSide();
 
             enPassantPawn = -1;
-            //todo get en Passant from FEN
+            //todo str en Passant from FEN
 
             lastCaptureOrPawnMove = Short.parseShort(args[4]);
             moveCounter = (short) (Short.parseShort(args[5]) - 1);
@@ -155,8 +160,8 @@ public class Chess {
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.err.println("FEN NOT ACCEPTED");
-            new DialogMessage("FEN wurde nicht akzeptiert");
+            System.out.println("FEN NOT ACCEPTED");
+            // todo gui user warning?
             return;
         }
 
@@ -166,7 +171,8 @@ public class Chess {
         whitePieces.updateThreats();
         blackPieces.updateThreats();
         score = calculateScore();
-        clock.initialize();
+        clock.initialize(timePreset);
+        started = false;
     }
 
     public String boardToString() {
@@ -175,6 +181,30 @@ public class Chess {
 
     public short getScore() {
         return score;
+    }
+
+    public ChessClock getClock() {
+        return clock;
+    }
+
+    public History getHistory() {
+        return history;
+    }
+
+    public PieceCollectionWhite getWhitePieces() {
+        return whitePieces;
+    }
+
+    public PieceCollectionBlack getBlackPieces() {
+        return blackPieces;
+    }
+
+    public void setTime(int timePreset) {
+        this.timePreset = timePreset;
+    }
+
+    public boolean isStarted() {
+        return started;
     }
 
     public String getStatusNotice() {
@@ -206,7 +236,7 @@ public class Chess {
     }
 
     /** return fully legal moves. Also detect Checkmate, Stalemate */
-    private Moves getUserLegalMoves() {
+    public Moves getUserLegalMoves() {
 
         Moves pseudoMoves;
         Moves illegalMoves = new Moves();
@@ -299,6 +329,7 @@ public class Chess {
         clock.update();
         movePiece(move);
         getUserLegalMoves(); //to make sure a checkmate will be detected
+        started = true;
         return true;
     }
 
@@ -527,9 +558,9 @@ public class Chess {
         long generateHashCode = hashGenerator.generateHashCode(board, whiteToMove, castling.getRights(), enPassantPawn);
 
         if (generateHashCode != hashGenerator.getHashCode()) {
-            System.err.println("HASHES NOT IDENTICAL:");
-            System.err.println("GENERATE:  \t\t" + generateHashCode);
-            System.err.println("GET:\t\t\t" + hashGenerator.getHashCode());
+            System.out.println("HASHES NOT IDENTICAL:");
+            System.out.println("GENERATE:  \t\t" + generateHashCode);
+            System.out.println("GET:\t\t\t" + hashGenerator.getHashCode());
             return false;
         }
         return true;
@@ -679,10 +710,10 @@ public class Chess {
         return combinedThreats;
     }
 
-    public boolean pieceAtSquare(int i, boolean color) {
+    public boolean pieceAtSquare(int pos, boolean color) {
 
-        if (color == Constants.WHITE) return isWhitePiece(board[i]);
-        else return isBlackPiece(board[i]);
+        if (color == Constants.WHITE) return isWhitePiece(board[pos]);
+        else return isBlackPiece(board[pos]);
     }
 
     public char[] getBoard() {
@@ -979,5 +1010,67 @@ class Piece {
 
     public void print() {
         System.out.print(Util.parseSymbol(type) + " #" + Util.parse(position) + " | ");
+    }
+}
+
+class Castling {
+
+    public final static byte ALL_RIGHTS = 0b1111;
+    public final static byte NO_RIGHTS = 0;
+
+    private byte rights;
+
+    public byte getRights() {
+        return rights;
+    }
+
+    public void setRights(byte rights) {
+        this.rights = rights;
+    }
+
+    public void reset() {
+        /* MSB-wKS wQS bKS bQS-LSB */
+        rights = 0b1111;
+    }
+
+    public void disableWhiteKingSide() {
+        rights &= ~(1 << 3);
+    }
+
+    public void disableWhiteQueenSide() {
+        rights &= ~(1 << 2);
+    }
+
+    public void disableBlackKingSide() {
+        rights &= ~(1 << 1);
+    }
+
+    public void disableBlackQueenSide() {
+        rights &= ~(1);
+    }
+
+    public boolean whiteKingSide() {
+        return (rights & (1 << 3)) > 0;
+    }
+
+    public boolean whiteQueenSide() {
+        return (rights & (1 << 2)) > 0;
+    }
+
+    public boolean blackKingSide() {
+        return (rights & (1 << 1)) > 0;
+    }
+
+    public boolean blackQueenSide() {
+        return (rights & 1) > 0;
+    }
+
+    public void print() {
+
+        System.out.println("WHITE KINGSIDE:\t" + whiteKingSide() +
+                "\nWHITE QUEENSIDE:" + whiteQueenSide() +
+                "\nBLACK KINGSIDE:\t" + blackKingSide() +
+                "\nBLACK QUEENSIDE:" + blackQueenSide() +
+                "\nRIGHTS:\t\t\t" + Integer.toBinaryString(rights) + "\n");
     }
 }

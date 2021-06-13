@@ -1,4 +1,4 @@
-package chessNetwork;
+package network;
 
 public interface Subscriber {
 

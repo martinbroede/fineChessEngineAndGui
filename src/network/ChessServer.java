@@ -1,6 +1,4 @@
-package chessNetwork;
-
-import gui.dialogs.DialogMessage;
+package network;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -8,10 +6,11 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.util.LinkedList;
 import java.util.Scanner;
 
-public class ChessServer extends NetInstance implements Runnable {
+import static misc.Properties.resourceBundle;
+
+public abstract class ChessServer extends NetInstance {
 
     private InetAddress inetAddress;
     private int port;
@@ -23,7 +22,7 @@ public class ChessServer extends NetInstance implements Runnable {
         String[] args = configIpAndPort.split("/");
         String ipString = "";
         if (args.length != 2) {
-            System.err.println("WRONG NUMBER OF ARGUMENTS FOR SERVER");
+            System.out.println("WRONG NUMBER OF ARGUMENTS FOR SERVER");
         } else {
             ipString = args[0];
             port = Integer.parseInt(args[1]);
@@ -31,11 +30,9 @@ public class ChessServer extends NetInstance implements Runnable {
         try {
             inetAddress = InetAddress.getByName(ipString);
         } catch (UnknownHostException ex) {
-            new DialogMessage("\"Spiel erstellen\" fehlgeschlagen. Host unbekannt ");
+            showMessage(ex.toString());
             ex.printStackTrace();
         }
-        this.messageQueue = new LinkedList<>();
-        sender = new Sender("SERVER SENDER");
     }
 
     public boolean provideServerSocket() {
@@ -45,7 +42,7 @@ public class ChessServer extends NetInstance implements Runnable {
             System.out.println("SERVER SOCKET PROVIDED. ADDRESS: " + serverSocket.getLocalSocketAddress());
             socket = serverSocket.accept();
             System.out.println("CONNECTED WITH " + socket.getRemoteSocketAddress());
-            new DialogMessage("Server - Verbinden mit " + socket.getRemoteSocketAddress() + " erfolgreich");
+            showMessage(String.format("Server - Verbinden mit %s erfolgreich", socket.getRemoteSocketAddress()));
             scanner = new Scanner(socket.getInputStream());
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             sender.setWriter(bufferedWriter);
@@ -58,7 +55,7 @@ public class ChessServer extends NetInstance implements Runnable {
             return true;
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-            new DialogMessage("Verbindung fehlgeschlagen ");
+            showMessage(resourceBundle.getString("connect.failed"));
             return false;
         }
     }
@@ -69,6 +66,10 @@ public class ChessServer extends NetInstance implements Runnable {
             receiver.start();
         }
     }
+
+    abstract void showMessage(String msg);
+
+    abstract void notifyOnlineToOffline();
 
     @Override
     public void run() {
@@ -85,7 +86,6 @@ public class ChessServer extends NetInstance implements Runnable {
             System.out.println("CLOSED SERVER SOCKET");
         } catch (IOException | NullPointerException ignored) {
         }
-        serverSocket = null;
         System.out.println("SERVER ABORTED");
     }
 }

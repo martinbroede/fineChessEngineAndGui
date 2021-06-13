@@ -1,4 +1,4 @@
-package fileHandling;
+package misc;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 public class StaticSetting {
 
+    public static final String SETTINGS_TXT = "settings.txt";
     private static String generalSettings;
 
     public static String getSetting(String settingName) {
@@ -38,22 +39,22 @@ public class StaticSetting {
         }
     }
 
-    public static void storeSettingsInFile() {
+    public static void storeSettings() {
 
         try {
-            FileWriter writer = new FileWriter("settings.txt");
+            FileWriter writer = new FileWriter(SETTINGS_TXT);
             writer.write(generalSettings);
             writer.close();
             System.out.println("STORED SETTINGS");
         } catch (IOException ex) {
-            System.err.println("STORE SETTINGS FAILED");
+            System.out.println("STORE SETTINGS FAILED");
         }
     }
 
     public static void getStoredSettings() {
 
         try {
-            File settingsFile = new File("settings.txt");
+            File settingsFile = new File(SETTINGS_TXT);
 
             if (settingsFile.createNewFile()) {
                 System.out.println(settingsFile.getName() + " CREATED");

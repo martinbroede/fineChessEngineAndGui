@@ -1,17 +1,12 @@
 package gui;
 
-import chessNetwork.Network;
-import chessNetwork.Password;
-import chessNetwork.Subscriber;
 import core.*;
-import fileHandling.ReadWrite;
 import gui.dialogs.DialogFeedback;
-import gui.dialogs.DialogInput;
-import gui.dialogs.DialogMessage;
-import gui.dialogs.DialogText;
+import gui.dialogs.DialogTextArea;
+import misc.Password;
+import network.Subscriber;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,35 +14,44 @@ import java.util.NoSuchElementException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static fileHandling.StaticSetting.rememberSetting;
-import static fileHandling.StaticSetting.storeSettingsInFile;
+import static misc.Properties.resourceBundle;
+import static misc.StaticSetting.rememberSetting;
+import static misc.StaticSetting.storeSettings;
 
-public class Gui extends Window implements ClockSubscriber {
+public class Gui extends MainWindow implements ClockSubscriber {
 
-    public final Network network;
-    final String SERVER_ADRESS = "chessnet.dynv6.net";
-    final String SERVER_PORT = "/55555";
-    final boolean WHITE = Constants.WHITE; //for readability reasons
-    final boolean BLACK = Constants.BLACK;
-    final String storagePath = "chessUserData/currentGame.txt";
-    private final ChatDialog chatDialog;
-    private final Chess chess;
+    private static final boolean BLACK = Constants.BLACK; //for readability reasons
+    private static final boolean WHITE = Constants.WHITE; //for readability reasons
+    private static final String INIT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    private static final String HTML_SPACE_1 = "<html> &#160 &#160 &#x25a1";
+    private static final String HTML_SPACE_2 = "<html> &#160 &#x25a0";
+    private static final String SERVER_ADDRESS = "chessnet.dynv6.net";
+    private static final String SERVER_PORT = "55555";
+    private static final String CASTLING_O_O_ILLEGAL = "CASTLING o-o ILLEGAL";
+    private static final String CASTLING_O_O_O_ILLEGAL = "CASTLING o-o-o ILLEGAL";
+    private static final String SERVER_SCORING_1_0 = "%SERVER SCORING 1.0";
+    private static final String SERVER_SCORING_0_0 = "%SERVER SCORING 0.0";
+    private static final String SERVER_ELO = "%SERVER ELO";
+
     private final SimpleDateFormat timeParser = new SimpleDateFormat("mm:ss");
+
+    private final ChessModel chess;
     private String moveString;
     private String moveStringSpecialMoves; //for promotion, castling, enPassant
     private boolean userPlaysColor = WHITE;
     private boolean userPlaysBothColors = true;
     private boolean feature = false;
 
-    public Gui(Chess chessGame) {
+    private byte mousePosition = -1;
 
-        super(chessGame);
-        chatDialog = new ChatDialog();
-        this.chess = chessGame;
-        chess.clock.callbackQuery(this);
+    public Gui(ChessModel chessModel) {
+
+        super(chessModel);
+
+        this.chess = chessModel;
+        this.chess.getClock().callbackQuery(this);
         moveString = "";
         moveStringSpecialMoves = "";
-        network = new Network();
         NetworkListener networkListener = new NetworkListener();
 
         Timer timer = new Timer();
@@ -62,111 +66,109 @@ public class Gui extends Window implements ClockSubscriber {
             public void run() {
                 refreshLabels();
             }
-        }, 0, 1000);
+        }, 0, 500); // update chess clock
 
-        /* todo remove
-        Scanner in = new Scanner(System.in);
-        while(chess.getTurnColor()){
-            String init = in.nextLine().replace("_", " ");
-            chess.newGame(init,Castling.NO_RIGHTS);
-            refreshFrameContent(-1);
-        }*/
+        if ((myName.equals("") || myPassword.equals("")))
+            getNameAndPassword();
 
-        if (!(myName.equals("") || myPassword.equals(""))) {
-            network.createClient(SERVER_ADRESS + SERVER_PORT);
-        }
+        connectToServer();
 
         /* ######################################### add listeners ################################################## */
 
         frame.addWindowListener(new WindowListener());
 
+        itemRename.addActionListener(e -> {
+            getNameAndPassword();
+            connectToServer();
+        });
+
         itemNewGame.addActionListener(e -> {
             System.out.println("NEW GAME");
-            chess.newGame();
+            this.chess.newGame();
             labelCapturedBlackPieces.setText("");
             labelCapturedWhitePieces.setText("");
             userPlaysBothColors = true;
-            refreshFrameContent(-1);
+            refreshFrameContent();
             moveString = "";
-            showPopup("Spiel beginnen");
+            showPopup(resourceBundle.getString(START_GAME));
         });
 
         itemStore.addActionListener(e -> {
-            System.out.println("STORE GAME");
-            ReadWrite.writeToFile(storagePath, chess);
+            {
+            }
         });
 
-        itemBegin.addActionListener(e -> System.err.println("NOT YET IMPLEMENTED"));
+        itemBegin.addActionListener(e -> System.out.println("NOT YET IMPLEMENTED"));
 
-        itemCastlingKingside.addActionListener(e -> {
+        itemCastlingKingSide.addActionListener(e -> {
             Move nextMove;
-            if (chess.getTurnColor() == WHITE) {
+            if (this.chess.getTurnColor() == WHITE) {
                 nextMove = new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING);
 
             } else { //BLACK
                 nextMove = new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING);
             }
             if (!movePiece(nextMove))
-                System.out.println("CASTLING o-o ILLEGAL");
-            refreshFrameContent(-1); // -1 : don't want to paint legal moves.
+                System.out.println(CASTLING_O_O_ILLEGAL);
+            refreshFrameContent(); // -1 : don't want to paint legal moves.
         });
 
-        itemCastlingQueenside.addActionListener(e -> {
+        itemCastlingQueenSide.addActionListener(e -> {
             Move nextMove;
-            if (chess.getTurnColor() == WHITE) {
+            if (this.chess.getTurnColor() == WHITE) {
                 nextMove = new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING);
 
             } else { //BLACK
                 nextMove = new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING);
             }
             if (!movePiece(nextMove))
-                System.out.println("CASTLING o-o-o ILLEGAL");
-            refreshFrameContent(-1); // -1 : don't want to paint legal moves.
+                System.out.println(CASTLING_O_O_O_ILLEGAL);
+            refreshFrameContent(); // -1 : don't want to paint legal moves.
         });
 
         itemPromotionQueen.addActionListener(e -> {
             movePiece(new Move(moveStringSpecialMoves + "Q"));
-            refreshFrameContent(-1);
+            refreshFrameContent();
         });
 
         itemPromotionRook.addActionListener(e -> {
             movePiece(new Move(moveStringSpecialMoves + "R"));
-            refreshFrameContent(-1);
+            refreshFrameContent();
         });
 
         itemPromotionKnight.addActionListener(e -> {
             movePiece(new Move(moveStringSpecialMoves + "N"));
-            refreshFrameContent(-1);
+            refreshFrameContent();
         });
 
         itemPromotionBishop.addActionListener(e -> {
             movePiece(new Move(moveStringSpecialMoves + "B"));
-            refreshFrameContent(-1);
+            refreshFrameContent();
         });
 
         itemUndo.addActionListener(e -> {
-            chess.userUndo();
-            refreshFrameContent(-1);
+            this.chess.userUndo();
+            refreshFrameContent();
         });
 
         itemRedo.addActionListener(e -> {
-            chess.userRedo();
-            refreshFrameContent(-1);
+            this.chess.userRedo();
+            refreshFrameContent();
         });
 
         itemChangePieceStyle.addActionListener(e -> {
             board.fontRoulette();
             setStyleSettings();
-            refreshFrameContent(-1);
+            refreshFrameContent();
         });
 
-        itemShowChat.addActionListener(e -> chatDialog.toggleVisibility());
+        itemShowChat.addActionListener(e -> chatWindow.toggleVisibility());
 
         itemStartClient.addActionListener(e -> network.showClientIpDialog(frame.getLocation()));
         itemStartServer.addActionListener(e -> network.showServerIpDialog(frame.getLocation()));
 
         itemNewNetworkGame.addActionListener(e -> {
-            chess.newGame();
+            this.chess.newGame();
             network.send("%MOVE " + Move.START_GAME);
             showPopup("Spiel beginnen");
         });
@@ -175,17 +177,25 @@ public class Gui extends Window implements ClockSubscriber {
 
         itemRotateBoard.addActionListener(e -> {
             board.toggleBoardOrientation();
-            refreshFrameContent(-1);
+            refreshFrameContent();
         });
 
-        itemFromFEN.addActionListener(e -> new DialogFEN());
+        itemFromFEN.addActionListener(e -> {
+            JTextField fen = new JTextField(INIT_FEN);
+            JPanel panel = new JPanel();
+            panel.add(fen);
+            int result = JOptionPane.showConfirmDialog(frame, panel, resourceBundle.getString("start.from.fen"), JOptionPane.OK_CANCEL_OPTION);
+            if (result == JOptionPane.OK_OPTION) {
+                this.chess.startFromFEN(fen.getText());
+            }
+        });
 
         itemAssignOpponentBlack.addActionListener(e -> {
             network.send("%MOVE " + Move.OPPONENT_BLACK);
             userPlaysColor = WHITE;
             userPlaysBothColors = false;
             board.setWhitePlayerSouth();
-            refreshFrameContent(-1);
+            refreshFrameContent();
         });
 
         itemAssignOpponentWhite.addActionListener(e -> {
@@ -193,24 +203,24 @@ public class Gui extends Window implements ClockSubscriber {
             userPlaysColor = BLACK;
             userPlaysBothColors = false;
             board.setWhitePlayerNorth();
-            refreshFrameContent(-1);
+            refreshFrameContent();
         });
 
         itemResign.addActionListener(e -> {
-            if (chess.getTurnColor() == userPlaysColor && chess.getStatus() == Status.UNDECIDED) {
-                chess.userMove(new Move(Move.RESIGN), userPlaysColor, true);
+            if (this.chess.getTurnColor() == userPlaysColor && this.chess.getStatus() == Status.UNDECIDED) {
+                this.chess.userMove(new Move(Move.RESIGN), userPlaysColor, true);
                 network.send("%MOVE " + Move.RESIGN);
                 processScoring();
-                showPopup(chess.getStatusNotice());
+                showPopup(this.chess.getStatusNotice());
             } else {
                 showPopup("Gib auf, wenn du am Zug bist.");
             }
         });
 
         itemOfferDraw.addActionListener(e -> {
-            if (chess.getTurnColor() == userPlaysColor) {
+            if (this.chess.getTurnColor() == userPlaysColor) {
                 network.send("%MOVE " + Move.OFFER_DRAW);
-                chess.userMove(new Move(Move.OFFER_DRAW), userPlaysColor, true);
+                this.chess.userMove(new Move(Move.OFFER_DRAW), userPlaysColor, true);
                 showPopup("Remis angeboten...");
             } else {
                 showPopup("Mache ein Angebot, wenn du am Zug bist.");
@@ -218,28 +228,36 @@ public class Gui extends Window implements ClockSubscriber {
         });
 
         itemAccept.addActionListener(e -> {
-            chess.userMove(new Move(Move.ACCEPT_DRAW), userPlaysColor, true);
+            this.chess.userMove(new Move(Move.ACCEPT_DRAW), userPlaysColor, true);
             network.send("%MOVE " + Move.ACCEPT_DRAW);
             processScoring();
-            showPopup(chess.getStatusNotice());
+            showPopup(this.chess.getStatusNotice());
         });
 
         itemDecline.addActionListener(e -> {
             network.send("%MOVE " + Move.DECLINE_DRAW);
-            chess.userMove(new Move(Move.DECLINE_DRAW), userPlaysColor, true);
+            this.chess.userMove(new Move(Move.DECLINE_DRAW), userPlaysColor, true);
             showPopup("Angebot abgelehnt.");
         });
 
         itemConnectWithPlayer.addActionListener(e -> network.send("%SERVER LINK"));
 
-        itemRatingQuery.addActionListener(e -> network.send("%SERVER ELO"));
+        itemChallengePlayer.addActionListener(e -> {
+            if (network.isConnected()) {
+                String name = JOptionPane.showInputDialog(frame, resourceBundle.getString("name"));
+                if (name != null)
+                    network.send("%SERVER LINKTO NAME".replace("NAME", name));
+            }
+        });
+
+        itemRatingQuery.addActionListener(e -> network.send(SERVER_ELO));
 
         itemConnectToServer.addActionListener(e -> {
             network.disconnect();
-            network.createClient(SERVER_ADRESS + SERVER_PORT);
+            network.createClient(String.format("%s/%s", SERVER_ADDRESS, SERVER_PORT));
         });
 
-        itemSendFeedback.addActionListener(e -> new DialogFeedback("Hallo, Team von SoftPawn!\n\n" +
+        itemSendFeedback.addActionListener(e -> new DialogFeedback("Lieber Entwickler von SoftPawn!\n\n" +
                 "An diesem Programm\ngibt es absolut\nnichts auszusetzen!!!" +
                 "\n\nGaligrü,\n" + myName, frame.getLocation()) {
             public void buttonClicked() {
@@ -253,7 +271,7 @@ public class Gui extends Window implements ClockSubscriber {
             public void keyTyped(KeyEvent e) {
                 if (feature && e.getKeyChar() == '\\') {
                     board.toggleShowHints();
-                    refreshFrameContent(-1);
+                    refreshFrameContent();
                 }
             }
 
@@ -261,11 +279,11 @@ public class Gui extends Window implements ClockSubscriber {
             public void keyPressed(KeyEvent e) {
                 if (e.isControlDown() && e.isAltDown()) feature = true;
                 if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    chess.userRedo();
-                    refreshFrameContent(-1);
+                    chessModel.userRedo();
+                    refreshFrameContent();
                 } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    chess.userUndo();
-                    refreshFrameContent(-1);
+                    chessModel.userUndo();
+                    refreshFrameContent();
                 }
             }
 
@@ -284,8 +302,8 @@ public class Gui extends Window implements ClockSubscriber {
                 switch (btn) {
                     case 1: {
                         if (network.isConnected()) {
-                            if (chess.userRedoAll() > 0) {
-                                refreshFrameContent(-1);
+                            if (chessModel.userRedoAll() > 0) {
+                                refreshFrameContent();
                             }
                         }
                         processMouseEvent(mouseEvent);
@@ -304,12 +322,16 @@ public class Gui extends Window implements ClockSubscriber {
         });
     }
 
+    private void connectToServer() {
+        network.createClient(String.format("%s/%s", SERVER_ADDRESS, SERVER_PORT));
+    }
+
     private boolean movePiece(Move move) {
 
         if (chess.userMove(move, userPlaysColor, userPlaysBothColors)) {
             if (network.isConnected()) {
                 network.send(//     send move information           and time stamps
-                        "%MOVE " + move.getInformation() + ' ' + chess.clock.whiteTime + ' ' + chess.clock.blackTime);
+                        "%MOVE " + move.getInformation() + ' ' + chess.getClock().whiteTime + ' ' + chess.getClock().blackTime);
             }
             processScoring();
             return true;
@@ -323,7 +345,7 @@ public class Gui extends Window implements ClockSubscriber {
         if (chess.getStatus() != Status.UNDECIDED) {
             showPopup(chess.getStatusNotice());
         } else {
-            byte mousePosition = board.coordFromEvent(mouseEvent);
+            mousePosition = board.coordFromEvent(mouseEvent);
 
             if (moveString.equals("")) { // no square chosen yet
                 if (chess.pieceAtSquare(mousePosition, chess.getTurnColor())) {
@@ -342,22 +364,22 @@ public class Gui extends Window implements ClockSubscriber {
                     /* move illegal? try castling moves */
                     if (nextMove.isFrom(Util.parse("E1")) && nextMove.getTo() == Util.parse("G1")) {
                         if (!movePiece(new Move((byte) 4, (byte) 6, Move.KING_SIDE_CASTLING)))
-                            System.out.println("CASTLING o-o ILLEGAL");
+                            System.out.println(CASTLING_O_O_ILLEGAL);
                     } else if (nextMove.isFrom(Util.parse("E1")) && nextMove.getTo() == Util.parse("C1")) {
                         if (!movePiece(new Move((byte) 4, (byte) 2, Move.QUEEN_SIDE_CASTLING)))
-                            System.out.println("CASTLING o-o-o ILLEGAL");
+                            System.out.println(CASTLING_O_O_O_ILLEGAL);
                     } else if (nextMove.isFrom(Util.parse("E8")) && nextMove.getTo() == Util.parse("G8")) {
                         if (!movePiece(new Move((byte) 60, (byte) 62, Move.KING_SIDE_CASTLING)))
-                            System.out.println("CASTLING o-o ILLEGAL");
+                            System.out.println(CASTLING_O_O_ILLEGAL);
                     } else if (nextMove.isFrom(Util.parse("E8")) && nextMove.getTo() == Util.parse("C8")) {
                         if (!movePiece(new Move((byte) 60, (byte) 58, Move.QUEEN_SIDE_CASTLING)))
-                            System.out.println("CASTLING o-o-o ILLEGAL");
+                            System.out.println(CASTLING_O_O_O_ILLEGAL);
                     }
 
                     /* move illegal? try en passant moves */
                     else if (nextMove.isFromRank('4') || nextMove.isFromRank('5')) {
-                        Move enPmove = new Move((short) (nextMove.getInformation() | Move.EN_PASSANT));
-                        if (!movePiece(enPmove)) System.out.println("EN PASSANT CAPTURE ILLEGAL");
+                        Move enPassMove = new Move((short) (nextMove.getInformation() | Move.EN_PASSANT));
+                        if (!movePiece(enPassMove)) System.out.println("EN PASSANT CAPTURE ILLEGAL");
                     }
 
                     /* move illegal? try promotion moves */
@@ -368,9 +390,9 @@ public class Gui extends Window implements ClockSubscriber {
 
                         Moves legalMoves;
                         if (chess.getTurnColor() == WHITE) {
-                            legalMoves = chess.whitePieces.getPseudoLegalMoves();
+                            legalMoves = chess.getWhitePieces().getPseudoLegalMoves();
                         } else {
-                            legalMoves = chess.blackPieces.getPseudoLegalMoves();
+                            legalMoves = chess.getBlackPieces().getPseudoLegalMoves(); // todo simplify to chess.getBlackMoves();
                         }
                         if (legalMoves.contains(promotionMove)) {
                             moveStringSpecialMoves = moveString;
@@ -383,30 +405,30 @@ public class Gui extends Window implements ClockSubscriber {
                 }
                 moveString = "";
             }
-            refreshFrameContent(mousePosition);
+            refreshFrameContent();
         }
     }
 
-    public void refreshFrameContent(int pos) {
+    public void refreshFrameContent() {
 
-        short lastMove = chess.history.getLastMoveCoordinates();
+        short lastMove = chess.getHistory().getLastMoveCoordinates();
         board.refreshChessBoard(true, true,
-                chess.getUserLegalMoves(userPlaysColor, userPlaysBothColors).getMovesFrom((byte) pos), lastMove);
+                chess.getUserLegalMoves(userPlaysColor, userPlaysBothColors).getMovesFrom(mousePosition), lastMove);
         refreshLabels();
     }
 
-    private void refreshLabels() {
+    public void refreshLabels() {
 
-        String whiteCaptPieces = chess.whitePieces.getCapturedPiecesString();
-        String blackCaptPieces = chess.blackPieces.getCapturedPiecesString();
+        String whiteCaptPieces = chess.getWhitePieces().getCapturedPiecesString();
+        String blackCaptPieces = chess.getBlackPieces().getCapturedPiecesString();
         whiteCaptPieces = replaceChessCharacters(whiteCaptPieces);
         blackCaptPieces = replaceChessCharacters(blackCaptPieces);
         labelCapturedWhitePieces.setText(whiteCaptPieces);
         labelCapturedBlackPieces.setText(blackCaptPieces);
 
         String space = "<br><br><br><br><br><br><br><br>";
-        String textWest = "<html> &#160 &#x25a0" + space; //square and linefeed...
-        String textEast = "<html> &#160 &#160 &#x25a1" + space;
+        String textWest = HTML_SPACE_2 + space; //square and linefeed...
+        String textEast = HTML_SPACE_1 + space;
 
         int score = Math.round((float) (chess.getScore() / 100));
 
@@ -415,8 +437,8 @@ public class Gui extends Window implements ClockSubscriber {
         else if (score > 0)
             textEast += " &#160 +" + Math.abs(score);
 
-        textWest += space + " &#160 " + timeParser.format(new Date(chess.clock.blackTime));
-        textEast += space + timeParser.format(new Date(chess.clock.whiteTime)) + " &#160 ";
+        textWest += space + " &#160 " + timeParser.format(new Date(chess.getClock().blackTime));
+        textEast += space + timeParser.format(new Date(chess.getClock().whiteTime)) + " &#160 ";
 
         textWest += "</html>";
         textEast += "</html>";
@@ -434,115 +456,29 @@ public class Gui extends Window implements ClockSubscriber {
                     network.send("%SERVER SCORING 0.5");
                 } else if (userPlaysColor == WHITE) {
                     if (chess.getStatus().getResult() == Status.Scoring.WHITE_ONE)
-                        network.send("%SERVER SCORING 1.0");
+                        network.send(SERVER_SCORING_1_0);
                     else
-                        network.send("%SERVER SCORING 0.0");
+                        network.send(SERVER_SCORING_0_0);
                 } else {
                     if (chess.getStatus().getResult() == Status.Scoring.BLACK_ONE)
-                        network.send("%SERVER SCORING 1.0");
+                        network.send(SERVER_SCORING_1_0);
                     else
-                        network.send("%SERVER SCORING 0.0");
+                        network.send(SERVER_SCORING_0_0);
                 }
                 System.out.println("TRANSMITTED SCORING");
             }
         }
     }
 
-    class ChatDialog extends JDialog {
-
-        public ChatDialog() {
-
-            setLayout(new BorderLayout());
-            JScrollPane scrollPane = new JScrollPane(chatOutput);
-            add(scrollPane, BorderLayout.NORTH);
-            add(chatInput, BorderLayout.SOUTH);
-            chatOutput.setEnabled(false);
-            chatOutput.setDisabledTextColor(Color.DARK_GRAY);
-            pack();
-            setResizable(false);
-
-            chatInput.addKeyListener(new KeyListener() {
-
-                @Override
-                public void keyTyped(KeyEvent e) {
-                }
-
-                @Override
-                public void keyPressed(KeyEvent e) {
-                }
-
-                @Override
-                public void keyReleased(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        if (chatInput.getText().startsWith("%")) network.send(chatInput.getText());
-                        else network.send("%CHAT " + chatInput.getText());
-                        addChatMessage(myName + ": " + chatInput.getText() + "\n");
-                        chatInput.setText("");
-                    }
-                }
-            });
-        }
-
-        public void addChatMessage(String message) {
-
-            chatOutput.append(message);
-            while (chatOutput.getLineCount() >= appearanceSettings.sizeFactor / 2) {
-                String text = chatOutput.getText();
-                text = text.substring(text.indexOf('\n') + 1);
-                chatOutput.setText(text);
-            }
-        }
-
-        public void toggleVisibility() {
-
-            Dimension newDim = new Dimension(appearanceSettings.margin, appearanceSettings.margin);
-            chatOutput.setPreferredSize(newDim);
-            chatOutput.setBackground(appearanceSettings.colorScheme.WHITE_SQUARES_COLOR);
-
-            newDim = new Dimension(appearanceSettings.margin, appearanceSettings.sizeFactor);
-            chatInput.setPreferredSize(newDim);
-            chatInput.setBackground(appearanceSettings.colorScheme.HIGHLIGHT_1_COLOR);
-
-            Point location = frame.getLocation();
-            location.translate(frame.getWidth(), 0);
-            setLocation(location);
-
-            pack();
-            setVisible(!isVisible());
-        }
-    }
-
-    class DialogFEN extends DialogInput {
-
-        public DialogFEN() {
-
-            super(
-                    "Spiel aus FEN beginnen",
-                    "FEN eingeben:",
-                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                    "OK",
-                    board.getLocation());
-            super.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        }
-
-        @Override
-        public void buttonClicked() {
-
-            chess.startFromFEN(input.getText());
-            network.send("%FEN " + input.getText());
-            refreshFrameContent(-1);
-            dispose();
-        }
-    }
-
     class NetworkListener implements Subscriber {
 
+        public static final String VERSION_ = "%VERSION ";
         private boolean subscribed;
 
         public void networkQuery() {
 
             if (!subscribed && network.isConnected()) {
-                changeTitle("-OFFLINE-", "-ONLINE-");
+                changeTitle(OFFLINE, ONLINE);
                 network.getInstance().getReceiver().register(this);
                 subscribed = true;
                 String authentication = Password.toSHA256String("chessIsFun");
@@ -553,6 +489,7 @@ public class Gui extends Window implements ClockSubscriber {
                 react();
             }
         }
+
 
         @Override
         public void react() {
@@ -569,7 +506,7 @@ public class Gui extends Window implements ClockSubscriber {
                         case "%MOVE":
 
                             if (chess.userRedoAll() > 0) {
-                                refreshFrameContent(-1);
+                                refreshFrameContent();
                             }
 
                             Move nextMove = new Move(Short.parseShort(args[1]));
@@ -578,20 +515,20 @@ public class Gui extends Window implements ClockSubscriber {
                                     chess.newGame();
                                     labelCapturedBlackPieces.setText("");
                                     labelCapturedWhitePieces.setText("");
-                                    network.send("% Spiel gegen " + myName + " begonnen - " + VERSION);
-                                    showPopup("Spiel beginnen");
+                                    network.send(String.format(resourceBundle.getString("game.started"), myName, VERSION));
+                                    showPopup(resourceBundle.getString(START_GAME));
                                     break;
                                 case Move.OPPONENT_BLACK:
                                     userPlaysColor = BLACK;
                                     board.setWhitePlayerNorth();
                                     userPlaysBothColors = false;
-                                    refreshFrameContent(-1);
+                                    refreshFrameContent();
                                     break;
                                 case Move.OPPONENT_WHITE:
                                     userPlaysColor = WHITE;
                                     board.setWhitePlayerSouth();
                                     userPlaysBothColors = false;
-                                    refreshFrameContent(-1);
+                                    refreshFrameContent();
                                     break;
                                 case Move.OFFER_DRAW:
                                     chess.userMove(nextMove, userPlaysColor, true);
@@ -599,7 +536,7 @@ public class Gui extends Window implements ClockSubscriber {
                                     break;
                                 case Move.DECLINE_DRAW:
                                     chess.userMove(nextMove, userPlaysColor, true);
-                                    showPopup("Angebot abgelehnt.");
+                                    showPopup(resourceBundle.getString("decline.offer"));
                                     break;
                                 case Move.ACCEPT_DRAW:
                                 case Move.RESIGN:
@@ -608,14 +545,14 @@ public class Gui extends Window implements ClockSubscriber {
                                     break;
                                 default:
                                     chess.userMove(nextMove, userPlaysColor, true);
-                                    refreshFrameContent(-1);
+                                    refreshFrameContent();
                             }
 
                             try {
-                                chess.clock.whiteTime = Long.parseLong(args[2]);
-                                chess.clock.blackTime = Long.parseLong(args[3]);
+                                chess.getClock().whiteTime = Long.parseLong(args[2]);
+                                chess.getClock().blackTime = Long.parseLong(args[3]);
                             } catch (Exception ex) {
-                                System.out.println("PARSING ERROR\n" + ex.getMessage());
+                                System.out.println("NO TIMESTAMP SENT");
                             }
 
                             processScoring();
@@ -625,15 +562,15 @@ public class Gui extends Window implements ClockSubscriber {
                             chess.startFromFEN(message.replace("%FEN ", ""));
                             labelCapturedBlackPieces.setText("");
                             labelCapturedWhitePieces.setText("");
-                            refreshFrameContent(-1);
+                            refreshFrameContent();
                             break;
                         case "%ELO":
                             String elo = message.replace("%ELO ", "");
-                            elo += "\nAktualisieren >Hier klicken<";
-                            new DialogText(elo, frame.getLocation()) {
+                            elo += resourceBundle.getString("click.to.update");
+                            new DialogTextArea(elo, frame.getLocation()) {
                                 @Override
                                 public void onMouseClick() {
-                                    network.send("%SERVER ELO");
+                                    network.send(SERVER_ELO);
                                     dispose();
                                 }
                             };
@@ -642,16 +579,16 @@ public class Gui extends Window implements ClockSubscriber {
                             showPopup(message.replace("%NOTE ", ""));
                             break;
                         case "%INFO":
-                            new DialogMessage(message.replace("%INFO ", ""));
+                            showMessageDialog(message.replace("%INFO ", ""));
                             break;
                         case "%VERSION?": // received version request
-                            network.send("%VERSION " + VERSION);
+                            network.send(String.format("%%VERSION %s", VERSION));
                             break;
                         case "%ECHO?":
                             network.send("%ECHO");
                             break;
                         case "%VERSION": // received friend's version
-                            chatOutput.append(message.replace("%VERSION ", "") + "\n");
+                            chatWindow.addChatMessage(message.replace(VERSION_, "") + "\n");
                             break;
                         case "%NAME?": // received name request
                             network.send("%NAME " + myName);
@@ -661,13 +598,14 @@ public class Gui extends Window implements ClockSubscriber {
                             System.out.println("YOU PLAY AGAINST " + myFriendsName);
                             break;
                         case "%CHAT": // display chat in chat window
-                            chatDialog.addChatMessage(myFriendsName + ": " + message.replace("%CHAT ", "") + "\n");
+                            chatWindow.addChatMessage(String.format(
+                                    "%s: %s\n", myFriendsName, message.replace("%CHAT ", "")));
                             break;
                         case "%BOARD":
                             System.out.println(message.replace("%BOARD ", "")); // todo...
                             break;
                         case "%": // show information in chat window
-                            chatDialog.addChatMessage(message.replace("% ", "") + "\n");
+                            chatWindow.addChatMessage(message.replace("% ", "") + "\n");
                             System.out.println(message);
                             break;
                         default:
@@ -675,7 +613,7 @@ public class Gui extends Window implements ClockSubscriber {
 
                     }
                 } catch (NoSuchElementException ex) {
-                    System.err.println("MESSAGE QUEUE IS EMPTY");
+                    System.out.println("MESSAGE QUEUE IS EMPTY");
                 }
             }
         }
@@ -690,16 +628,20 @@ public class Gui extends Window implements ClockSubscriber {
 
         @Override
         public void windowClosing(WindowEvent e) {
-            if (network.isConnected())
-                network.disconnect();
-            rememberSetting("%NAME " + myName);
-            rememberSetting("%PW " + myPassword);
-            rememberSetting("%SIZE " + appearanceSettings.sizeFactor);
-            rememberSetting("%STYLE " + appearanceSettings.colorScheme.getCurrentScheme());
-            rememberSetting("%LOCATION " + frame.getLocation().getX() + "/" + frame.getLocation().getY());
-            rememberSetting("%PIECES " + appearanceSettings.getFontNumer());
-            storeSettingsInFile();
-            e.getWindow().dispose();
+            try {
+                if (network.isConnected())
+                    network.disconnect();
+                rememberSetting("%NAME " + myName);
+                rememberSetting("%PW " + myPassword);
+                rememberSetting("%SIZE " + appearanceSettings.sizeFactor);
+                rememberSetting("%STYLE " + appearanceSettings.colorScheme.getCurrentScheme());
+                rememberSetting("%LOCATION " + frame.getLocation().getX() + "/" + frame.getLocation().getY());
+                rememberSetting("%PIECES " + appearanceSettings.getFontNumer());
+                storeSettings();
+                e.getWindow().dispose();
+            } catch (Exception ex) {
+                System.out.println(ex.toString());
+            }
             System.out.println("FINECHESS SAYS GOODBYE AND HAVE A NICE DAY");
             System.exit(0);
         }
