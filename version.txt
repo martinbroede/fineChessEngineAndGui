@@ -1,4 +1,4 @@
-#V0.56  (beta)
+#V0.56b (beta)
 
 V0.01   initial commit
 V0.1    add castling
@@ -51,3 +51,4 @@ V0.55f  fix reconnect issues
         add properties
 V0.56   add scrollbars
         add challenge-player-dialog
+V0.56b  add factory method for "move"

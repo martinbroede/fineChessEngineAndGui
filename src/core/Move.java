@@ -21,12 +21,26 @@ public class Move {
     public static final short ACCEPT_DRAW = -1200;
     public static final short DECLINE_DRAW = -1300;
 
+    private static final Object[] KNOWN_MOVES;
+
     private final short information;
 
     // todo implement static factory method to restrict access
 
-    public Move(byte from, byte to) {
+    static {
+        KNOWN_MOVES = new Object[64 * 64];
+        for (short i = 0; i < 64 * 64; i++) {
+            KNOWN_MOVES[i] = new Move(i);
+        }
+        System.out.println("MOVES: FACTORY METHOD ESTABLISHED");
+    }
+
+    private Move(byte from, byte to) { //TODO REMOVE
         information = (short) (from + to * 64);
+    }
+
+    public static Move getMove(byte from, byte to) {
+        return (Move) KNOWN_MOVES[(from + to * 64)];
     }
 
     public Move(byte from, byte to, short special) {

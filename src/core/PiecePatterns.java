@@ -131,7 +131,7 @@ public class PiecePatterns {
                     legalMoves.add(new Move(from, to, Move.PROMOTION_KNIGHT));
                     legalMoves.add(new Move(from, to, Move.PROMOTION_BISHOP));
                     legalMoves.add(new Move(from, to, Move.PROMOTION_ROOK));
-                } else legalMoves.add(new Move(from, to)); // REGULAR MOVE
+                } else legalMoves.add(Move.getMove(from,to)); // REGULAR MOVE
             }
 
             for (byte to : Constants.WHITE_PAWN_CAPTURE_SQUARES[from]) {
@@ -141,7 +141,7 @@ public class PiecePatterns {
                         legalMoves.add(new Move(from, to, Move.PROMOTION_KNIGHT));
                         legalMoves.add(new Move(from, to, Move.PROMOTION_BISHOP));
                         legalMoves.add(new Move(from, to, Move.PROMOTION_ROOK));
-                    } else legalMoves.add(new Move(from, to)); // REGULAR MOVE
+                    } else legalMoves.add(Move.getMove(from,to)); // REGULAR MOVE
                 }
             }
 
@@ -177,7 +177,7 @@ public class PiecePatterns {
                     legalMoves.add(new Move(from, to, Move.PROMOTION_KNIGHT));
                     legalMoves.add(new Move(from, to, Move.PROMOTION_BISHOP));
                     legalMoves.add(new Move(from, to, Move.PROMOTION_ROOK));
-                } else legalMoves.add(new Move(from, to)); // REGULAR MOVE
+                } else legalMoves.add(Move.getMove(from,to)); // REGULAR MOVE
             }
 
             for (byte to : Constants.BLACK_PAWN_CAPTURE_SQUARES[from]) {
@@ -187,7 +187,7 @@ public class PiecePatterns {
                         legalMoves.add(new Move(from, to, Move.PROMOTION_KNIGHT));
                         legalMoves.add(new Move(from, to, Move.PROMOTION_BISHOP));
                         legalMoves.add(new Move(from, to, Move.PROMOTION_ROOK));
-                    } else legalMoves.add(new Move(from, to)); // REGULAR MOVE
+                    } else legalMoves.add(Move.getMove(from,to)); // REGULAR MOVE
                 }
             }
 
@@ -218,7 +218,7 @@ public class PiecePatterns {
 
             for (byte to : Constants.KNIGHT_SQUARES[from]) {
                 if (!isWhiteOccupied(board[to])) {
-                    legalMoves.add(new Move(from, to));
+                    legalMoves.add(Move.getMove(from,to));
                 }
             }
             return legalMoves;
@@ -240,7 +240,7 @@ public class PiecePatterns {
 
             for (byte to : Constants.KNIGHT_SQUARES[from]) {
                 if (!isBlackOccupied(board[to])) {
-                    legalMoves.add(new Move(from, to));
+                    legalMoves.add(Move.getMove(from,to));
                 }
             }
             return legalMoves;
@@ -263,11 +263,11 @@ public class PiecePatterns {
             for (byte[][] line : Constants.ROOK_SQUARES) {
                 for (byte to : line[from]) {
                     if (isBlackOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                         break;
                     }
                     if (isNotOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                     } else break;
                 }
             }
@@ -299,11 +299,11 @@ public class PiecePatterns {
             for (byte[][] line : Constants.ROOK_SQUARES) {
                 for (byte to : line[from]) {
                     if (isWhiteOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                         break;
                     }
                     if (isNotOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                     } else break;
                 }
             }
@@ -335,11 +335,11 @@ public class PiecePatterns {
             for (byte[][] line : Constants.BISHOP_SQUARES) {
                 for (byte to : line[from]) {
                     if (isBlackOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                         break;
                     }
                     if (isNotOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                     } else break;
                 }
             }
@@ -371,11 +371,11 @@ public class PiecePatterns {
             for (byte[][] line : Constants.BISHOP_SQUARES) {
                 for (byte to : line[from]) {
                     if (isWhiteOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                         break;
                     }
                     if (isNotOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                     } else break;
                 }
             }
@@ -408,11 +408,11 @@ public class PiecePatterns {
 
                 for (byte to : line[from]) {
                     if (isBlackOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                         break;
                     }
                     if (isNotOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                     } else break;
                 }
             }
@@ -444,11 +444,11 @@ public class PiecePatterns {
             for (byte[][] line : Constants.QUEEN_SQUARES) {
                 for (byte to : line[from]) {
                     if (isWhiteOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                         break;
                     }
                     if (isNotOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                     } else break;
                 }
             }
@@ -484,7 +484,7 @@ public class PiecePatterns {
             for (byte to : Constants.KING_SQUARES[from]) {
                 if (threats[to] == 0) {
                     if (!isWhiteOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                     }
                 }
             }
@@ -529,7 +529,7 @@ public class PiecePatterns {
             for (byte to : Constants.KING_SQUARES[from]) {
                 if (threats[to] == 0) {
                     if (!isBlackOccupied(board[to])) {
-                        legalMoves.add(new Move(from, to));
+                        legalMoves.add(Move.getMove(from,to));
                     }
                 }
             }
